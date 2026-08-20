@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const dataFilePath = path.resolve(__dirname, './AEERO_crm_data.json');
+const dataFilePath = path.resolve(__dirname, './aeero_crm_data.json');
 
 // Standard Statuses according to AEERO CRM Specification
 export const STATUS_MAP = {
