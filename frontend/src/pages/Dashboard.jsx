@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../api/client';
 import {
   ResponsiveContainer,
@@ -53,14 +53,63 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
   const [detailData, setDetailData] = useState([]);
   const [detailLoading, setDetailLoading] = useState(false);
 
-  useEffect(() => {
-    loadStats();
-  }, []);
+  // Dynamic Real-Time Date & Range Calculations
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonthNum = String(now.getMonth() + 1).padStart(2, '0');
+  const todayDateStr = now.toISOString().split('T')[0];
+  const firstDayOfMonthStr = `${currentYear}-${currentMonthNum}-01`;
 
-  const loadStats = async () => {
+  const [dateFrom, setDateFrom] = useState(firstDayOfMonthStr);
+  const [dateTo, setDateTo] = useState(todayDateStr);
+  const [isCustomRangeActive, setIsCustomRangeActive] = useState(false);
+  const [showDatePickerModal, setShowDatePickerModal] = useState(false);
+
+  const currentMonthShort = now.toLocaleDateString('en-US', { month: 'short' });
+  const todayNum = now.getDate();
+
+  const currentDateRangeString = useMemo(() => {
+    if (selectedPeriod === 'This Month') {
+      return `${currentMonthShort} 1 – ${currentMonthShort} ${todayNum}, ${currentYear}`;
+    }
+    if (selectedPeriod === 'Last Month') {
+      const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const prevMonthShort = prevDate.toLocaleDateString('en-US', { month: 'short' });
+      const lastDayOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+      return `${prevMonthShort} 1 – ${prevMonthShort} ${lastDayOfPrevMonth}, ${prevDate.getFullYear()}`;
+    }
+    if (selectedPeriod === 'This Quarter') {
+      const q = Math.floor(now.getMonth() / 3) + 1;
+      const qStartMonth = (q - 1) * 3;
+      const qStartName = new Date(currentYear, qStartMonth, 1).toLocaleDateString('en-US', { month: 'short' });
+      return `Q${q} (${qStartName} 1 – ${currentMonthShort} ${todayNum}, ${currentYear})`;
+    }
+    if (selectedPeriod.startsWith('Year')) {
+      return `Jan 1 – ${currentMonthShort} ${todayNum}, ${currentYear}`;
+    }
+    return `${currentMonthShort} 1 – ${currentMonthShort} ${todayNum}, ${currentYear}`;
+  }, [selectedPeriod, currentMonthShort, todayNum, currentYear]);
+
+  const displayDateString = useMemo(() => {
+    if (isCustomRangeActive && dateFrom && dateTo) {
+      const d1 = new Date(dateFrom);
+      const d2 = new Date(dateTo);
+      if (!isNaN(d1.getTime()) && !isNaN(d2.getTime())) {
+        const f1 = d1.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: d1.getFullYear() !== d2.getFullYear() ? 'numeric' : undefined });
+        const f2 = d2.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        return `${f1} – ${f2}`;
+      }
+    }
+    return currentDateRangeString;
+  }, [isCustomRangeActive, dateFrom, dateTo, currentDateRangeString]);
+
+  const loadStats = async (overrideFilters = null) => {
     try {
       setLoading(true);
-      const data = await api.getStats();
+      const filters = overrideFilters !== null 
+        ? overrideFilters 
+        : (isCustomRangeActive ? { startDate: dateFrom, endDate: dateTo } : {});
+      const data = await api.getStats(filters);
       if (data) {
         setStats(prev => ({
           ...prev,
@@ -73,6 +122,78 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
       setLoading(false);
     }
   };
+
+  const applyPreset = (preset) => {
+    setSelectedPeriod(preset);
+    const n = new Date();
+    let s = '';
+    let e = n.toISOString().split('T')[0];
+
+    if (preset === 'Today') {
+      s = e;
+    } else if (preset === 'Yesterday') {
+      const y = new Date(n);
+      y.setDate(y.getDate() - 1);
+      s = y.toISOString().split('T')[0];
+      e = s;
+    } else if (preset === 'Last 7 Days') {
+      const d = new Date(n);
+      d.setDate(d.getDate() - 7);
+      s = d.toISOString().split('T')[0];
+    } else if (preset === 'Last 30 Days') {
+      const d = new Date(n);
+      d.setDate(d.getDate() - 30);
+      s = d.toISOString().split('T')[0];
+    } else if (preset === 'This Month') {
+      s = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-01`;
+    } else if (preset === 'Last Month') {
+      const prev = new Date(n.getFullYear(), n.getMonth() - 1, 1);
+      const lastDay = new Date(n.getFullYear(), n.getMonth(), 0);
+      s = prev.toISOString().split('T')[0];
+      e = lastDay.toISOString().split('T')[0];
+    } else if (preset === 'This Quarter') {
+      const q = Math.floor(n.getMonth() / 3);
+      s = new Date(n.getFullYear(), q * 3, 1).toISOString().split('T')[0];
+    } else if (preset.startsWith('Year')) {
+      s = `${n.getFullYear()}-01-01`;
+    }
+
+    setDateFrom(s);
+    setDateTo(e);
+    setIsCustomRangeActive(true);
+    setShowDatePickerModal(false);
+    loadStats({ startDate: s, endDate: e });
+  };
+
+  const handleApplyCustomRange = () => {
+    if (!dateFrom || !dateTo) {
+      alert("Please select both Start Date and End Date.");
+      return;
+    }
+    if (dateFrom > dateTo) {
+      alert("Start Date cannot be after End Date.");
+      return;
+    }
+    setIsCustomRangeActive(true);
+    setSelectedPeriod('Custom');
+    setShowDatePickerModal(false);
+    loadStats({ startDate: dateFrom, endDate: dateTo });
+  };
+
+  const handleResetDateFilter = () => {
+    const s = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+    const e = now.toISOString().split('T')[0];
+    setDateFrom(s);
+    setDateTo(e);
+    setIsCustomRangeActive(false);
+    setSelectedPeriod('This Month');
+    setShowDatePickerModal(false);
+    loadStats({});
+  };
+
+  useEffect(() => {
+    loadStats();
+  }, []);
 
   // Detailed Metric & Chart Explanation Dictionary for the (i) Info Icons
   const EXPLANATION_GUIDE = {
@@ -397,25 +518,46 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
         {/* Right Header Actions */}
         <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
 
-          {/* Date Picker Button */}
-          <div className={`flex items-center gap-2 border rounded-xl px-3 py-2 text-xs font-semibold shadow-xs cursor-pointer ${darkMode ? 'bg-[#12161F] border-[#262F3D] text-slate-200 hover:bg-[#1C222D]' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-            }`}>
-            <span className={`material-symbols-outlined text-lg ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>calendar_today</span>
-            <span>May 1 – May 13, 2026</span>
-            <span className={`material-symbols-outlined text-base ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>expand_more</span>
+          {/* Date Picker Button with Real Dynamic Date Range & Popover Trigger */}
+          <div 
+            onClick={() => setShowDatePickerModal(true)}
+            className={`flex items-center gap-2 border rounded-xl px-3 py-2 text-xs font-semibold shadow-xs cursor-pointer transition-all ${
+              isCustomRangeActive
+                ? (darkMode ? 'bg-amber-950/40 border-[#E5A812] text-amber-200 ring-1 ring-[#E5A812]/50' : 'bg-amber-50 border-[#7D610F] text-[#7D610F] ring-1 ring-[#7D610F]/30')
+                : (darkMode ? 'bg-[#12161F] border-[#262F3D] text-slate-200 hover:bg-[#1C222D]' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100')
+            }`}
+            title="Click to select custom Start Date and End Date range for analytics"
+          >
+            <span className={`material-symbols-outlined text-lg ${isCustomRangeActive ? (darkMode ? 'text-[#E5A812]' : 'text-[#7D610F]') : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>calendar_today</span>
+            <span>{displayDateString}</span>
+            <span className={`material-symbols-outlined text-base ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>edit_calendar</span>
           </div>
 
-          {/* Timeframe Dropdown */}
+          {/* Timeframe Dropdown with Real Current Month & Year */}
           <select
             value={selectedPeriod}
-            onChange={(e) => setSelectedPeriod(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === 'Custom') {
+                setShowDatePickerModal(true);
+              } else {
+                applyPreset(val);
+              }
+            }}
             className={`border rounded-xl px-3 py-2 text-xs font-semibold outline-none cursor-pointer shadow-xs focus:ring-2 focus:ring-[#D99B00] ${darkMode ? 'bg-[#12161F] border-[#262F3D] text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'
               }`}
           >
-            <option value="This Month">This Month</option>
+            <option value="This Month">This Month ({currentMonthShort})</option>
+            <option value="Today">Today</option>
+            <option value="Yesterday">Yesterday</option>
+            <option value="Last 7 Days">Last 7 Days</option>
+            <option value="Last 30 Days">Last 30 Days</option>
             <option value="Last Month">Last Month</option>
             <option value="This Quarter">This Quarter</option>
-            <option value="Year 2026">Year 2026</option>
+            <option value={`Year ${currentYear}`}>Year {currentYear}</option>
+            {isCustomRangeActive && selectedPeriod === 'Custom' && (
+              <option value="Custom">Custom Range</option>
+            )}
           </select>
 
           {/* Notifications Icon */}
@@ -432,8 +574,10 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
           {/* User Profile Badge */}
           <div className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-xs font-bold shadow-xs ${darkMode ? 'bg-[#2A2100] text-amber-200 border-[#D4AF37]/40' : 'bg-amber-100 text-[#7D610F] border-amber-200'
             }`}>
-            <span className="w-6 h-6 rounded-lg bg-[#D99B00] text-black flex items-center justify-center text-[10px] font-black">AU</span>
-            <span>Admin User 1</span>
+            <span className="w-6 h-6 rounded-lg bg-[#D99B00] text-black flex items-center justify-center text-[10px] font-black">
+              {(currentUser?.name || 'Admin User 1').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+            </span>
+            <span>{currentUser?.name || 'Admin User 1'}</span>
           </div>
 
           {/* Add Lead CTA Button */}
@@ -450,6 +594,35 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
 
         </div>
       </div>
+
+      {/* Active Custom Date Range Indicator Banner */}
+      {isCustomRangeActive && (
+        <div className={`flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 rounded-xl border text-xs font-semibold shadow-xs transition-colors ${
+          darkMode ? 'bg-amber-950/40 text-amber-200 border-[#E5A812]/40' : 'bg-amber-50 text-[#7D610F] border-amber-200'
+        }`}>
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px] text-[#E5A812]">filter_alt</span>
+            <span>Filtered Analytics Date Window: <strong className={darkMode ? 'text-white' : 'text-slate-900'}>{displayDateString}</strong></span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowDatePickerModal(true)}
+              className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-black/10 hover:bg-black/20 dark:bg-white/10 dark:hover:bg-white/20 transition-colors flex items-center gap-1"
+            >
+              <span className="material-symbols-outlined text-[14px]">edit_calendar</span>
+              <span>Change Range</span>
+            </button>
+            <button
+              onClick={handleResetDateFilter}
+              className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 transition-colors flex items-center gap-1"
+            >
+              <span className="material-symbols-outlined text-[14px]">close</span>
+              <span>Clear Filter</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ---------------------------------------------------- */}
       {/* ROW 1: TOP KPI CARDS WITH (i) INFO BUTTONS           */}
@@ -476,11 +649,11 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
           <div className="mt-2">
             <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400 truncate">TOTAL LEADS</p>
             <h3 className={`text-xl md:text-2xl font-black mt-0.5 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-              {loading ? '...' : (stats.totalLeads || '1248')}
+              {loading ? '...' : (stats.totalLeads ?? 0)}
             </h3>
-            <div className="flex items-center gap-1 text-[10px] font-semibold text-[#10B981] mt-0.5 truncate">
-              <span className="material-symbols-outlined text-xs flex-shrink-0">trending_up</span>
-              <span>18.7% <span className={darkMode ? 'text-slate-500' : 'text-slate-400 font-normal'}>vs last month</span></span>
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-amber-500 mt-0.5 truncate">
+              <span className="material-symbols-outlined text-xs flex-shrink-0">database</span>
+              <span>Active pipeline enquiries</span>
             </div>
           </div>
         </div>
@@ -505,11 +678,11 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
           <div className="mt-2">
             <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400 truncate">NEW LEADS</p>
             <h3 className={`text-xl md:text-2xl font-black mt-0.5 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-              {loading ? '...' : (stats.newLeads || '82')}
+              {loading ? '...' : (stats.newLeads ?? 0)}
             </h3>
-            <div className="flex items-center gap-1 text-[10px] font-semibold text-[#10B981] mt-0.5 truncate">
-              <span className="material-symbols-outlined text-xs flex-shrink-0">trending_up</span>
-              <span>15.3% <span className={darkMode ? 'text-slate-500' : 'text-slate-400 font-normal'}>vs last month</span></span>
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-blue-400 mt-0.5 truncate">
+              <span className="material-symbols-outlined text-xs flex-shrink-0">fiber_new</span>
+              <span>{stats.totalLeads > 0 ? `${((stats.newLeads / stats.totalLeads) * 100).toFixed(1)}% of total` : '0% of total'}</span>
             </div>
           </div>
         </div>
@@ -534,11 +707,11 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
           <div className="mt-2">
             <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400 truncate">INTERESTED</p>
             <h3 className={`text-xl md:text-2xl font-black mt-0.5 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-              {loading ? '...' : (stats.interestedLeads || '214')}
+              {loading ? '...' : (stats.interestedLeads ?? 0)}
             </h3>
-            <div className="flex items-center gap-1 text-[10px] font-semibold text-[#10B981] mt-0.5 truncate">
-              <span className="material-symbols-outlined text-xs flex-shrink-0">trending_up</span>
-              <span>11.8% <span className={darkMode ? 'text-slate-500' : 'text-slate-400 font-normal'}>vs last month</span></span>
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-emerald-500 mt-0.5 truncate">
+              <span className="material-symbols-outlined text-xs flex-shrink-0">thumb_up</span>
+              <span>{stats.totalLeads > 0 ? `${((stats.interestedLeads / stats.totalLeads) * 100).toFixed(1)}% warm leads` : '0% warm leads'}</span>
             </div>
           </div>
         </div>
@@ -563,10 +736,11 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
           <div className="mt-2">
             <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400 truncate">FOLLOW-UPS TODAY</p>
             <h3 className={`text-xl md:text-2xl font-black mt-0.5 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-              {loading ? '...' : (stats.followupsToday || '37')}
+              {loading ? '...' : (stats.followupsToday ?? 0)}
             </h3>
-            <div className="text-[10px] font-semibold text-blue-400 mt-0.5 truncate">
-              <span>12 completed</span>
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-orange-400 mt-0.5 truncate">
+              <span className="material-symbols-outlined text-xs flex-shrink-0">schedule</span>
+              <span>{stats.overdueFollowups || 0} overdue tasks</span>
             </div>
           </div>
         </div>
@@ -591,11 +765,11 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
           <div className="mt-2">
             <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400 truncate">CONVERTED</p>
             <h3 className={`text-xl md:text-2xl font-black mt-0.5 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-              {loading ? '...' : (stats.convertedLeads || '68')}
+              {loading ? '...' : (stats.convertedLeads ?? 0)}
             </h3>
-            <div className="flex items-center gap-1 text-[10px] font-semibold text-[#10B981] mt-0.5 truncate">
-              <span className="material-symbols-outlined text-xs flex-shrink-0">trending_up</span>
-              <span>13.2% <span className={darkMode ? 'text-slate-500' : 'text-slate-400 font-normal'}>vs last month</span></span>
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-purple-400 mt-0.5 truncate">
+              <span className="material-symbols-outlined text-xs flex-shrink-0">check_circle</span>
+              <span>{stats.totalLeads > 0 ? `${((stats.convertedLeads / stats.totalLeads) * 100).toFixed(1)}% admissions` : '0% admissions'}</span>
             </div>
           </div>
         </div>
@@ -620,11 +794,11 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
           <div className="mt-2">
             <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400 truncate">CONVERSION RATE</p>
             <h3 className={`text-xl md:text-2xl font-black mt-0.5 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-              {loading ? '...' : (stats.conversionRate || '5.45')}
+              {loading ? '...' : `${stats.conversionRate ?? '0.0'}%`}
             </h3>
-            <div className="flex items-center gap-1 text-[10px] font-semibold text-[#10B981] mt-0.5 truncate">
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-emerald-500 mt-0.5 truncate">
               <span className="material-symbols-outlined text-xs flex-shrink-0">trending_up</span>
-              <span>1.25% <span className={darkMode ? 'text-slate-500' : 'text-slate-400 font-normal'}>vs last month</span></span>
+              <span>{stats.convertedLeads ?? 0} of {stats.totalLeads ?? 0} won</span>
             </div>
           </div>
         </div>
@@ -649,11 +823,11 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
           <div className="mt-2">
             <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400 truncate">TOTAL COLLECTED INCOME</p>
             <h3 className={`text-lg md:text-xl font-black mt-0.5 ${darkMode ? 'text-emerald-400' : 'text-emerald-700'}`}>
-              ₹ {loading ? '...' : (stats.totalCollectedRevenue || '200,000')}
+              ₹ {loading ? '...' : (stats.totalCollectedRevenue ?? '0')}
             </h3>
-            <div className="flex items-center gap-1 text-[10px] font-semibold text-[#10B981] mt-0.5 truncate">
-              <span className="material-symbols-outlined text-xs flex-shrink-0">check_circle</span>
-              <span>Reflected live from payments</span>
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-emerald-500 mt-0.5 truncate">
+              <span className="material-symbols-outlined text-xs flex-shrink-0">verified</span>
+              <span>Live recorded payments</span>
             </div>
           </div>
         </div>
@@ -1459,6 +1633,149 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
               >
                 Close
               </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ---------------------------------------------------- */}
+      {/* CUSTOM DATE-TO-DATE RANGE PICKER MODAL              */}
+      {/* ---------------------------------------------------- */}
+      {showDatePickerModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className={`relative w-full max-w-lg rounded-2xl border shadow-2xl overflow-hidden transition-colors ${
+            darkMode ? 'bg-[#151B24] border-[#262F3D] text-slate-200' : 'bg-white border-slate-200 text-slate-800'
+          }`}>
+            
+            {/* Header */}
+            <div className={`p-5 border-b flex items-center justify-between ${
+              darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-slate-50 border-slate-200'
+            }`}>
+              <div className="flex items-center gap-2.5">
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                  darkMode ? 'bg-[#E5A812]/20 text-[#E5A812]' : 'bg-amber-100 text-[#7D610F]'
+                }`}>
+                  <span className="material-symbols-outlined text-xl">date_range</span>
+                </div>
+                <div>
+                  <h3 className={`font-bold text-base ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                    Select Analytics Date Range
+                  </h3>
+                  <p className="text-[11px] text-slate-400">Choose start & end dates or pick a quick timeframe preset</p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowDatePickerModal(false)}
+                className={`p-1.5 rounded-lg border transition-colors ${
+                  darkMode ? 'bg-[#12161F] hover:bg-[#1E2633] text-slate-400 hover:text-white border-[#262F3D]' : 'bg-white hover:bg-slate-100 text-slate-500 border-slate-200'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-5 space-y-5">
+              
+              {/* Quick Presets */}
+              <div>
+                <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Quick Presets
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    'Today',
+                    'Yesterday',
+                    'Last 7 Days',
+                    'Last 30 Days',
+                    'This Month',
+                    'Last Month',
+                    'This Quarter',
+                    `Year ${currentYear}`
+                  ].map(preset => (
+                    <button
+                      key={preset}
+                      onClick={() => applyPreset(preset)}
+                      className={`px-2.5 py-2 rounded-xl text-xs font-semibold border transition-all text-center ${
+                        selectedPeriod === preset && isCustomRangeActive
+                          ? (darkMode ? 'bg-[#E5A812] text-black font-bold border-[#E5A812]' : 'bg-[#7D610F] text-white font-bold border-[#7D610F]')
+                          : (darkMode ? 'bg-[#181D26] hover:bg-[#1E2633] text-slate-300 border-[#262F3D]' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200')
+                      }`}
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Custom Date Inputs (Date to Date) */}
+              <div className={`p-4 rounded-xl border ${darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-200'}`}>
+                <label className={`block text-xs font-bold uppercase tracking-wider mb-3 ${darkMode ? 'text-amber-300' : 'text-[#7D610F]'}`}>
+                  Custom Date-to-Date Filter
+                </label>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <span className="block text-[11px] font-bold text-slate-400 mb-1">From Start Date</span>
+                    <input
+                      type="date"
+                      value={dateFrom}
+                      onChange={(e) => setDateFrom(e.target.value)}
+                      className={`w-full px-3 py-2 text-xs font-semibold rounded-lg border outline-none ${
+                        darkMode ? 'bg-[#181D26] border-[#262F3D] text-white focus:border-[#E5A812]' : 'bg-white border-slate-300 text-slate-900 focus:border-[#7D610F]'
+                      }`}
+                    />
+                  </div>
+
+                  <div>
+                    <span className="block text-[11px] font-bold text-slate-400 mb-1">To End Date</span>
+                    <input
+                      type="date"
+                      value={dateTo}
+                      onChange={(e) => setDateTo(e.target.value)}
+                      className={`w-full px-3 py-2 text-xs font-semibold rounded-lg border outline-none ${
+                        darkMode ? 'bg-[#181D26] border-[#262F3D] text-white focus:border-[#E5A812]' : 'bg-white border-slate-300 text-slate-900 focus:border-[#7D610F]'
+                      }`}
+                    />
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Footer */}
+            <div className={`p-4 border-t flex flex-wrap items-center justify-between gap-2 ${
+              darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-slate-50 border-slate-200'
+            }`}>
+              <button
+                onClick={handleResetDateFilter}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+                  darkMode ? 'bg-[#12161F] hover:bg-[#1E2633] text-slate-300 border-[#262F3D]' : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300'
+                }`}
+              >
+                Reset to Full Range
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowDatePickerModal(false)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold ${
+                    darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleApplyCustomRange}
+                  className={`px-5 py-2 rounded-xl text-xs font-black shadow-sm transition-all active:scale-95 ${
+                    darkMode ? 'bg-[#E5A812] hover:bg-[#F5B822] text-slate-950' : 'bg-[#7D610F] hover:bg-[#634C0A] text-white'
+                  }`}
+                >
+                  Apply Date Range
+                </button>
+              </div>
             </div>
 
           </div>

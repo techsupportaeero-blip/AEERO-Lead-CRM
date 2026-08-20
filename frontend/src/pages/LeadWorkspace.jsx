@@ -194,8 +194,8 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
           </div>
 
           <div className="flex flex-wrap items-center gap-3 pt-1">
-            <StatusBadge status={lead.status} />
-            <PriorityBadge priority={lead.priority} />
+            <StatusBadge status={lead.status} darkMode={darkMode} />
+            <PriorityBadge priority={lead.priority} darkMode={darkMode} />
             <span className={`text-xs flex items-center gap-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
               <span className="material-symbols-outlined text-[16px] text-[#7D610F]">person</span>
               <span>Owner: <strong className={darkMode ? 'text-slate-200' : 'text-slate-700'}>{lead.ownerId}</strong></span>

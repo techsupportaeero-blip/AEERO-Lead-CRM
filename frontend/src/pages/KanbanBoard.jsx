@@ -150,7 +150,7 @@ export const KanbanBoard = ({ onSelectLead, currentUser, onNotify, darkMode }) =
                         }`}>
                           {lead.leadId}
                         </span>
-                        <StatusBadge status={lead.status} />
+                        <StatusBadge status={lead.status} darkMode={darkMode} />
                       </div>
 
                       {/* Lead Name */}

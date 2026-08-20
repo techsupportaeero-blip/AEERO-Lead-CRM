@@ -28,7 +28,7 @@
       "priority": "High",
       "tags": "[\"CPL\",\"Hot Lead\",\"Fast Track\"]",
       "createdAt": "2026-08-12T06:58:27.579Z",
-      "updatedAt": "2026-08-14T12:08:15.231Z",
+      "updatedAt": "2026-08-20T11:55:14.006Z",
       "isArchived": 0
     },
     {
@@ -541,7 +541,7 @@
       "isArchived": 0,
       "createdBy": "Counselor",
       "createdAt": "2026-08-18T12:13:44.669Z",
-      "updatedAt": "2026-08-18T12:13:44.669Z"
+      "updatedAt": "2026-08-20T07:49:15.097Z"
     }
   ],
   "activities": [
@@ -1374,6 +1374,45 @@
       "outcome": "Created",
       "createdBy": "Counselor",
       "createdAt": "2026-08-18T12:13:44.669Z"
+    },
+    {
+      "activityId": 67,
+      "subject": "Lead Archived",
+      "description": "Lead archived from CRM active directory",
+      "duration": 0,
+      "participants": "",
+      "attachmentUrl": "",
+      "leadId": "LD-000015",
+      "activityType": "Lead Archived",
+      "outcome": "Archived",
+      "createdBy": "Admin User 1",
+      "createdAt": "2026-08-20T07:49:02.625Z"
+    },
+    {
+      "activityId": 68,
+      "subject": "Lead Unarchived & Restored",
+      "description": "Lead restored back to active CRM directory",
+      "duration": 0,
+      "participants": "",
+      "attachmentUrl": "",
+      "leadId": "LD-000015",
+      "activityType": "Lead Restored",
+      "outcome": "Restored",
+      "createdBy": "Admin User 1",
+      "createdAt": "2026-08-20T07:49:15.097Z"
+    },
+    {
+      "activityId": 69,
+      "subject": "Lead Unarchived & Restored",
+      "description": "Lead restored back to active CRM directory",
+      "duration": 0,
+      "participants": "",
+      "attachmentUrl": "",
+      "leadId": "LD-000001",
+      "activityType": "Lead Restored",
+      "outcome": "Restored",
+      "createdBy": "Admin User 1",
+      "createdAt": "2026-08-20T11:55:14.006Z"
     }
   ],
   "followups": [
@@ -1412,7 +1451,7 @@
     }
   ],
   "lastLeadId": 15,
-  "lastActivityId": 66,
+  "lastActivityId": 69,
   "lastFollowupId": 3,
   "users": [
     {
@@ -2336,6 +2375,36 @@
       "timestamp": "2026-08-18T12:13:44.673Z",
       "oldValue": "",
       "newValue": "{\"id\":15,\"leadId\":\"LD-000015\",\"source\":\"Walk-in\",\"campaign\":\"\",\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"formId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\",\"gclid\":\"\",\"fbclid\":\"\",\"landingPage\":\"\",\"leadDateTime\":\"2026-08-18T12:13:44.669Z\",\"name\":\"dhrishti\",\"mobile\":\"9876e\",\"whatsappNumber\":\"9876e\",\"email\":\"dhrishti@gmail.com\",\"city\":\"Delhi\",\"state\":\"\",\"age\":null,\"qualification\":\"\",\"interestedCourse\":\"Diploma in Industrial Safety\",\"preferredStudyMode\":\"Offline\",\"requirement\":\"\",\"remarks\":\"\",\"ownerId\":\"Anita Verma\",\"status\":\"NEW\",\"priority\":\"Urgent\",\"tags\":\"[]\",\"isArchived\":0,\"createdBy\":\"Counselor\",\"createdAt\":\"2026-08-18T12:13:44.669Z\",\"updatedAt\":\"2026-08-18T12:13:44.669Z\"}"
+    },
+    {
+      "id": 62,
+      "user": "Admin User 1",
+      "action": "LEAD_ARCHIVED",
+      "entity": "LEAD",
+      "entityId": "LD-000015",
+      "timestamp": "2026-08-20T07:49:02.631Z",
+      "oldValue": "0",
+      "newValue": "1"
+    },
+    {
+      "id": 63,
+      "user": "Admin User 1",
+      "action": "LEAD_RESTORED",
+      "entity": "LEAD",
+      "entityId": "LD-000015",
+      "timestamp": "2026-08-20T07:49:15.101Z",
+      "oldValue": "1",
+      "newValue": "0"
+    },
+    {
+      "id": 64,
+      "user": "Admin User 1",
+      "action": "LEAD_RESTORED",
+      "entity": "LEAD",
+      "entityId": "LD-000001",
+      "timestamp": "2026-08-20T11:55:14.009Z",
+      "oldValue": "0",
+      "newValue": "0"
     }
   ],
   "notifications": [
@@ -2361,7 +2430,7 @@
     }
   ],
   "lastTaskId": 3,
-  "lastAuditId": 61,
+  "lastAuditId": 64,
   "lastCustomerId": 8,
   "lastNotificationId": 2,
   "payments": [

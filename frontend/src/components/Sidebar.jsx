@@ -1,4 +1,5 @@
 import React from 'react';
+import aeeroLogo from '../assets/logo/aeero-logo.png';
 
 export const Sidebar = ({ currentRoute, setCurrentRoute, mobileOpen, setMobileOpen, onLogout, leadCount, darkMode, onToggleDarkMode, currentUser }) => {
   const sections = [
@@ -61,9 +62,13 @@ export const Sidebar = ({ currentRoute, setCurrentRoute, mobileOpen, setMobileOp
       >
         {/* Brand Header with Profile Badge matching Screenshot */}
         <div className="p-4 flex flex-col items-center justify-center border-b border-[#574500] relative bg-black/30">
-          <div className="w-14 h-14 rounded-full bg-[#2A2100] border-2 border-[#D4AF37] flex flex-col items-center justify-center shadow-lg mb-2">
-            <span className="material-symbols-outlined text-[#D4AF37] text-[24px]">school</span>
-            <span className="text-[8px] font-bold tracking-widest text-[#D4AF37] uppercase -mt-0.5">AEERO</span>
+          <div className="w-24 h-24 flex items-center justify-center mb-1">
+            <img 
+              src={aeeroLogo} 
+              alt="AEERO Logo" 
+              className="w-full h-full object-contain filter drop-shadow-lg"
+              onError={(e) => { e.target.src = 'https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100087907540113'; }}
+            />
           </div>
           <p className="text-xs font-extrabold text-white leading-tight drop-shadow-xs">
             {currentUser ? currentUser.name : 'Admin User 1'}

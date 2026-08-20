@@ -2,51 +2,94 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ================================================================ */
+/* AEERO CRM – DARK READER-STYLE GLOBAL DARK MODE                  */
+/* When <html class="dark"> is active, every color is automatically */
+/* inverted to a comfortable dark palette (like Dark Reader ext).   */
+/* ================================================================ */
+
 @layer base {
   body {
     background-color: #F1F8FC;
     color: #1F2937;
     font-family: 'Inter', sans-serif;
   }
-
-  .dark body,
-  html.dark,
-  .dark #root {
-    background-color: #181a1b !important;
-    color: #e8e6e3 !important;
-  }
 }
 
+/* ========================================= */
+/*  1. COLOR SCHEME & ROOT OVERRIDES         */
+/* ========================================= */
 .dark {
   color-scheme: dark;
 }
 
-/* ======================================================== */
-/* AUTHENTIC DARK READER EXTENSION COLOR PALETTE & SYSTEM   */
-/* ======================================================== */
-
-/* Base Layout Surfaces */
-.dark main,
-.dark .main-content {
+html.dark,
+html.dark body,
+.dark body,
+.dark #root {
   background-color: #181a1b !important;
   color: #e8e6e3 !important;
 }
 
-/* Elevated Cards & Panels */
-.dark .bg-white {
-  background-color: #222426 !important;
+/* ========================================= */
+/*  2. BASE LAYOUT SURFACES                 */
+/* ========================================= */
+.dark main,
+.dark .main-content,
+.dark [class*="bg-[#F1F8FC]"],
+.dark [class*="bg-[#EEF2F6]"] {
+  background-color: #181a1b !important;
+  color: #e8e6e3 !important;
+}
+
+.dark [class*="bg-[#0A0D14]"],
+.dark [class*="bg-[#0F1217]"] {
+  background-color: #101214 !important;
+}
+
+/* ========================================= */
+/*  3. ELEVATED CARDS, PANELS, WHITE BG      */
+/* ========================================= */
+.dark .bg-white,
+.dark [class*="bg-white"] {
+  background-color: #1e2021 !important;
   color: #e8e6e3 !important;
 }
 
 .dark .bg-slate-50,
 .dark .bg-slate-100,
 .dark .bg-gray-50,
-.dark .bg-gray-100 {
-  background-color: #161819 !important;
+.dark .bg-gray-100,
+.dark .bg-zinc-50,
+.dark .bg-zinc-100,
+.dark .bg-neutral-50,
+.dark .bg-neutral-100 {
+  background-color: #1a1c1e !important;
   color: #d1ccc4 !important;
 }
 
-/* Borders and Dividers in Dark Reader Style */
+.dark .bg-slate-200,
+.dark .bg-gray-200,
+.dark .bg-zinc-200 {
+  background-color: #252829 !important;
+  color: #d1ccc4 !important;
+}
+
+/* Dark panel cards used in Dashboard & LeadWorkspace */
+.dark [class*="bg-[#181D26]"] {
+  background-color: #1e2021 !important;
+}
+
+.dark [class*="bg-[#12161F]"],
+.dark [class*="bg-[#151C24]"],
+.dark [class*="bg-[#090C14]"],
+.dark [class*="bg-[#0F1420]"] {
+  background-color: #161819 !important;
+}
+
+/* ========================================= */
+/*  4. BORDERS & DIVIDERS                    */
+/* ========================================= */
 .dark .border-slate-100,
 .dark .border-slate-200,
 .dark .border-slate-300,
@@ -54,60 +97,96 @@
 .dark .border-gray-100,
 .dark .border-gray-200,
 .dark .border-gray-300,
+.dark .border-zinc-100,
+.dark .border-zinc-200,
+.dark .border-zinc-300 {
+  border-color: #333739 !important;
+}
+
+.dark [class*="border-[#262F3D]"],
+.dark [class*="border-[#222936]"] {
+  border-color: #333739 !important;
+}
+
 .dark .divide-slate-100 > * + *,
 .dark .divide-slate-200 > * + *,
 .dark .divide-gray-100 > * + *,
 .dark .divide-gray-200 > * + * {
-  border-color: #363a3d !important;
+  border-color: #333739 !important;
 }
 
-/* Typography Contrast (Soft Warm White for zero eye strain) */
+/* ========================================= */
+/*  5. TYPOGRAPHY                            */
+/* ========================================= */
+
+/* Headings & bold dark text → warm white */
 .dark .text-slate-900,
 .dark .text-slate-800,
 .dark .text-gray-900,
 .dark .text-gray-800,
-.dark h1,
-.dark h2,
-.dark h3,
-.dark h4,
-.dark h5,
-.dark h6 {
+.dark .text-zinc-900,
+.dark .text-zinc-800,
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
   color: #e8e6e3 !important;
 }
 
+/* Body text */
 .dark .text-slate-700,
 .dark .text-slate-600,
 .dark .text-gray-700,
 .dark .text-gray-600,
-.dark p,
-.dark span:not(.badge-text) {
-  color: #cdc8c0;
+.dark .text-zinc-700,
+.dark .text-zinc-600 {
+  color: #cdc8c0 !important;
 }
 
+/* Muted / caption text */
 .dark .text-slate-500,
 .dark .text-slate-400,
 .dark .text-gray-500,
-.dark .text-gray-400 {
+.dark .text-gray-400,
+.dark .text-zinc-500,
+.dark .text-zinc-400 {
   color: #9e9689 !important;
 }
 
-/* Table styling in Dark Reader Theme */
-.dark table {
-  background-color: #222426 !important;
-  color: #e8e6e3 !important;
-  border-color: #363a3d !important;
+/* Very light text (used in some utility labels) */
+.dark .text-slate-300,
+.dark .text-gray-300,
+.dark .text-zinc-300 {
+  color: #bbb5ac !important;
 }
 
+/* Black text inversion */
+.dark .text-black {
+  color: #e8e6e3 !important;
+}
+
+/* Paragraphs and generic spans */
+.dark p {
+  color: inherit;
+}
+
+/* ========================================= */
+/*  6. TABLE STYLING                         */
+/* ========================================= */
+.dark table {
+  background-color: #1e2021 !important;
+  color: #e8e6e3 !important;
+  border-color: #333739 !important;
+}
+
+.dark thead,
 .dark thead th,
 .dark tr th {
-  background-color: #161819 !important;
+  background-color: #1a1c1e !important;
   color: #e8e6e3 !important;
-  border-color: #363a3d !important;
+  border-color: #333739 !important;
 }
 
 .dark tbody tr {
-  background-color: #222426 !important;
-  border-color: #2c3033 !important;
+  background-color: #1e2021 !important;
+  border-color: #2a2d2f !important;
   transition: background-color 0.15s ease;
 }
 
@@ -115,25 +194,31 @@
 .dark tr.hover\:bg-slate-50:hover,
 .dark tr.hover\:bg-slate-100:hover,
 .dark tr:hover {
-  background-color: #282b2e !important;
-  color: #e8e6e3 !important;
+  background-color: #252829 !important;
 }
 
 .dark td {
-  border-color: #2c3033 !important;
+  border-color: #2a2d2f !important;
 }
 
-/* Form Controls: Inputs, Selects, Textareas */
-.dark input:not([type="checkbox"]):not([type="radio"]),
+.dark th {
+  border-color: #333739 !important;
+}
+
+/* ========================================= */
+/*  7. FORM CONTROLS                         */
+/* ========================================= */
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 .dark select,
 .dark textarea {
-  background-color: #141617 !important;
-  border-color: #383d40 !important;
+  background-color: #161819 !important;
+  border-color: #3a3e41 !important;
   color: #e8e6e3 !important;
 }
 
 .dark input::placeholder,
-.dark textarea::placeholder {
+.dark textarea::placeholder,
+.dark select::placeholder {
   color: #7a7368 !important;
 }
 
@@ -145,52 +230,368 @@
   outline: none !important;
 }
 
-/* Dark Reader Status Badges & Pills */
+/* Checkboxes & radios */
+.dark input[type="checkbox"],
+.dark input[type="radio"] {
+  background-color: #1a1c1e !important;
+  border-color: #3a3e41 !important;
+}
+
+.dark input[type="checkbox"]:checked,
+.dark input[type="radio"]:checked {
+  background-color: #e5a812 !important;
+  border-color: #e5a812 !important;
+}
+
+/* Select dropdown arrow fix */
+.dark select option {
+  background-color: #1e2021 !important;
+  color: #e8e6e3 !important;
+}
+
+/* ========================================= */
+/*  8. BUTTONS                               */
+/* ========================================= */
+
+/* Generic outline/secondary buttons */
+.dark button.bg-white,
+.dark button.bg-slate-50,
+.dark button.bg-slate-100,
+.dark button.bg-gray-50,
+.dark button.bg-gray-100 {
+  background-color: #252829 !important;
+  color: #e8e6e3 !important;
+  border-color: #3a3e41 !important;
+}
+
+.dark button.bg-white:hover,
+.dark button.bg-slate-50:hover,
+.dark button.bg-slate-100:hover {
+  background-color: #2e3133 !important;
+}
+
+/* Hover states for slate button variants */
+.dark .hover\:bg-slate-50:hover,
+.dark .hover\:bg-slate-100:hover,
+.dark .hover\:bg-gray-50:hover,
+.dark .hover\:bg-gray-100:hover {
+  background-color: #252829 !important;
+}
+
+.dark .hover\:bg-slate-200:hover,
+.dark .hover\:bg-gray-200:hover {
+  background-color: #2e3133 !important;
+}
+
+/* ========================================= */
+/*  9. STATUS BADGES & COLORED PILLS         */
+/* ========================================= */
+
+/* Green / Emerald */
 .dark .bg-emerald-50,
-.dark .bg-emerald-100 {
-  background-color: rgba(46, 125, 50, 0.22) !important;
+.dark .bg-emerald-100,
+.dark .bg-green-50,
+.dark .bg-green-100 {
+  background-color: rgba(46, 125, 50, 0.20) !important;
   color: #81c784 !important;
   border-color: rgba(76, 175, 80, 0.35) !important;
 }
 
+.dark .text-emerald-600,
+.dark .text-emerald-700,
+.dark .text-green-600,
+.dark .text-green-700 {
+  color: #81c784 !important;
+}
+
+.dark .text-emerald-800,
+.dark .text-green-800 {
+  color: #a5d6a7 !important;
+}
+
+.dark .border-emerald-200,
+.dark .border-emerald-300,
+.dark .border-green-200,
+.dark .border-green-300 {
+  border-color: rgba(76, 175, 80, 0.35) !important;
+}
+
+/* Blue */
 .dark .bg-blue-50,
 .dark .bg-blue-100 {
-  background-color: rgba(25, 118, 210, 0.22) !important;
+  background-color: rgba(25, 118, 210, 0.20) !important;
   color: #90caf9 !important;
   border-color: rgba(33, 150, 243, 0.35) !important;
 }
 
+.dark .text-blue-600,
+.dark .text-blue-700 {
+  color: #90caf9 !important;
+}
+
+.dark .text-blue-800 {
+  color: #bbdefb !important;
+}
+
+.dark .border-blue-200,
+.dark .border-blue-300 {
+  border-color: rgba(33, 150, 243, 0.35) !important;
+}
+
+/* Sky */
+.dark .bg-sky-50,
+.dark .bg-sky-100 {
+  background-color: rgba(2, 136, 209, 0.20) !important;
+  color: #81d4fa !important;
+  border-color: rgba(3, 169, 244, 0.35) !important;
+}
+
+.dark .text-sky-600,
+.dark .text-sky-700 {
+  color: #81d4fa !important;
+}
+
+.dark .text-sky-800 {
+  color: #b3e5fc !important;
+}
+
+.dark .border-sky-200,
+.dark .border-sky-300 {
+  border-color: rgba(3, 169, 244, 0.35) !important;
+}
+
+/* Cyan */
+.dark .bg-cyan-50,
+.dark .bg-cyan-100 {
+  background-color: rgba(0, 151, 167, 0.20) !important;
+  color: #80deea !important;
+  border-color: rgba(0, 188, 212, 0.35) !important;
+}
+
+.dark .text-cyan-600,
+.dark .text-cyan-700,
+.dark .text-cyan-800 {
+  color: #80deea !important;
+}
+
+.dark .border-cyan-200,
+.dark .border-cyan-300 {
+  border-color: rgba(0, 188, 212, 0.35) !important;
+}
+
+/* Amber / Orange / Yellow */
 .dark .bg-amber-50,
-.dark .bg-amber-100 {
-  background-color: rgba(245, 124, 0, 0.22) !important;
+.dark .bg-amber-100,
+.dark .bg-yellow-50,
+.dark .bg-yellow-100,
+.dark .bg-orange-50,
+.dark .bg-orange-100 {
+  background-color: rgba(245, 124, 0, 0.20) !important;
   color: #ffb74d !important;
   border-color: rgba(255, 152, 0, 0.35) !important;
 }
 
+.dark .text-amber-600,
+.dark .text-amber-700,
+.dark .text-orange-600,
+.dark .text-orange-700,
+.dark .text-yellow-600,
+.dark .text-yellow-700 {
+  color: #ffb74d !important;
+}
+
+.dark .text-amber-800,
+.dark .text-yellow-800 {
+  color: #ffe082 !important;
+}
+
+.dark .border-amber-200,
+.dark .border-amber-300,
+.dark .border-orange-200,
+.dark .border-orange-300,
+.dark .border-yellow-200,
+.dark .border-yellow-300 {
+  border-color: rgba(255, 152, 0, 0.35) !important;
+}
+
+/* Rose / Red */
 .dark .bg-rose-50,
 .dark .bg-rose-100,
 .dark .bg-red-50,
 .dark .bg-red-100 {
-  background-color: rgba(211, 47, 47, 0.22) !important;
+  background-color: rgba(211, 47, 47, 0.20) !important;
   color: #ef9a9a !important;
   border-color: rgba(244, 67, 54, 0.35) !important;
 }
 
+.dark .text-rose-600,
+.dark .text-rose-700,
+.dark .text-red-600,
+.dark .text-red-700 {
+  color: #ef9a9a !important;
+}
+
+.dark .text-red-800,
+.dark .text-rose-800 {
+  color: #ef9a9a !important;
+}
+
+.dark .border-rose-200,
+.dark .border-rose-300,
+.dark .border-red-200,
+.dark .border-red-300 {
+  border-color: rgba(244, 67, 54, 0.35) !important;
+}
+
+/* Purple / Violet */
 .dark .bg-purple-50,
-.dark .bg-purple-100 {
-  background-color: rgba(123, 31, 162, 0.22) !important;
+.dark .bg-purple-100,
+.dark .bg-violet-50,
+.dark .bg-violet-100 {
+  background-color: rgba(123, 31, 162, 0.20) !important;
   color: #ce93d8 !important;
   border-color: rgba(156, 39, 176, 0.35) !important;
 }
 
-/* Modals & Backdrop Blur */
-.dark .fixed.inset-0.bg-slate-900\/70,
-.dark .fixed.inset-0.bg-slate-900\/60,
-.dark .fixed.inset-0.bg-slate-900\/50 {
-  background-color: rgba(0, 0, 0, 0.78) !important;
+.dark .text-purple-600,
+.dark .text-purple-700,
+.dark .text-violet-600,
+.dark .text-violet-700 {
+  color: #ce93d8 !important;
 }
 
-/* Custom Dark Reader Scrollbars */
+.dark .border-purple-200,
+.dark .border-purple-300,
+.dark .border-violet-200,
+.dark .border-violet-300 {
+  border-color: rgba(156, 39, 176, 0.35) !important;
+}
+
+/* Teal / Cyan */
+.dark .bg-teal-50,
+.dark .bg-teal-100,
+.dark .bg-cyan-50,
+.dark .bg-cyan-100 {
+  background-color: rgba(0, 150, 136, 0.20) !important;
+  color: #80cbc4 !important;
+  border-color: rgba(0, 150, 136, 0.35) !important;
+}
+
+.dark .text-teal-600,
+.dark .text-teal-700,
+.dark .text-cyan-600,
+.dark .text-cyan-700 {
+  color: #80cbc4 !important;
+}
+
+/* Indigo */
+.dark .bg-indigo-50,
+.dark .bg-indigo-100 {
+  background-color: rgba(63, 81, 181, 0.20) !important;
+  color: #9fa8da !important;
+  border-color: rgba(63, 81, 181, 0.35) !important;
+}
+
+.dark .text-indigo-600,
+.dark .text-indigo-700 {
+  color: #9fa8da !important;
+}
+
+/* Pink */
+.dark .bg-pink-50,
+.dark .bg-pink-100 {
+  background-color: rgba(194, 24, 91, 0.20) !important;
+  color: #f48fb1 !important;
+  border-color: rgba(233, 30, 99, 0.35) !important;
+}
+
+.dark .text-pink-600,
+.dark .text-pink-700 {
+  color: #f48fb1 !important;
+}
+
+/* ========================================= */
+/* 10. MODALS & OVERLAYS                     */
+/* ========================================= */
+.dark .fixed.inset-0[class*="bg-slate-900"],
+.dark .fixed.inset-0[class*="bg-black"],
+.dark [class*="bg-slate-900/70"],
+.dark [class*="bg-slate-900/60"],
+.dark [class*="bg-slate-900/50"],
+.dark [class*="bg-black/50"],
+.dark [class*="bg-black/60"],
+.dark [class*="bg-black/70"] {
+  background-color: rgba(0, 0, 0, 0.80) !important;
+}
+
+/* Modal content panels */
+.dark .bg-white.rounded-xl,
+.dark .bg-white.rounded-2xl,
+.dark .bg-white.rounded-lg,
+.dark [class*="rounded-xl"].bg-white,
+.dark [class*="rounded-2xl"].bg-white {
+  background-color: #1e2021 !important;
+  color: #e8e6e3 !important;
+  border-color: #333739 !important;
+}
+
+/* ========================================= */
+/* 11. DROPDOWN MENUS & POPOVERS             */
+/* ========================================= */
+.dark [class*="shadow-lg"].bg-white,
+.dark [class*="shadow-xl"].bg-white,
+.dark [class*="shadow-md"].bg-white {
+  background-color: #1e2021 !important;
+  border-color: #333739 !important;
+  color: #e8e6e3 !important;
+}
+
+/* ========================================= */
+/* 12. SHADOW ADJUSTMENTS                    */
+/* ========================================= */
+.dark .shadow-sm,
+.dark .shadow-xs,
+.dark .shadow-md,
+.dark .shadow-lg,
+.dark .shadow-xl,
+.dark .shadow-2xl {
+  --tw-shadow-color: rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ========================================= */
+/* 13. RING (focus ring) ADJUSTMENTS         */
+/* ========================================= */
+.dark .ring-slate-200,
+.dark .ring-slate-300,
+.dark .ring-gray-200,
+.dark .ring-gray-300 {
+  --tw-ring-color: #3a3e41 !important;
+}
+
+/* ========================================= */
+/* 14. CHART / RECHARTS TOOLTIP OVERRIDES    */
+/* ========================================= */
+.dark .recharts-default-tooltip {
+  background-color: #1e2021 !important;
+  border-color: #333739 !important;
+  color: #e8e6e3 !important;
+}
+
+.dark .recharts-tooltip-label {
+  color: #e8e6e3 !important;
+}
+
+.dark .recharts-cartesian-grid line {
+  stroke: #2a2d2f !important;
+}
+
+.dark .recharts-text {
+  fill: #9e9689 !important;
+}
+
+/* ========================================= */
+/* 15. SCROLLBAR STYLING                     */
+/* ========================================= */
 .custom-scrollbar::-webkit-scrollbar,
 ::-webkit-scrollbar {
   width: 7px;
@@ -214,7 +615,140 @@
   background-color: #4e5458;
 }
 
-/* Dedicated Print Stylesheet rules */
+/* Light mode scrollbar */
+.custom-scrollbar::-webkit-scrollbar-track,
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb,
+::-webkit-scrollbar-thumb {
+  background-color: #c1c1c1;
+  border-radius: 9999px;
+  border: 1px solid #f1f1f1;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover,
+::-webkit-scrollbar-thumb:hover {
+  background-color: #a1a1a1;
+}
+
+/* ========================================= */
+/* 16. SPECIFIC COMPONENT OVERRIDES          */
+/* ========================================= */
+
+/* Sidebar in dark mode (already dark-themed, ensure consistency) */
+.dark aside,
+.dark nav[class*="sidebar"],
+.dark [class*="Sidebar"] {
+  border-color: #333739 !important;
+}
+
+/* Header bar */
+.dark header {
+  border-color: #333739 !important;
+}
+
+/* Info/Help modal icon circles in dark mode */
+.dark .bg-amber-100 {
+  background-color: rgba(245, 158, 11, 0.20) !important;
+}
+
+/* Pagination */
+.dark [class*="pagination"] button,
+.dark button[class*="page"] {
+  color: #e8e6e3 !important;
+}
+
+/* Tags / Chips */
+.dark .bg-slate-200.rounded-full,
+.dark .bg-gray-200.rounded-full {
+  background-color: #2a2d2f !important;
+  color: #d1ccc4 !important;
+}
+
+/* Loader backgrounds */
+.dark .animate-pulse {
+  opacity: 0.6;
+}
+
+/* ========================================= */
+/* 17. CATCH-ALL: ANY REMAINING WHITE BG     */
+/* ========================================= */
+/* This catches any dynamic Tailwind classes that generate bg-white */
+.dark [style*="background-color: white"],
+.dark [style*="background-color: #fff"],
+.dark [style*="background-color: #ffffff"],
+.dark [style*="background: white"],
+.dark [style*="background: #fff"],
+.dark [style*="background: #ffffff"] {
+  background-color: #1e2021 !important;
+  color: #e8e6e3 !important;
+}
+
+/* Catch text-black on inline styles */
+.dark [style*="color: black"],
+.dark [style*="color: #000"],
+.dark [style*="color: #000000"],
+.dark [style*="color: rgb(0, 0, 0)"] {
+  color: #e8e6e3 !important;
+}
+
+/* ========================================= */
+/* 18. LINK COLORS IN DARK MODE              */
+/* ========================================= */
+.dark a:not([class*="text-"]):not([class*="bg-"]) {
+  color: #90caf9;
+}
+
+.dark a:hover:not([class*="text-"]):not([class*="bg-"]) {
+  color: #bbdefb;
+}
+
+/* ========================================= */
+/* 19. CODE & PRE BLOCKS                     */
+/* ========================================= */
+.dark code,
+.dark pre {
+  background-color: #161819 !important;
+  color: #d1ccc4 !important;
+  border-color: #333739 !important;
+}
+
+/* ========================================= */
+/* 20. HR DIVIDERS                           */
+/* ========================================= */
+.dark hr {
+  border-color: #333739 !important;
+}
+
+/* ========================================= */
+/* 21. TRANSITION SMOOTHNESS                 */
+/* ========================================= */
+html,
+body,
+#root,
+main,
+.bg-white,
+.bg-slate-50,
+.bg-slate-100,
+input,
+select,
+textarea,
+table,
+thead,
+tbody,
+tr,
+td,
+th,
+button,
+a {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* ========================================= */
+/* PRINT STYLESHEET                          */
+/* ========================================= */
 @media print {
   aside,
   header,

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import aeeroLogo from '../assets/logo/aeero-logo.png';
 
 export const Header = ({ onOpenAddLead, onToggleMobileSidebar, globalSearch, setGlobalSearch, currentUser, currentRoute, darkMode, onToggleDarkMode, onRefreshData }) => {
   const [showPageInfoModal, setShowPageInfoModal] = useState(false);
@@ -240,6 +241,12 @@ export const Header = ({ onOpenAddLead, onToggleMobileSidebar, globalSearch, set
 
           {/* Dynamic Page Title + Interactive (i) Info Button */}
           <div className="flex items-center gap-2">
+            <img 
+              src={aeeroLogo} 
+              alt="AEERO" 
+              className="w-10 h-10 object-contain filter drop-shadow-md"
+              onError={(e) => { e.target.src = 'https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100087907540113'; }}
+            />
             <span className="material-symbols-outlined text-[#E5A812] text-[20px]">
               {currentExplanation.icon || 'explore'}
             </span>

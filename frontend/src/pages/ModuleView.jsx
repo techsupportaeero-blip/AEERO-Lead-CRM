@@ -56,7 +56,7 @@ export const ModuleView = ({ routeId, onNavigateToLeads, onSelectLead, currentUs
   }
 
   if (routeId === 'activities') {
-    return <AuditLogsView darkMode={darkMode} />;
+    return <AuditLogsView onSelectLead={onSelectLead} onNotify={onNotify} darkMode={darkMode} />;
   }
 
   // For all in-progress pages (email-triggers, email-templates, settings, system-settings, users, etc.),

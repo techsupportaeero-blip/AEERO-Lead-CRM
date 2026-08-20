@@ -66,10 +66,16 @@ export const AllLeads = ({
     }
   };
 
+  const isAdmin = currentUser?.role?.toUpperCase() === 'ADMIN' || currentUser?.username === 'admin' || currentUser?.name?.toLowerCase()?.includes('admin');
+
   const handleUnarchiveLead = async (leadId) => {
+    if (!isAdmin) {
+      alert("Access Denied: Only administrators have permission to restore archived leads.");
+      return;
+    }
     try {
       setLoading(true);
-      await api.unarchiveLead(leadId, currentUser ? currentUser.name : 'Admin');
+      await api.unarchiveLead(leadId, currentUser ? currentUser.name : 'Admin', currentUser ? currentUser.role : 'ADMIN');
       await fetchLeads();
     } catch (err) {
       alert("Failed to restore lead: " + err.message);
@@ -734,7 +740,7 @@ export const AllLeads = ({
                     </td>
 
                     <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                      <StatusBadge status={lead.status} />
+                      <StatusBadge status={lead.status} darkMode={darkMode} />
                     </td>
 
                     <td className={`py-2.5 px-3 whitespace-nowrap ${
@@ -744,7 +750,7 @@ export const AllLeads = ({
                     </td>
 
                     <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                      <PriorityBadge priority={lead.priority} />
+                      <PriorityBadge priority={lead.priority} darkMode={darkMode} />
                     </td>
 
                     <td className={`py-2.5 px-3 font-medium whitespace-nowrap ${
@@ -829,16 +835,28 @@ export const AllLeads = ({
                           <span className="material-symbols-outlined text-[16px]">edit</span>
                         </button>
 
-                        {/* Restore Lead if Archived, or Delete/Archive if Active */}
+                        {/* Restore Lead if Archived (ADMIN ONLY), or Delete/Archive if Active */}
                         {viewArchived ? (
-                          <button
-                            onClick={() => handleUnarchiveLead(lead.leadId)}
-                            className="px-2 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-bold transition-all flex items-center gap-1 shadow-xs"
-                            title="Restore Lead back to Active Directory"
-                          >
-                            <span className="material-symbols-outlined text-[14px]">settings_backup_restore</span>
-                            <span>Restore</span>
-                          </button>
+                          isAdmin ? (
+                            <button
+                              onClick={() => handleUnarchiveLead(lead.leadId)}
+                              className="px-2 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-bold transition-all flex items-center gap-1 shadow-xs"
+                              title="Restore Lead back to Active Directory (Admin Only)"
+                            >
+                              <span className="material-symbols-outlined text-[14px]">settings_backup_restore</span>
+                              <span>Restore</span>
+                            </button>
+                          ) : (
+                            <span 
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-0.5 border cursor-not-allowed ${
+                                darkMode ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-100 text-slate-500 border-slate-200'
+                              }`}
+                              title="Only Admin users can restore archived leads"
+                            >
+                              <span className="material-symbols-outlined text-[12px]">lock</span>
+                              <span>Admin Only</span>
+                            </span>
+                          )
                         ) : (
                           <button
                             onClick={(e) => promptArchiveLead(lead, e)}

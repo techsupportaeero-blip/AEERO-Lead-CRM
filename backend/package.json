@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "node --watch --watch-exclude=aeero_crm_data.json index.js"
+    "dev": "node --watch-path=index.js --watch-path=database.js index.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

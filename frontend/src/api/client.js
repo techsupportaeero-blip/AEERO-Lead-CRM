@@ -33,8 +33,16 @@ export const api = {
   },
 
   // Stats
-  async getStats() {
-    const res = await fetch(`${API_BASE}/stats`);
+  async getStats(filters = {}) {
+    const params = new URLSearchParams();
+    if (filters.startDate) params.append('startDate', filters.startDate);
+    if (filters.endDate) params.append('endDate', filters.endDate);
+    if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
+    if (filters.dateTo) params.append('dateTo', filters.dateTo);
+    if (filters.period) params.append('period', filters.period);
+
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    const res = await fetch(`${API_BASE}/stats${queryString}`);
     if (!res.ok) throw new Error('Failed to fetch stats');
     return res.json();
   },
@@ -140,15 +148,16 @@ export const api = {
     return res.json();
   },
 
-  // Unarchive / Restore Lead
-  async unarchiveLead(id, currentUser = 'Admin') {
+  // Unarchive / Restore Lead (Admin Only)
+  async unarchiveLead(id, currentUser = 'Admin', userRole = 'ADMIN') {
     const res = await fetch(`${API_BASE}/leads/${id}/unarchive`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ currentUser }),
+      body: JSON.stringify({ currentUser, userRole }),
     });
-    if (!res.ok) throw new Error('Failed to unarchive lead');
-    return res.json();
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to unarchive lead');
+    return data;
   },
 
   // Payments

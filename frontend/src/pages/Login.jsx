@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../api/client';
+import aeeroLogo from '../assets/logo/aeero-logo.png';
 
 export const Login = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState('admin');
@@ -37,9 +38,13 @@ export const Login = ({ onLoginSuccess }) => {
 
         {/* Top AEERO Emblem Logo */}
         <div className="text-center mb-6">
-          <div className="w-20 h-20 bg-[#7D610F] text-white rounded-full flex flex-col items-center justify-center mx-auto mb-3 shadow-md border-2 border-[#CDB46A]">
-            <span className="material-symbols-outlined text-[36px]">school</span>
-            <span className="text-[10px] font-bold tracking-widest uppercase text-[#CDB46A] -mt-1">AEERO</span>
+          <div className="w-36 h-36 flex items-center justify-center mx-auto mb-2">
+            <img 
+              src={aeeroLogo} 
+              alt="AEERO Aviation Logo" 
+              className="w-full h-full object-contain filter drop-shadow-xl"
+              onError={(e) => { e.target.src = 'https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100087907540113'; }}
+            />
           </div>
           <h1 className="font-bold text-2xl text-slate-900 tracking-tight">AEERO CRM</h1>
           <p className="text-xs text-slate-500 font-medium mt-1">Lead Management Core System</p>

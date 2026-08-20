@@ -167,7 +167,7 @@ app.post('/api/public/leads', async (req, res) => {
 // ----------------------------------------------------
 app.get('/api/stats', (req, res) => {
   try {
-    const stats = getStatsData();
+    const stats = getStatsData(req.query);
     res.json(stats);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -418,13 +418,25 @@ app.post('/api/leads/:id/archive', (req, res) => {
   }
 });
 
-// Unarchive / Restore Lead
+// Unarchive / Restore Lead (ADMIN ONLY)
 app.post('/api/leads/:id/unarchive', (req, res) => {
   try {
+    const { currentUser = 'Admin', userRole = '' } = req.body || {};
+    const roleUpper = String(userRole).toUpperCase();
+    const nameLower = String(currentUser).toLowerCase();
+
+    // Enforce Admin Only Restriction
+    const isAdmin = roleUpper === 'ADMIN' || nameLower.includes('admin');
+    if (!isAdmin) {
+      return res.status(403).json({ 
+        error: "Access Denied: Only administrators have permission to restore archived leads." 
+      });
+    }
+
     const leadParam = req.params.id;
     let existing = getLeadById(leadParam);
     const targetId = existing ? (existing.leadId || existing.id) : leadParam;
-    const restored = unarchiveLeadRecord(targetId, req.body.currentUser || 'Admin');
+    const restored = unarchiveLeadRecord(targetId, currentUser);
     if (restored) {
       res.json({ message: "Lead unarchived & restored successfully", lead: restored });
     } else {

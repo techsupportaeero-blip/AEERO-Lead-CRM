@@ -1348,9 +1348,30 @@ let lastAssignedCounselorIndex = 0;
   // ----------------------------------------------------
   // DATABASE ANALYTICS & DASHBOARD METRICS (REAL DATA)
   // ----------------------------------------------------
-  export const getStatsData = () => {
-    const activeLeads = (dbData.leads || []).filter(l => !l.isArchived);
+  export const getStatsData = (filters = {}) => {
+    let activeLeads = (dbData.leads || []).filter(l => !l.isArchived);
     const todayStr = new Date().toISOString().split('T')[0];
+
+    const start = filters.startDate || filters.dateFrom;
+    const end = filters.endDate || filters.dateTo;
+
+    if (start) {
+      const sDate = new Date(start);
+      sDate.setHours(0, 0, 0, 0);
+      activeLeads = activeLeads.filter(l => {
+        const dt = new Date(l.leadDateTime || l.createdAt || 0);
+        return !isNaN(dt.getTime()) && dt >= sDate;
+      });
+    }
+
+    if (end) {
+      const eDate = new Date(end);
+      eDate.setHours(23, 59, 59, 999);
+      activeLeads = activeLeads.filter(l => {
+        const dt = new Date(l.leadDateTime || l.createdAt || 0);
+        return !isNaN(dt.getTime()) && dt <= eDate;
+      });
+    }
 
     const totalLeads = activeLeads.length;
     const newLeads = activeLeads.filter(l => l.status === 'NEW').length;
