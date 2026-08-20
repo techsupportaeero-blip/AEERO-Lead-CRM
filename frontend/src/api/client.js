@@ -1,4 +1,17 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
+const getApiBaseUrl = () => {
+  let url = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '/api';
+  url = url.trim().replace(/\/+$/, '');
+  if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('/')) {
+    url = `/${url}`;
+  }
+  if (!url.endsWith('/api')) {
+    url = `${url}/api`;
+  }
+  return url;
+};
+
+const API_BASE = getApiBaseUrl();
+
 
 export const api = {
   // Authentication
