@@ -1,0 +1,268 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #F1F8FC;
+    color: #1F2937;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .dark body,
+  html.dark,
+  .dark #root {
+    background-color: #181a1b !important;
+    color: #e8e6e3 !important;
+  }
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+/* ======================================================== */
+/* AUTHENTIC DARK READER EXTENSION COLOR PALETTE & SYSTEM   */
+/* ======================================================== */
+
+/* Base Layout Surfaces */
+.dark main,
+.dark .main-content {
+  background-color: #181a1b !important;
+  color: #e8e6e3 !important;
+}
+
+/* Elevated Cards & Panels */
+.dark .bg-white {
+  background-color: #222426 !important;
+  color: #e8e6e3 !important;
+}
+
+.dark .bg-slate-50,
+.dark .bg-slate-100,
+.dark .bg-gray-50,
+.dark .bg-gray-100 {
+  background-color: #161819 !important;
+  color: #d1ccc4 !important;
+}
+
+/* Borders and Dividers in Dark Reader Style */
+.dark .border-slate-100,
+.dark .border-slate-200,
+.dark .border-slate-300,
+.dark .border-slate-400,
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-gray-300,
+.dark .divide-slate-100 > * + *,
+.dark .divide-slate-200 > * + *,
+.dark .divide-gray-100 > * + *,
+.dark .divide-gray-200 > * + * {
+  border-color: #363a3d !important;
+}
+
+/* Typography Contrast (Soft Warm White for zero eye strain) */
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6 {
+  color: #e8e6e3 !important;
+}
+
+.dark .text-slate-700,
+.dark .text-slate-600,
+.dark .text-gray-700,
+.dark .text-gray-600,
+.dark p,
+.dark span:not(.badge-text) {
+  color: #cdc8c0;
+}
+
+.dark .text-slate-500,
+.dark .text-slate-400,
+.dark .text-gray-500,
+.dark .text-gray-400 {
+  color: #9e9689 !important;
+}
+
+/* Table styling in Dark Reader Theme */
+.dark table {
+  background-color: #222426 !important;
+  color: #e8e6e3 !important;
+  border-color: #363a3d !important;
+}
+
+.dark thead th,
+.dark tr th {
+  background-color: #161819 !important;
+  color: #e8e6e3 !important;
+  border-color: #363a3d !important;
+}
+
+.dark tbody tr {
+  background-color: #222426 !important;
+  border-color: #2c3033 !important;
+  transition: background-color 0.15s ease;
+}
+
+.dark tbody tr:hover,
+.dark tr.hover\:bg-slate-50:hover,
+.dark tr.hover\:bg-slate-100:hover,
+.dark tr:hover {
+  background-color: #282b2e !important;
+  color: #e8e6e3 !important;
+}
+
+.dark td {
+  border-color: #2c3033 !important;
+}
+
+/* Form Controls: Inputs, Selects, Textareas */
+.dark input:not([type="checkbox"]):not([type="radio"]),
+.dark select,
+.dark textarea {
+  background-color: #141617 !important;
+  border-color: #383d40 !important;
+  color: #e8e6e3 !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #7a7368 !important;
+}
+
+.dark input:focus,
+.dark select:focus,
+.dark textarea:focus {
+  border-color: #e5a812 !important;
+  box-shadow: 0 0 0 1px #e5a812 !important;
+  outline: none !important;
+}
+
+/* Dark Reader Status Badges & Pills */
+.dark .bg-emerald-50,
+.dark .bg-emerald-100 {
+  background-color: rgba(46, 125, 50, 0.22) !important;
+  color: #81c784 !important;
+  border-color: rgba(76, 175, 80, 0.35) !important;
+}
+
+.dark .bg-blue-50,
+.dark .bg-blue-100 {
+  background-color: rgba(25, 118, 210, 0.22) !important;
+  color: #90caf9 !important;
+  border-color: rgba(33, 150, 243, 0.35) !important;
+}
+
+.dark .bg-amber-50,
+.dark .bg-amber-100 {
+  background-color: rgba(245, 124, 0, 0.22) !important;
+  color: #ffb74d !important;
+  border-color: rgba(255, 152, 0, 0.35) !important;
+}
+
+.dark .bg-rose-50,
+.dark .bg-rose-100,
+.dark .bg-red-50,
+.dark .bg-red-100 {
+  background-color: rgba(211, 47, 47, 0.22) !important;
+  color: #ef9a9a !important;
+  border-color: rgba(244, 67, 54, 0.35) !important;
+}
+
+.dark .bg-purple-50,
+.dark .bg-purple-100 {
+  background-color: rgba(123, 31, 162, 0.22) !important;
+  color: #ce93d8 !important;
+  border-color: rgba(156, 39, 176, 0.35) !important;
+}
+
+/* Modals & Backdrop Blur */
+.dark .fixed.inset-0.bg-slate-900\/70,
+.dark .fixed.inset-0.bg-slate-900\/60,
+.dark .fixed.inset-0.bg-slate-900\/50 {
+  background-color: rgba(0, 0, 0, 0.78) !important;
+}
+
+/* Custom Dark Reader Scrollbars */
+.custom-scrollbar::-webkit-scrollbar,
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-track,
+.dark ::-webkit-scrollbar-track {
+  background: #181a1b;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb,
+.dark ::-webkit-scrollbar-thumb {
+  background-color: #383d40;
+  border-radius: 9999px;
+  border: 1px solid #181a1b;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover,
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: #4e5458;
+}
+
+/* Dedicated Print Stylesheet rules */
+@media print {
+  aside,
+  header,
+  .no-print,
+  button:not(.printable-btn),
+  input,
+  select,
+  .filters-panel {
+    display: none !important;
+  }
+
+  main {
+    margin-left: 0 !important;
+    margin-top: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    color: black !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .print-only-title {
+    display: block !important;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    text-align: center;
+    color: #0F2438;
+  }
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  th, td {
+    border: 1px solid #CBD5E1 !important;
+    padding: 6px 8px !important;
+    font-size: 10px !important;
+  }
+
+  th {
+    background-color: #0F2438 !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
