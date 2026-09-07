@@ -8,11 +8,35 @@
 /* inverted to a comfortable dark palette (like Dark Reader ext).   */
 /* ================================================================ */
 
+@font-face {
+  font-family: 'Material Symbols Outlined';
+  font-style: normal;
+  font-weight: 100 700;
+  src: url('/fonts/material-symbols-outlined.woff2') format('woff2');
+  font-display: block;
+}
+
 @layer base {
   body {
     background-color: #F1F8FC;
     color: #1F2937;
     font-family: 'Inter', sans-serif;
+  }
+  
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
   }
 }
 
@@ -76,11 +100,11 @@ html.dark body,
 }
 
 /* Dark panel cards used in Dashboard & LeadWorkspace */
-.dark [class*="bg-[#181D26]"] {
+.dark [class*="bg-[#2A220C]"] {
   background-color: #1e2021 !important;
 }
 
-.dark [class*="bg-[#12161F]"],
+.dark [class*="bg-[#1A1608]"],
 .dark [class*="bg-[#151C24]"],
 .dark [class*="bg-[#090C14]"],
 .dark [class*="bg-[#0F1420]"] {
@@ -103,7 +127,7 @@ html.dark body,
   border-color: #333739 !important;
 }
 
-.dark [class*="border-[#262F3D]"],
+.dark [class*="border-[#574719]"],
 .dark [class*="border-[#222936]"] {
   border-color: #333739 !important;
 }
@@ -317,24 +341,24 @@ html.dark body,
 }
 
 /* Blue */
-.dark .bg-blue-50,
-.dark .bg-blue-100 {
+.dark .bg-amber-50,
+.dark .bg-amber-100 {
   background-color: rgba(25, 118, 210, 0.20) !important;
   color: #90caf9 !important;
   border-color: rgba(33, 150, 243, 0.35) !important;
 }
 
-.dark .text-blue-600,
-.dark .text-blue-700 {
+.dark .text-amber-600,
+.dark .text-amber-700 {
   color: #90caf9 !important;
 }
 
-.dark .text-blue-800 {
+.dark .text-amber-800 {
   color: #bbdefb !important;
 }
 
-.dark .border-blue-200,
-.dark .border-blue-300 {
+.dark .border-amber-200,
+.dark .border-amber-300 {
   border-color: rgba(33, 150, 243, 0.35) !important;
 }
 
@@ -779,7 +803,7 @@ a {
     font-weight: bold;
     margin-bottom: 12px;
     text-align: center;
-    color: #0F2438;
+    color: #574719;
   }
 
   table {
@@ -794,7 +818,7 @@ a {
   }
 
   th {
-    background-color: #0F2438 !important;
+    background-color: #574719 !important;
     color: white !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;

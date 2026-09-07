@@ -16,7 +16,7 @@ export const NotificationToast = ({ message, type = 'success', onClose, darkMode
 
   return (
     <div className={`fixed bottom-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-lg shadow-xl border animate-slide-up transition-all ${
-      darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+      darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
     }`}>
       <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isSuccess ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-800/50' : 'bg-red-950/40 text-red-400 border border-red-800/50'}`}>
         <span className="material-symbols-outlined text-[20px]">

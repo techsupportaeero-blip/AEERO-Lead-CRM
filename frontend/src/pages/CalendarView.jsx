@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
+import { COUNSELORS } from '../config/constants';
 
 export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) => {
   const [tasks, setTasks] = useState([]);
@@ -16,7 +17,7 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
   const [leadId, setLeadId] = useState('');
   const [dueTime, setDueTime] = useState('12:00');
   const [priority, setPriority] = useState('Medium');
-  const [assignedUser, setAssignedUser] = useState('Rahul Sharma');
+  const [assignedUser, setAssignedUser] = useState(COUNSELORS[0] || 'Counselor');
 
   useEffect(() => {
     loadTasks();
@@ -74,6 +75,13 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
     return `${year}-${pad(month + 1)}-${pad(d)}`;
   };
 
+  // Helper to get today's date in local timezone (avoids UTC midnight bug)
+  const getTodayLocalDate = () => {
+    const today = new Date();
+    const pad = (n) => n < 10 ? '0' + n : n;
+    return `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+  };
+
   const handleDayClick = (day) => {
     if (!day || currentUser?.role?.toUpperCase() !== 'ADMIN') return;
     setSelectedDate(getFormattedDate(day));
@@ -88,7 +96,7 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
       await api.addTask({
         title: taskTitle.trim(),
         description: taskDesc.trim(),
-        leadId: leadId.trim(),
+        leadId: leadId.trim() || undefined,
         assignedUser,
         dueDate: selectedDate,
         dueTime,
@@ -112,7 +120,7 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
       
       {/* Top Header */}
       <div className={`p-5 rounded-xl border shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors ${
-        darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+        darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
       }`}>
         <div>
           <h2 className={`font-bold text-xl flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
@@ -124,17 +132,17 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
 
         <div className="flex items-center gap-2">
           <button onClick={handlePrevMonth} className={`p-2 border rounded transition-colors ${
-            darkMode ? 'border-[#262F3D] hover:bg-[#1E2633] text-slate-300' : 'border-slate-300 hover:bg-slate-50 text-slate-700'
+            darkMode ? 'border-[#574719] hover:bg-[#3D3212] text-slate-300' : 'border-slate-300 hover:bg-slate-50 text-slate-700'
           }`}>
             <span className="material-symbols-outlined text-[18px]">chevron_left</span>
           </button>
           <button onClick={handleToday} className={`px-4 py-2 border rounded font-bold text-xs transition-colors ${
-            darkMode ? 'border-[#262F3D] hover:bg-[#1E2633] text-slate-300' : 'border-slate-300 hover:bg-slate-50 text-slate-700'
+            darkMode ? 'border-[#574719] hover:bg-[#3D3212] text-slate-300' : 'border-slate-300 hover:bg-slate-50 text-slate-700'
           }`}>
             Today
           </button>
           <button onClick={handleNextMonth} className={`p-2 border rounded transition-colors ${
-            darkMode ? 'border-[#262F3D] hover:bg-[#1E2633] text-slate-300' : 'border-slate-300 hover:bg-slate-50 text-slate-700'
+            darkMode ? 'border-[#574719] hover:bg-[#3D3212] text-slate-300' : 'border-slate-300 hover:bg-slate-50 text-slate-700'
           }`}>
             <span className="material-symbols-outlined text-[18px]">chevron_right</span>
           </button>
@@ -143,44 +151,44 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
 
       {/* Calendar Grid */}
       <div className={`rounded-xl border shadow-sm overflow-hidden transition-colors ${
-        darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+        darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
       }`}>
         {loading && (
           <div className="h-1 bg-amber-500 animate-pulse w-full"></div>
         )}
         <div className={`grid grid-cols-7 border-b ${
-          darkMode ? 'border-[#262F3D] bg-[#12161F]' : 'border-slate-200 bg-slate-50'
+          darkMode ? 'border-[#574719] bg-[#1A1608]' : 'border-slate-200 bg-slate-50'
         }`}>
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
             <div key={day} className={`py-3 text-center text-[11px] font-bold uppercase tracking-wider border-r last:border-r-0 ${
-              darkMode ? 'text-slate-400 border-[#262F3D]' : 'text-slate-500 border-slate-200'
+              darkMode ? 'text-slate-400 border-[#574719]' : 'text-slate-500 border-slate-200'
             }`}>
               {day}
             </div>
           ))}
         </div>
         
-        <div className={`grid grid-cols-7 ${darkMode ? 'bg-[#181D26]' : 'bg-white'}`}>
+        <div className={`grid grid-cols-7 ${darkMode ? 'bg-[#2A220C]' : 'bg-white'}`}>
           {days.map((day, idx) => {
             if (!day) {
               return <div key={`empty-${idx}`} className={`min-h-[120px] p-2 border-b border-r ${
-                darkMode ? 'border-[#262F3D] bg-[#12161F]/40' : 'border-slate-100 bg-slate-50/50'
+                darkMode ? 'border-[#574719] bg-[#1A1608]/40' : 'border-slate-100 bg-slate-50/50'
               }`}></div>;
             }
             
             const dateStr = getFormattedDate(day);
-            const dayTasks = tasks.filter(t => t.dueDate === dateStr);
-            const isToday = new Date().toISOString().split('T')[0] === dateStr;
+            const dayTasks = tasks.filter(t => (t.dueDate || '').split('T')[0] === dateStr);
+            const isToday = getTodayLocalDate() === dateStr;
 
             return (
               <div 
                 key={day} 
                 onClick={() => handleDayClick(day)}
                 className={`min-h-[120px] p-2 border-b border-r transition-colors relative ${
-                  darkMode ? 'border-[#262F3D]' : 'border-slate-100'
+                  darkMode ? 'border-[#574719]' : 'border-slate-100'
                 } ${
                   currentUser?.role?.toUpperCase() === 'ADMIN' 
-                    ? darkMode ? 'cursor-pointer hover:bg-[#1E2633] group' : 'cursor-pointer hover:bg-slate-50 group' 
+                    ? darkMode ? 'cursor-pointer hover:bg-[#3D3212] group' : 'cursor-pointer hover:bg-slate-50 group' 
                     : ''
                 }`}
               >
@@ -200,13 +208,13 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
                 <div className="space-y-1.5 max-h-[85px] overflow-y-auto no-scrollbar">
                   {dayTasks.map(t => (
                     <div 
-                      key={t.taskId}
+                      key={t.taskId || t.id}
                       onClick={(e) => {
                         e.stopPropagation(); // Prevent triggering day click
                         if(t.leadId && onSelectLead) onSelectLead(t.leadId);
                       }}
                       className={`px-2 py-1.5 rounded border text-[10px] leading-tight truncate cursor-pointer transition-colors ${
-                        t.status === 'Completed' 
+                        (t.status === 'Completed' || t.status === 'COMPLETED')
                           ? darkMode 
                             ? 'bg-emerald-950/40 border-emerald-800/40 text-emerald-300 line-through'
                             : 'bg-emerald-50 border-emerald-100 text-emerald-700 line-through'
@@ -214,10 +222,10 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
                             ? 'bg-amber-950/50 border-amber-800/40 text-amber-200 hover:bg-amber-900/60 shadow-sm'
                             : 'bg-amber-50 border-amber-100 text-amber-900 hover:bg-amber-100 hover:border-amber-200 shadow-sm'
                       }`}
-                      title={`${t.title} - ${t.assignedUser}`}
+                      title={`${t.title} - ${t.assignedUser || t.assignedTo}`}
                     >
                       <span className="font-bold block truncate">{t.title}</span>
-                      <span className="opacity-80 block truncate">({t.assignedUser}) {t.dueTime}</span>
+                      <span className="opacity-80 block truncate">({t.assignedUser || t.assignedTo}) {t.dueTime}</span>
                     </div>
                   ))}
                 </div>
@@ -231,9 +239,9 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
           <div className={`rounded-xl shadow-2xl border w-full max-w-md p-6 space-y-4 ${
-            darkMode ? 'bg-[#181D26] border-[#262F3D] text-white' : 'bg-white border-slate-200 text-slate-900'
+            darkMode ? 'bg-[#2A220C] border-[#574719] text-white' : 'bg-white border-slate-200 text-slate-900'
           }`}>
-            <div className={`flex justify-between items-center border-b pb-3 ${darkMode ? 'border-[#262F3D]' : 'border-slate-100'}`}>
+            <div className={`flex justify-between items-center border-b pb-3 ${darkMode ? 'border-[#574719]' : 'border-slate-100'}`}>
               <h3 className={`font-bold text-base ${darkMode ? 'text-white' : 'text-slate-900'}`}>Schedule Task on {selectedDate}</h3>
               <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-200">
                 <span className="material-symbols-outlined">close</span>
@@ -250,7 +258,7 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
                   value={taskTitle}
                   onChange={(e) => setTaskTitle(e.target.value)}
                   className={`w-full border rounded p-2 outline-none focus:ring-2 focus:ring-[#7D610F]/20 focus:border-[#7D610F] ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -263,7 +271,7 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
                   value={taskDesc}
                   onChange={(e) => setTaskDesc(e.target.value)}
                   className={`w-full border rounded p-2 outline-none focus:ring-2 focus:ring-[#7D610F]/20 focus:border-[#7D610F] ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -277,7 +285,7 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
                     value={leadId}
                     onChange={(e) => setLeadId(e.target.value)}
                     className={`w-full border rounded p-2 font-mono outline-none focus:ring-2 focus:ring-[#7D610F]/20 focus:border-[#7D610F] ${
-                      darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                      darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                     }`}
                   />
                 </div>
@@ -288,12 +296,12 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
                     value={assignedUser}
                     onChange={(e) => setAssignedUser(e.target.value)}
                     className={`w-full border rounded p-2 outline-none focus:ring-2 focus:ring-[#7D610F]/20 focus:border-[#7D610F] ${
-                      darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                      darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                     }`}
                   >
-                    <option value="Rahul Sharma">Rahul Sharma</option>
-                    <option value="Anita Verma">Anita Verma</option>
-                    <option value="Suresh Menon">Suresh Menon</option>
+                    {COUNSELORS.map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -306,7 +314,7 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
                     value={dueTime}
                     onChange={(e) => setDueTime(e.target.value)}
                     className={`w-full border rounded p-2 outline-none focus:ring-2 focus:ring-[#7D610F]/20 focus:border-[#7D610F] ${
-                      darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                      darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                     }`}
                   />
                 </div>
@@ -316,7 +324,7 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
                     value={priority}
                     onChange={(e) => setPriority(e.target.value)}
                     className={`w-full border rounded p-2 outline-none focus:ring-2 focus:ring-[#7D610F]/20 focus:border-[#7D610F] ${
-                      darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                      darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                     }`}
                   >
                     <option value="High">High</option>
@@ -326,12 +334,12 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
                 </div>
               </div>
 
-              <div className={`pt-3 flex justify-end gap-2 border-t ${darkMode ? 'border-[#262F3D]' : 'border-slate-100'}`}>
+              <div className={`pt-3 flex justify-end gap-2 border-t ${darkMode ? 'border-[#574719]' : 'border-slate-100'}`}>
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
                   className={`px-4 py-2 rounded font-semibold transition-colors ${
-                    darkMode ? 'bg-[#12161F] hover:bg-[#1E2633] text-slate-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                    darkMode ? 'bg-[#1A1608] hover:bg-[#3D3212] text-slate-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                   }`}
                 >
                   Cancel

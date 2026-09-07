@@ -1,0 +1,370 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            Int            @id @default(autoincrement())
+  username      String         @unique
+  name          String
+  email         String         @unique
+  phone         String?
+  passwordHash  String
+  role          Role           @default(LEAD_FINDER)
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  activities    Activity[]
+  auditLogs     AuditLog[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model LeadCounter {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique @default("lead_seq")
+  lastNumber Int      @default(0)
+  updatedAt  DateTime @updatedAt
+
+  @@map("lead_counters")
+}
+
+model LeadSource {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  code      String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  leads     Lead[]
+
+  @@map("lead_sources")
+}
+
+model Course {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique
+  name        String
+  description String?
+  price       Decimal  @default(0.00) @db.Decimal(10, 2)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("courses")
+}
+
+model Lead {
+  id                    Int         @id @default(autoincrement())
+  leadId                String      @unique
+  name                  String
+  mobile                String
+  whatsappNumber        String?
+  email                 String?
+  city                  String?
+  state                 String?
+  age                   Int?
+  qualification         String?
+  interestedCourse      String?
+  preferredStudyMode    String?
+  requirement           String?
+  remarks               String?
+  ownerId               String?
+  status                LeadStatus  @default(NEW)
+  priority              Priority    @default(MEDIUM)
+  tags                  String?
+  isArchived            Boolean     @default(false)
+  sourceId              Int?
+  source                String?
+  platform              String?
+  campaign              String?
+  campaignId            String?
+  adSet                 String?
+  adSetId               String?
+  ad                    String?
+  adId                  String?
+  formId                String?
+  utmSource             String?
+  utmMedium             String?
+  utmCampaign           String?
+  utmContent            String?
+  utmTerm               String?
+  gclid                 String?
+  fbclid                String?
+  landingPage           String?
+  externalLeadId        String?
+  externalSource        String?
+  leadDateTime          DateTime    @default(now())
+  createdBy             String?     @default("System")
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  sourceRowNumber       Int?
+  sourceSheetName       String?
+  sourceSpreadsheetId   String?
+  sourceSpreadsheetName String?
+  activities            Activity[]
+  auditLogs             AuditLog[]
+  followUps             FollowUp[]
+  leadSourceRef         LeadSource? @relation(fields: [sourceId], references: [id])
+  notes                 Note[]
+  payments              Payment[]
+  tasks                 Task[]
+
+  @@index([mobile])
+  @@index([email])
+  @@index([status])
+  @@index([ownerId])
+  @@index([isArchived])
+  @@index([createdAt])
+  @@map("leads")
+}
+
+model Activity {
+  id                    Int          @id @default(autoincrement())
+  leadId                String
+  leadRelId             Int?
+  userId                Int?
+  type                  ActivityType @default(CALL)
+  activityType          String?
+  outcome               String?
+  subject               String?
+  description           String?
+  durationMinutes       Int?         @default(5)
+  remarks               String?
+  additionalInformation String?
+  participants          String?
+  attachmentUrl         String?
+  createdBy             String?      @default("System")
+  createdAt             DateTime     @default(now())
+  lead                  Lead?        @relation(fields: [leadRelId], references: [id], onDelete: Cascade)
+  user                  User?        @relation(fields: [userId], references: [id])
+
+  @@index([leadId])
+  @@index([createdAt])
+  @@map("activities")
+}
+
+model FollowUp {
+  id         Int            @id @default(autoincrement())
+  leadId     String
+  leadRelId  Int?
+  assignedTo String?
+  date       String
+  time       String?        @default("10:00")
+  type       FollowUpType   @default(CALL)
+  notes      String?
+  status     FollowUpStatus @default(PENDING)
+  createdBy  String?        @default("System")
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  lead       Lead?          @relation(fields: [leadRelId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([date])
+  @@index([status])
+  @@map("followups")
+}
+
+model Task {
+  id          Int        @id @default(autoincrement())
+  leadId      String?
+  leadRelId   Int?
+  assignedTo  String?
+  title       String
+  description String?
+  priority    Priority   @default(MEDIUM)
+  dueDate     String?
+  dueTime     String?    @default("11:00 AM")
+  status      TaskStatus @default(PENDING)
+  createdBy   String?    @default("System")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  lead        Lead?      @relation(fields: [leadRelId], references: [id])
+
+  @@index([leadId])
+  @@index([status])
+  @@index([dueDate])
+  @@map("tasks")
+}
+
+model Payment {
+  id            Int      @id @default(autoincrement())
+  leadId        String
+  leadRelId     Int?
+  amount        Decimal  @db.Decimal(10, 2)
+  paymentMethod String?  @default("Bank Transfer")
+  referenceNo   String?
+  notes         String?
+  paymentDate   String?
+  createdBy     String?  @default("Counselor")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  lead          Lead?    @relation(fields: [leadRelId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@map("payments")
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String?
+  phone     String?
+  whatsapp  String?
+  city      String?
+  state     String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("customers")
+}
+
+model Note {
+  id        Int      @id @default(autoincrement())
+  leadId    String
+  leadRelId Int?
+  content   String
+  isPinned  Boolean  @default(false)
+  createdBy String?  @default("Counselor")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lead      Lead?    @relation(fields: [leadRelId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@map("notes")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  title     String
+  message   String
+  type      String?  @default("info")
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  userName  String?
+  leadId    String?
+  leadRelId Int?
+  action    String
+  oldValue  String?
+  newValue  String?
+  details   String?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  lead      Lead?    @relation(fields: [leadRelId], references: [id])
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([leadId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model GoogleSheetSource {
+  id                     Int               @id @default(autoincrement())
+  spreadsheetId          String            @unique
+  spreadsheetName        String
+  folderId               String?
+  courseId               Int?
+  courseCode             String?
+  courseName             String?
+  source                 String            @default("Meta Ads")
+  status                 GoogleSheetStatus @default(ACTIVE)
+  lastProcessedRow       Int               @default(1)
+  totalRowsProcessed     Int               @default(0)
+  totalLeadsImported     Int               @default(0)
+  totalDuplicatesSkipped Int               @default(0)
+  totalErrors            Int               @default(0)
+  lastScannedAt          DateTime?
+  lastSuccessfulSyncAt   DateTime?
+  lastErrorMessage       String?
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+
+  @@index([spreadsheetId])
+  @@index([status])
+  @@map("google_sheet_sources")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  LEAD_FINDER
+  VIEWER
+}
+
+enum LeadStatus {
+  NEW
+  NO_ANSWER
+  GIVEN_DETAILS
+  INTERESTED
+  FOLLOW_UP
+  CONVERTED
+  LOST
+  NOT_INTERESTED
+  INVALID
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum ActivityType {
+  CALL
+  WHATSAPP
+  EMAIL
+  SMS
+  MEETING
+  VIDEO_CALL
+  NOTE
+  OTHER
+}
+
+enum FollowUpType {
+  CALL
+  WHATSAPP
+  EMAIL
+  MEETING
+  OTHER
+}
+
+enum FollowUpStatus {
+  PENDING
+  COMPLETED
+  MISSED
+  CANCELLED
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum GoogleSheetStatus {
+  ACTIVE
+  NEEDS_MAPPING
+  PAUSED
+  ERROR
+}

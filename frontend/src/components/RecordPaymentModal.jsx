@@ -43,11 +43,11 @@ export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecord
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-xs p-4 animate-fadeIn">
       <div className={`rounded-2xl shadow-2xl border w-full max-w-lg overflow-hidden ${
-        darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+        darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
       }`}>
         
         {/* Header */}
-        <div className="bg-[#0F2438] text-white px-6 py-4 flex items-center justify-between">
+        <div className="bg-[#574719] text-white px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center border border-emerald-400/30">
               <span className="material-symbols-outlined text-[20px]">payments</span>
@@ -64,7 +64,7 @@ export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecord
 
         {/* Lead Student Info Summary */}
         <div className={`px-6 py-3 flex items-center justify-between text-xs border-b ${
-          darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-200'
+          darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-200'
         }`}>
           <div>
             <span className="text-slate-400 block uppercase font-bold text-[10px]">Student / Trainee</span>
@@ -102,7 +102,7 @@ export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecord
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 className={`w-full border rounded-lg pl-8 pr-3 py-2 text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500 transition-all ${
-                  darkMode ? 'bg-[#12161F] border-[#262F3D] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
+                  darkMode ? 'bg-[#1A1608] border-[#574719] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
                 }`}
               />
             </div>
@@ -118,7 +118,7 @@ export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecord
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
                 className={`w-full border rounded-lg px-3 py-2 text-xs font-semibold outline-none focus:ring-2 focus:ring-emerald-500 ${
-                  darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                  darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                 }`}
               >
                 <option value="UPI">UPI (GPay / PhonePe / Paytm)</option>
@@ -140,7 +140,7 @@ export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecord
                 value={paymentDate}
                 onChange={(e) => setPaymentDate(e.target.value)}
                 className={`w-full border rounded-lg px-3 py-2 text-xs font-medium outline-none focus:ring-2 focus:ring-emerald-500 ${
-                  darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                  darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                 }`}
               />
             </div>
@@ -157,7 +157,7 @@ export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecord
               value={referenceNo}
               onChange={(e) => setReferenceNo(e.target.value)}
               className={`w-full border rounded-lg px-3 py-2 text-xs font-mono outline-none focus:ring-2 focus:ring-emerald-500 ${
-                darkMode ? 'bg-[#12161F] border-[#262F3D] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
+                darkMode ? 'bg-[#1A1608] border-[#574719] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
               }`}
             />
           </div>
@@ -173,18 +173,18 @@ export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecord
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className={`w-full border rounded-lg px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-emerald-500 ${
-                darkMode ? 'bg-[#12161F] border-[#262F3D] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
+                darkMode ? 'bg-[#1A1608] border-[#574719] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
               }`}
             />
           </div>
 
           {/* Footer Actions */}
-          <div className={`pt-3 border-t flex justify-end gap-3 ${darkMode ? 'border-[#262F3D]' : 'border-slate-200'}`}>
+          <div className={`pt-3 border-t flex justify-end gap-3 ${darkMode ? 'border-[#574719]' : 'border-slate-200'}`}>
             <button
               type="button"
               onClick={onClose}
               className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${
-                darkMode ? 'bg-[#12161F] hover:bg-[#1E2633] text-slate-300' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                darkMode ? 'bg-[#1A1608] hover:bg-[#3D3212] text-slate-300' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
               }`}
             >
               Cancel

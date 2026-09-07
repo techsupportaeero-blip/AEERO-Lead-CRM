@@ -1,4 +1,6 @@
+import Skeleton, { TableSkeleton, CardSkeleton, TableRowSkeleton } from '../components/Skeleton.jsx';
 import React, { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
 import { api } from '../api/client';
 import { StatusBadge, PriorityBadge } from '../components/StatusBadge';
 import { LEAD_STATUSES, COUNSELORS, LEAD_SOURCES } from '../config/constants';
@@ -9,6 +11,7 @@ export const AllLeads = ({
   onSelectLead,
   onEditLead,
   onOpenAddLead,
+  onOpenColumnModal,
   onNavigateToCustomers,
   currentUser,
   initialFilters = {},
@@ -37,6 +40,29 @@ export const AllLeads = ({
   useEffect(() => {
     fetchLeads();
   }, [search, statusFilter, sourceFilter, ownerFilter, priorityFilter, viewArchived]);
+
+  useEffect(() => {
+    const socket = io(); // Connects to same host, Vite proxy will route /socket.io
+
+    socket.on('connect', () => {
+      console.log('Connected to real-time lead updates');
+    });
+
+    socket.on('newLead', (newLead) => {
+      console.log('New lead received via socket:', newLead);
+      setLeads((prevLeads) => {
+        // Check if viewing archived
+        if (viewArchived) return prevLeads;
+        // Check for duplicates
+        if (prevLeads.some(l => l.leadId === newLead.leadId)) return prevLeads;
+        return [newLead, ...prevLeads];
+      });
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [viewArchived]);
 
   const fetchLeads = async () => {
     try {
@@ -104,7 +130,6 @@ export const AllLeads = ({
     setOwnerFilter('All');
     setSearch('');
     setCurrentPage(1);
-    fetchLeads();
   };
 
   const promptClearFilters = () => {
@@ -115,6 +140,7 @@ export const AllLeads = ({
       type: "warning",
       onConfirm: () => {
         handleClearFilters();
+        setConfirmConfig(null);
       }
     });
   };
@@ -131,46 +157,30 @@ export const AllLeads = ({
       onConfirm: async () => {
         try {
           await api.archiveLead(leadId, currentUser ? currentUser.name : 'Counselor');
+          setConfirmConfig(null);
           await fetchLeads();
         } catch (err) {
+          setConfirmConfig(null);
           alert("Failed to archive lead: " + err.message);
         }
       }
     });
   };
 
-  // Helper to generate rich realistic mock fallback attributes matching the screenshot
+  // Normalize lead fields for display (NO FAKE DATA)
   const enrichLead = (lead, index) => {
     if (!lead) return {};
-    const defaultValues = [
-      '₹ 1,850,000', '₹ 180,000', '₹ 450,000', '₹ 120,000',
-      '₹ 95,000', '₹ 75,000', '₹ 85,000', '₹ 65,000',
-      '₹ 1,850,000', '₹ 180,000', '₹ 450,000', '₹ 120,000'
-    ];
-    const defaultFollowups = [
-      'Mar 04, 2026', '-', '-', 'Feb 26, 2026',
-      'Feb 24, 2026', 'Feb 22, 2026', 'Feb 20, 2026', 'Feb 18, 2026',
-      'Feb 16, 2026', 'Mar 18, 2026', '-', 'Feb 12, 2026'
-    ];
-    const defaultCreated = [
-      'Jan 31, 2026', 'Jan 29, 2026', 'Jan 27, 2026', 'Jan 25, 2026',
-      'Jan 23, 2026', 'Jan 21, 2026', 'Jan 19, 2026', 'Jan 17, 2026',
-      'Feb 16, 2026', 'Feb 14, 2026', 'Feb 10, 2026', 'Feb 08, 2026'
-    ];
-    const defaultCounselors = ['Sourav Sharma', 'Anita Verma', 'Suresh Menon'];
-
-    const idx = index % defaultValues.length;
-    const formattedId = lead.leadId || `LEAD00${index + 1}`;
+    const formattedId = lead.leadId || '-';
 
     return {
       ...lead,
       displayId: formattedId,
-      value: lead.value || defaultValues[idx],
-      followUp: lead.followUp || defaultFollowups[idx],
-      createdDate: lead.createdAt ? new Date(lead.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : defaultCreated[idx],
-      assignedTo: lead.ownerId || defaultCounselors[index % defaultCounselors.length],
-      email: lead.email || `student${index + 1}@example.com`,
-      phone: lead.mobile || lead.phone || `+91 98765 4321${index % 10}`
+      value: lead.value || '-',
+      followUp: lead.followUp || '-',
+      createdDate: lead.createdAt ? new Date(lead.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : '-',
+      assignedTo: lead.ownerId || '-',
+      email: lead.email || '-',
+      phone: lead.mobile || lead.phone || '-'
     };
   };
 
@@ -199,8 +209,9 @@ export const AllLeads = ({
   // CSV Export Helper with UTF-8 BOM for perfect Excel column separation
   const handleExportCSV = () => {
     if (processedLeads.length === 0) return alert("No leads to export");
-    const headers = ["Lead ID", "Student Name", "Email Address", "Phone Number", "Status", "Source", "Priority", "Assigned Counselor", "Course Value (INR)", "Follow-up Date", "Created Date"];
-    const rows = processedLeads.map(l => [
+    const headers = ["S.No.", "Lead ID", "Student Name", "Email Address", "Phone Number", "Status", "Source", "Priority", "Assigned Counselor", "Course Value (INR)", "Follow-up Date", "Created Date"];
+    const rows = processedLeads.map((l, index) => [
+      index + 1,
       l.displayId || '',
       l.name || '',
       l.email || '',
@@ -237,8 +248,9 @@ export const AllLeads = ({
     if (!printWindow) return alert("Please allow popups to export PDF.");
 
     const todayStr = new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
-    const tableRowsHtml = processedLeads.map(l => `
+    const tableRowsHtml = processedLeads.map((l, index) => `
       <tr>
+        <td style="padding:6px;border:1px solid #CBD5E1;font-family:monospace;">${index + 1}</td>
         <td style="padding:6px;border:1px solid #CBD5E1;font-family:monospace;">${l.displayId || ''}</td>
         <td style="padding:6px;border:1px solid #CBD5E1;font-weight:bold;">${l.name || ''}</td>
         <td style="padding:6px;border:1px solid #CBD5E1;">${l.email || ''}</td>
@@ -260,10 +272,10 @@ export const AllLeads = ({
           <title>AEERO CRM - All Leads Report (${todayStr})</title>
           <style>
             body { font-family: sans-serif; padding: 20px; color: #1E293B; }
-            h2 { text-align: center; color: #0F2438; margin-bottom: 4px; }
+            h2 { text-align: center; color: #0c0a01ff; margin-bottom: 4px; }
             p.sub { text-align: center; font-size: 12px; color: #64748B; margin-top: 0; margin-bottom: 16px; }
             table { width: 100%; border-collapse: collapse; font-size: 11px; }
-            th { background-color: #0F2438; color: white; padding: 8px; border: 1px solid #0F2438; text-align: left; }
+            th { background-color: #000000ff; color: white; padding: 8px; border: 1px solid #3E3100; text-align: left; }
             @media print {
               @page { size: landscape; margin: 15mm; }
             }
@@ -275,6 +287,7 @@ export const AllLeads = ({
           <table>
             <thead>
               <tr>
+                <th>S.No.</th>
                 <th>Lead ID</th>
                 <th>Student Name</th>
                 <th>Email</th>
@@ -312,7 +325,7 @@ export const AllLeads = ({
 
       {/* Top Header Row with Prominent Search Bar & Add Lead */}
       <div className={`flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 p-4 rounded-xl border shadow-xs transition-colors ${
-        darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+        darkMode ? 'bg-[#161412ff] border-[#080706]' : 'bg-white border-slate-200'
       }`}>
         <div className="flex items-center gap-2.5">
           <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
@@ -339,7 +352,7 @@ export const AllLeads = ({
             placeholder="Search by Student Name, Mobile, Email, City, or Lead ID..."
             className={`w-full rounded-xl pl-9 pr-8 py-2 text-xs outline-none transition-all shadow-2xs font-medium border ${
               darkMode
-                ? 'bg-[#12161F] hover:bg-[#1C222D] focus:bg-[#1C222D] border-[#262F3D] text-white placeholder:text-slate-500 focus:border-[#E5A812] focus:ring-2 focus:ring-[#E5A812]/20'
+                ? 'bg-[#161412ff] hover:bg-[#1f1c19] focus:bg-[#161412ff] border-[#080706] text-white placeholder:text-slate-500 focus:border-[#E5A812] focus:ring-2 focus:ring-[#E5A812]/20'
                 : 'bg-slate-50 hover:bg-white focus:bg-white border-slate-300 focus:border-[#7D610F] text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-amber-500/20'
             }`}
           />
@@ -361,8 +374,8 @@ export const AllLeads = ({
               onClick={onNavigateToCustomers}
               className={`px-3.5 py-2 border rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 active:scale-95 flex-shrink-0 cursor-pointer shadow-2xs ${
                 darkMode
-                  ? 'bg-blue-950/40 hover:bg-blue-900/50 text-blue-300 border-blue-800/50'
-                  : 'bg-blue-50 hover:bg-blue-100 text-blue-800 border-blue-200'
+                  ? 'bg-amber-950/40 hover:bg-amber-900/50 text-amber-300 border-amber-800/50'
+                  : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200'
               }`}
               title="View Enrolled Trainees & Converted Customers"
             >
@@ -378,7 +391,7 @@ export const AllLeads = ({
               viewArchived
                 ? 'bg-amber-600 text-white border-amber-700 shadow-sm'
                 : darkMode
-                  ? 'bg-[#12161F] hover:bg-[#1C222D] text-slate-300 border-[#262F3D]'
+                  ? 'bg-[#161412ff] hover:bg-[#1f1c19] text-slate-300 border-[#080706]'
                   : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'
             }`}
             title="Toggle Soft-Deleted / Archived Leads"
@@ -399,7 +412,7 @@ export const AllLeads = ({
 
       {/* Archived Directory Banner when active */}
       {viewArchived && (
-        <div className="p-3 bg-[#0F2438] text-white rounded-xl font-semibold text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md border border-slate-700 animate-fadeIn">
+        <div className="p-3 bg-[#3E3100] text-white rounded-xl font-semibold text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md border border-slate-700 animate-fadeIn">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center flex-shrink-0 border border-amber-400/30">
               <span className="material-symbols-outlined text-[18px]">inventory_2</span>
@@ -421,19 +434,19 @@ export const AllLeads = ({
 
       {/* Filters Panel matching Screenshot */}
       <div className={`rounded-lg border shadow-xs p-3.5 space-y-3 transition-colors ${
-        darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+        darkMode ? 'bg-black border-slate-800' : 'bg-black border-slate-800'
       }`}>
 
         {/* Filters Header */}
-        <div className={`flex justify-between items-center border-b pb-2 ${darkMode ? 'border-[#262F3D]' : 'border-slate-100'}`}>
+        <div className={`flex justify-between items-center border-b pb-2 ${darkMode ? 'border-slate-800' : 'border-slate-800'}`}>
           <div className="flex items-center gap-1.5">
-            <span className={`material-symbols-outlined text-[18px] ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>tune</span>
-            <span className={`font-bold text-xs ${darkMode ? 'text-white' : 'text-slate-800'}`}>Filters</span>
+            <span className="material-symbols-outlined text-[18px] text-slate-300">tune</span>
+            <span className="font-bold text-xs text-white">Filters</span>
           </div>
 
           <button
             onClick={promptClearFilters}
-            className="px-2.5 py-1 bg-slate-700 hover:bg-slate-800 text-white rounded text-[11px] font-medium flex items-center gap-1 transition-colors"
+            className="px-2.5 py-1 bg-[#b58d16] hover:bg-[#6B540A] text-white rounded text-xs font-semibold flex items-center gap-1 transition-colors"
           >
             <span className="material-symbols-outlined text-[14px]">cancel</span>
             <span>Clear All</span>
@@ -445,7 +458,7 @@ export const AllLeads = ({
 
           {/* Date From */}
           <div className="space-y-1">
-            <label className={`text-[10px] font-bold uppercase flex items-center gap-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+            <label className="text-[10px] font-bold uppercase flex items-center gap-1 text-slate-400">
               <span className="material-symbols-outlined text-[13px]">calendar_today</span>
               <span>DATE FROM</span>
             </label>
@@ -455,7 +468,7 @@ export const AllLeads = ({
               onChange={(e) => setDateFromFilter(e.target.value)}
               className={`w-full px-2.5 py-1.5 rounded text-xs outline-none transition-colors border ${
                 darkMode
-                  ? 'bg-[#12161F] border-[#262F3D] text-slate-200 focus:ring-2 focus:ring-[#E5A812] focus:border-[#E5A812]'
+                  ? 'bg-[#161412ff] border-[#080706] text-slate-200 focus:ring-2 focus:ring-[#E5A812] focus:border-[#E5A812]'
                   : 'bg-white border-slate-300 text-slate-800 focus:ring-2 focus:ring-[#9A7310] focus:border-[#9A7310]'
               }`}
             />
@@ -463,7 +476,7 @@ export const AllLeads = ({
 
           {/* Date To */}
           <div className="space-y-1">
-            <label className={`text-[10px] font-bold uppercase flex items-center gap-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+            <label className="text-[10px] font-bold uppercase flex items-center gap-1 text-slate-400">
               <span className="material-symbols-outlined text-[13px]">calendar_today</span>
               <span>DATE TO</span>
             </label>
@@ -473,7 +486,7 @@ export const AllLeads = ({
               onChange={(e) => setDateToFilter(e.target.value)}
               className={`w-full px-2.5 py-1.5 rounded text-xs outline-none transition-colors border ${
                 darkMode
-                  ? 'bg-[#12161F] border-[#262F3D] text-slate-200 focus:ring-2 focus:ring-[#E5A812] focus:border-[#E5A812]'
+                  ? 'bg-[#161412ff] border-[#080706] text-slate-200 focus:ring-2 focus:ring-[#E5A812] focus:border-[#E5A812]'
                   : 'bg-white border-slate-300 text-slate-800 focus:ring-2 focus:ring-[#9A7310] focus:border-[#9A7310]'
               }`}
             />
@@ -481,7 +494,7 @@ export const AllLeads = ({
 
           {/* Status Filter */}
           <div className="space-y-1">
-            <label className={`text-[10px] font-bold uppercase flex items-center gap-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+            <label className="text-[10px] font-bold uppercase flex items-center gap-1 text-slate-400">
               <span className="material-symbols-outlined text-[13px]">flag</span>
               <span>STATUS</span>
             </label>
@@ -490,7 +503,7 @@ export const AllLeads = ({
               onChange={(e) => setStatusFilter(e.target.value)}
               className={`w-full px-2.5 py-1.5 rounded text-xs outline-none font-medium transition-colors border ${
                 darkMode
-                  ? 'bg-[#12161F] border-[#262F3D] text-slate-200 focus:ring-2 focus:ring-[#E5A812]'
+                  ? 'bg-[#161412ff] border-[#080706] text-slate-200 focus:ring-2 focus:ring-[#E5A812]'
                   : 'bg-white border-slate-300 text-slate-800 focus:ring-2 focus:ring-[#9A7310]'
               }`}
             >
@@ -503,7 +516,7 @@ export const AllLeads = ({
 
           {/* Priority Filter */}
           <div className="space-y-1">
-            <label className={`text-[10px] font-bold uppercase flex items-center gap-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+            <label className="text-[10px] font-bold uppercase flex items-center gap-1 text-slate-400">
               <span className="material-symbols-outlined text-[13px]">warning</span>
               <span>PRIORITY</span>
             </label>
@@ -512,7 +525,7 @@ export const AllLeads = ({
               onChange={(e) => setPriorityFilter(e.target.value)}
               className={`w-full px-2.5 py-1.5 rounded text-xs outline-none font-medium transition-colors border ${
                 darkMode
-                  ? 'bg-[#12161F] border-[#262F3D] text-slate-200 focus:ring-2 focus:ring-[#E5A812]'
+                  ? 'bg-[#161412ff] border-[#080706] text-slate-200 focus:ring-2 focus:ring-[#E5A812]'
                   : 'bg-white border-slate-300 text-slate-800 focus:ring-2 focus:ring-[#9A7310]'
               }`}
             >
@@ -526,7 +539,7 @@ export const AllLeads = ({
 
           {/* Source Filter */}
           <div className="space-y-1">
-            <label className={`text-[10px] font-bold uppercase flex items-center gap-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+            <label className="text-[10px] font-bold uppercase flex items-center gap-1 text-slate-400">
               <span className="material-symbols-outlined text-[13px]">density_medium</span>
               <span>SOURCE</span>
             </label>
@@ -535,7 +548,7 @@ export const AllLeads = ({
               onChange={(e) => setSourceFilter(e.target.value)}
               className={`w-full px-2.5 py-1.5 rounded text-xs outline-none font-medium transition-colors border ${
                 darkMode
-                  ? 'bg-[#12161F] border-[#262F3D] text-slate-200 focus:ring-2 focus:ring-[#E5A812]'
+                  ? 'bg-[#161412ff] border-[#080706] text-slate-200 focus:ring-2 focus:ring-[#E5A812]'
                   : 'bg-white border-slate-300 text-slate-800 focus:ring-2 focus:ring-[#9A7310]'
               }`}
             >
@@ -548,7 +561,7 @@ export const AllLeads = ({
 
           {/* Assigned To Filter */}
           <div className="space-y-1">
-            <label className={`text-[10px] font-bold uppercase flex items-center gap-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+            <label className="text-[10px] font-bold uppercase flex items-center gap-1 text-slate-400">
               <span className="material-symbols-outlined text-[13px]">person</span>
               <span>ASSIGNED TO</span>
             </label>
@@ -557,7 +570,7 @@ export const AllLeads = ({
               onChange={(e) => setOwnerFilter(e.target.value)}
               className={`w-full px-2.5 py-1.5 rounded text-xs outline-none font-medium transition-colors border ${
                 darkMode
-                  ? 'bg-[#12161F] border-[#262F3D] text-slate-200 focus:ring-2 focus:ring-[#E5A812]'
+                  ? 'bg-[#161412ff] border-[#080706] text-slate-200 focus:ring-2 focus:ring-[#E5A812]'
                   : 'bg-white border-slate-300 text-slate-800 focus:ring-2 focus:ring-[#9A7310]'
               }`}
             >
@@ -574,14 +587,14 @@ export const AllLeads = ({
 
       {/* Export Controls & Table Options Toolbar matching Screenshot */}
       <div className={`flex flex-col md:flex-row justify-between items-start md:items-center gap-3 p-3 rounded-lg border shadow-xs transition-colors ${
-        darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+        darkMode ? 'bg-black border-slate-800' : 'bg-black border-slate-800'
       }`}>
 
         {/* Left Export Buttons & Show Entries */}
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={handleExportCSV}
-            className="px-2.5 py-1 bg-[#0F2942] hover:bg-[#16385C] text-white rounded text-xs font-semibold flex items-center gap-1 transition-colors"
+            className="px-2.5 py-1 bg-[#b58d16] hover:bg-[#6B540A] text-white rounded text-xs font-semibold flex items-center gap-1 transition-colors"
           >
             <span className="material-symbols-outlined text-[14px]">table_chart</span>
             <span>CSV</span>
@@ -589,7 +602,7 @@ export const AllLeads = ({
 
           <button
             onClick={handleExportPDF}
-            className="px-2.5 py-1 bg-[#0F2942] hover:bg-[#16385C] text-white rounded text-xs font-semibold flex items-center gap-1 transition-colors"
+            className="px-2.5 py-1 bg-[#b58d16] hover:bg-[#6B540A] text-white rounded text-xs font-semibold flex items-center gap-1 transition-colors"
           >
             <span className="material-symbols-outlined text-[14px]">picture_as_pdf</span>
             <span>PDF</span>
@@ -597,13 +610,13 @@ export const AllLeads = ({
 
           <button
             onClick={handlePrint}
-            className="px-2.5 py-1 bg-[#0F2942] hover:bg-[#16385C] text-white rounded text-xs font-semibold flex items-center gap-1 transition-colors"
+            className="px-2.5 py-1 bg-[#b58d16] hover:bg-[#6B540A] text-white rounded text-xs font-semibold flex items-center gap-1 transition-colors"
           >
             <span className="material-symbols-outlined text-[14px]">print</span>
             <span>Print</span>
           </button>
 
-          <div className={`flex items-center gap-1 text-xs pl-2 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+          <div className="flex items-center gap-1 text-xs pl-2 text-slate-400">
             <span>Show</span>
             <select
               value={entriesPerPage}
@@ -611,8 +624,10 @@ export const AllLeads = ({
                 setEntriesPerPage(Number(e.target.value));
                 setCurrentPage(1);
               }}
-              className={`px-2 py-0.5 border rounded text-xs focus:outline-none ${
-                darkMode ? 'bg-[#12161F] border-[#262F3D] text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+              className={`px-2 py-1 rounded border outline-none text-xs transition-colors ${
+                darkMode
+                  ? 'bg-[#1a1714] border-[#080706] text-slate-200'
+                  : 'bg-slate-800 border-slate-700 text-white'
               }`}
             >
               <option value={10}>10</option>
@@ -626,7 +641,7 @@ export const AllLeads = ({
 
         {/* Right Search Input matching Screenshot */}
         <div className="flex items-center gap-1 text-xs w-full md:w-auto">
-          <span className={`font-medium whitespace-nowrap ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Search:</span>
+          <span className="font-medium whitespace-nowrap text-slate-400">Search:</span>
           <input
             type="text"
             value={search}
@@ -637,8 +652,8 @@ export const AllLeads = ({
             placeholder="Type keyword..."
             className={`px-2.5 py-1 border rounded text-xs outline-none w-full md:w-48 ${
               darkMode
-                ? 'bg-[#12161F] border-[#262F3D] text-slate-200 focus:ring-1 focus:ring-[#E5A812]'
-                : 'bg-white border-slate-300 text-slate-800 focus:ring-1 focus:ring-[#7D610F]'
+                ? 'bg-[#1a1714] border-[#080706] text-slate-200 focus:ring-2 focus:ring-[#E5A812]'
+                : 'bg-slate-800 border-slate-700 text-white placeholder-slate-400 focus:ring-2 focus:ring-[#9A7310]'
             }`}
           />
         </div>
@@ -647,16 +662,17 @@ export const AllLeads = ({
 
       {/* Main Leads Table matching Screenshot layout */}
       <div className={`rounded-lg border shadow-xs overflow-hidden transition-colors ${
-        darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+        darkMode ? 'bg-[#1A1500] border-[#3E3100]' : 'bg-white border-slate-200'
       }`}>
         <div className="overflow-x-auto custom-scrollbar">
           <table className="w-full text-left text-xs border-collapse">
 
             {/* Dark Styled Header Bar matching Screenshot */}
             <thead>
-              <tr className="bg-[#0F2438] text-white font-semibold text-[11px] border-b border-slate-800">
-                <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">ID</th>
-                <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Name</th>
+              <tr className={`font-semibold text-[11px] border-b ${darkMode ? 'bg-[#6B540A] text-[#F5D061] border-[#85620D]' : 'bg-[#3E3100] text-[#F5D061] border-[#574500]'}`}>
+                <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-left">S.No.</th>
+                <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-left">Lead ID</th>
+                <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-left">Student Name</th>
                 <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Email</th>
                 <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Phone</th>
                 <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-center">Status</th>
@@ -673,23 +689,16 @@ export const AllLeads = ({
             {/* Table Rows matching Screenshot */}
             <tbody className={`divide-y text-[12px] ${darkMode ? 'divide-[#222936] text-slate-300' : 'divide-slate-100 text-slate-700'}`}>
               {loading ? (
-                <tr>
-                  <td colSpan={12} className="py-12 text-center text-slate-500">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <span className="material-symbols-outlined text-[28px] animate-spin text-[#9A7310]">sync</span>
-                      <p className="text-xs font-medium">Loading leads from backend database...</p>
-                    </div>
-                  </td>
-                </tr>
+                <TableRowSkeleton columns={13} rows={10} />
               ) : error ? (
                 <tr>
-                  <td colSpan={12} className="py-8 text-center text-red-600 font-medium">
+                  <td colSpan={13} className="py-8 text-center text-red-600 font-medium">
                     {error}
                   </td>
                 </tr>
               ) : visibleLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={12} className="py-12 text-center text-slate-500">
+                  <td colSpan={13} className="py-12 text-center text-slate-500">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <span className="material-symbols-outlined text-[36px] text-slate-300">folder_off</span>
                       <p className={`text-sm font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>No matching {viewArchived ? 'archived' : 'active'} leads found</p>
@@ -703,15 +712,19 @@ export const AllLeads = ({
                   </td>
                 </tr>
               ) : (
-                visibleLeads.map((lead) => (
+                visibleLeads.map((lead, index) => (
                   <tr
-                    key={lead.displayId}
+                    key={lead.id || lead.displayId || index}
                     className={`transition-colors ${
-                      darkMode ? 'hover:bg-[#1E2633]' : 'hover:bg-slate-50'
+                      darkMode ? 'hover:bg-[#413000]' : 'hover:bg-slate-50'
                     }`}
                   >
+                    <td className="py-2.5 px-3 font-medium text-slate-500">
+                      {startIndex + index + 1}
+                    </td>
+
                     <td className={`py-2.5 px-3 font-mono font-medium whitespace-nowrap ${
-                      darkMode ? 'text-slate-400' : 'text-slate-600'
+                      darkMode ? 'text-slate-400' : 'text-[#9A7310]'
                     }`}>
                       {lead.displayId}
                     </td>
@@ -736,7 +749,7 @@ export const AllLeads = ({
                     <td className={`py-2.5 px-3 font-mono text-[11px] whitespace-nowrap ${
                       darkMode ? 'text-slate-300' : 'text-slate-700'
                     }`}>
-                      {lead.phone}
+                      {lead.phone || lead.mobile || ''}
                     </td>
 
                     <td className="py-2.5 px-3 text-center whitespace-nowrap">
@@ -786,7 +799,7 @@ export const AllLeads = ({
                           onClick={() => onSelectLead(lead.leadId)}
                           className={`p-0.5 rounded transition-colors ${
                             darkMode
-                              ? 'text-slate-400 hover:text-slate-200 hover:bg-[#262F3D]'
+                              ? 'text-slate-400 hover:text-slate-200 hover:bg-[#3E3100]'
                               : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200'
                           }`}
                           title="View Workspace"
@@ -884,7 +897,7 @@ export const AllLeads = ({
 
         {/* Table Footer Pagination matching Screenshot */}
         <div className={`p-3 border-t flex flex-col sm:flex-row justify-between items-center gap-3 text-xs font-medium transition-colors ${
-          darkMode ? 'bg-[#12161F] border-[#262F3D] text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-600'
+          darkMode ? 'bg-[#120E00] border-[#3E3100] text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-600'
         }`}>
           <div>
             Showing {processedLeads.length > 0 ? startIndex + 1 : 0} to {Math.min(startIndex + entriesPerPage, processedLeads.length)} of {processedLeads.length} entries
@@ -897,10 +910,10 @@ export const AllLeads = ({
               className={`px-2.5 py-1 border rounded text-xs transition-colors ${
                 currentPage === 1
                   ? darkMode
-                    ? 'bg-[#181D26] text-slate-600 border-[#262F3D] cursor-not-allowed'
+                    ? 'bg-[#1A1500] text-slate-600 border-[#3E3100] cursor-not-allowed'
                     : 'bg-slate-50 text-slate-400 cursor-not-allowed border-slate-300'
                   : darkMode
-                    ? 'bg-[#181D26] hover:bg-[#262F3D] text-slate-300 border-[#262F3D]'
+                    ? 'bg-[#1A1500] hover:bg-[#3E3100] text-slate-300 border-[#3E3100]'
                     : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300'
               }`}
             >
@@ -915,7 +928,7 @@ export const AllLeads = ({
                   currentPage === page
                     ? 'bg-[#9A7310] text-white shadow-xs'
                     : darkMode
-                      ? 'bg-[#181D26] hover:bg-[#262F3D] text-slate-300 border border-[#262F3D]'
+                      ? 'bg-[#1A1500] hover:bg-[#3E3100] text-slate-300 border border-[#3E3100]'
                       : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
                 }`}
               >
@@ -929,10 +942,10 @@ export const AllLeads = ({
               className={`px-2.5 py-1 border rounded text-xs transition-colors ${
                 currentPage === totalPages || totalPages === 0
                   ? darkMode
-                    ? 'bg-[#181D26] text-slate-600 border-[#262F3D] cursor-not-allowed'
+                    ? 'bg-[#1A1500] text-slate-600 border-[#3E3100] cursor-not-allowed'
                     : 'bg-slate-50 text-slate-400 cursor-not-allowed border-slate-300'
                   : darkMode
-                    ? 'bg-[#181D26] hover:bg-[#262F3D] text-slate-300 border-[#262F3D]'
+                    ? 'bg-[#1A1500] hover:bg-[#3E3100] text-slate-300 border-[#3E3100]'
                     : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300'
               }`}
             >

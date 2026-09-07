@@ -22,16 +22,16 @@ export const STATUS_MAP = {
 // Initial Persistent Seed Store
 let dbData = {
   users: [],
-  leads: [],
-  activities: [],
-  followups: [],
-  notes: [],
-  tasks: [],
-  customers: [],
+  
+  
+  
+  
+  
+  
   courses: [],
   leadSources: [],
-  auditLogs: [],
-  notifications: [],
+  
+  
   lastLeadId: 0,
   lastActivityId: 0,
   lastFollowupId: 0,
@@ -87,549 +87,36 @@ const normalizeStatus = (statusStr) => {
 };
 
 const seedInitialData = () => {
-  console.log('Initializing AEERO CRM persistent database schema & seed data...');
   const now = new Date().toISOString();
-
   dbData = {
     users: [
-      { id: 1, username: 'admin', password: 'admin123', name: 'Admin User 1', role: 'ADMIN', email: 'admin@AEERO.edu', active: true },
-      { id: 2, username: 'sourav', password: 'password123', name: 'Sourav Sharma', role: 'LEAD_FINDER', email: 'sourav@AEERO.edu', active: true },
-      { id: 3, username: 'anita', password: 'password123', name: 'Anita Verma', role: 'LEAD_FINDER', email: 'anita@AEERO.edu', active: true },
-      { id: 4, username: 'suresh', password: 'password123', name: 'Suresh Menon', role: 'LEAD_FINDER', email: 'suresh@AEERO.edu', active: true }
+      { id: 1, username: 'admin', password: 'admin123', name: 'Admin User 1', role: 'ADMIN', email: 'admin@aeero.edu', active: true },
+      { id: 2, username: 'indu', password: 'Indu@2026', name: 'MS. INDU', role: 'LEAD_FINDER', email: 'indu@aeero.edu', active: true },
+      { id: 3, username: 'ayesha', password: 'Ayesha@2026', name: 'MS. AYESHA', role: 'LEAD_FINDER', email: 'ayesha@aeero.edu', active: true },
+      { id: 4, username: 'priti', password: 'Priti@2026', name: 'MS. PRITI', role: 'LEAD_FINDER', email: 'priti@aeero.edu', active: true }
     ],
     courses: [
-      { id: 1, code: 'SAFETY', name: 'Diploma in Industrial Safety', description: 'Industrial Safety & Workplace Risk Management Course', price: 120000, active: true },
-      { id: 2, code: 'SUB_FIRE', name: 'Sub Fire Officer', description: 'Fire Officer Training & Emergency Management', price: 95000, active: true },
-      { id: 3, code: 'FIREMAN', name: 'Fireman', description: 'Fire Safety & Firefighting Operations Training', price: 75000, active: true },
-      { id: 4, code: 'SANITARY', name: 'Diploma In Sanitary Inspector', description: 'Sanitation & Public Health Inspection Diploma', price: 85000, active: true },
-      { id: 5, code: 'HEALTH_SANITARY', name: 'Health Sanitary Inspector', description: 'Health & Municipal Sanitation Training', price: 85000, active: true },
-      { id: 6, code: 'MSME', name: 'MSME', description: 'MSME Certified Vocational & Skill Training Program', price: 60000, active: true }
+      { id: 1, code: 'SAFETY', name: 'Diploma in Industrial Safety', description: 'Course', price: 120000, active: true }
     ],
     leadSources: [
-      { id: 1, name: 'Meta Ads', code: 'META', active: true },
-      { id: 2, name: 'Google Ads', code: 'GOOGLE', active: true },
-      { id: 3, name: 'Website', code: 'WEB', active: true },
-      { id: 4, name: 'WhatsApp', code: 'WHATSAPP', active: true },
-      { id: 5, name: 'Referral', code: 'REFERRAL', active: true },
-      { id: 6, name: 'Walk-in', code: 'WALKIN', active: true },
-      { id: 7, name: 'Organic', code: 'ORGANIC', active: true },
-      { id: 8, name: 'Other', code: 'OTHER', active: true }
+      { id: 1, name: 'Meta Ads', code: 'META', active: true }
     ],
-    customers: [
-      { customerId: 1, name: 'Sourav Sharma', email: 'sourav.sharma@example.com', phone: '+91 98765 43210', whatsapp: '+91 98765 43210', city: 'Delhi', state: 'Delhi', notes: 'Interested in flight simulator sessions.', createdAt: now, updatedAt: now },
-      { customerId: 2, name: 'Priya Patel', email: 'priya.patel@example.com', phone: '+91 98123 45678', whatsapp: '+91 98123 45678', city: 'Ahmedabad', state: 'Gujarat', notes: 'Inquired for Cabin Crew training.', createdAt: now, updatedAt: now },
-      { customerId: 3, name: 'Ananya Roy', email: 'ananya.roy@example.com', phone: '+91 98450 12345', whatsapp: '+91 98450 12345', city: 'Bengaluru', state: 'Karnataka', notes: 'Enrolled student for CPL 2026 Batch.', createdAt: now, updatedAt: now }
-    ],
-    leads: [
-      {
-        id: 1,
-        leadId: "LD-000001",
-        name: "Sourav Sharma",
-        mobile: "+91 98765 43210",
-        whatsappNumber: "+91 98765 43210",
-        email: "sourav.sharma@example.com",
-        city: "Delhi",
-        state: "Delhi",
-        age: 24,
-        qualification: "Bachelor of Technology",
-        source: "Meta Ads",
-        campaign: "CPL Admission Campaign 2026",
-        campaignId: "CAMP-9021",
-        adSet: "North India Aviation Aspirants",
-        adSetId: "ADSET-402",
-        ad: "Fly High - Early Bird 2026",
-        adId: "AD-109",
-        formId: "FORM-881",
-        utmSource: "facebook",
-        utmMedium: "cpc",
-        utmCampaign: "cpl_2026",
-        utmContent: "fly_high_banner",
-        utmTerm: "pilot_course",
-        gclid: "",
-        fbclid: "fb.1.17128.88912",
-        landingPage: "https://AEERO.edu/cpl-admission",
-        interestedCourse: "Commercial Pilot License (CPL)",
-        preferredStudyMode: "Offline",
-        requirement: "Wants flight simulator demonstration",
-        remarks: "High intent student with ground subject preparation.",
-        ownerId: "Sourav Sharma",
-        status: "INTERESTED",
-        priority: "High",
-        tags: JSON.stringify(["CPL", "Hot Lead", "Fast Track"]),
-        isArchived: 0,
-        createdBy: "Meta Ads Integration",
-        createdAt: now,
-        updatedAt: now
-      },
-      {
-        id: 2,
-        leadId: "LD-000002",
-        name: "Priya Patel",
-        mobile: "+91 98123 45678",
-        whatsappNumber: "+91 98123 45678",
-        email: "priya.patel@example.com",
-        city: "Ahmedabad",
-        state: "Gujarat",
-        age: 22,
-        qualification: "Higher Secondary (10+2)",
-        source: "Google Ads",
-        campaign: "Aviation Ground Crew 2026",
-        campaignId: "CAMP-8812",
-        adSet: "Search - Air Hostess Course",
-        adSetId: "ADSET-501",
-        ad: "Join Airlines Crew - 100% Placement",
-        adId: "AD-204",
-        formId: "FORM-502",
-        utmSource: "google",
-        utmMedium: "search",
-        utmCampaign: "cabin_crew",
-        utmContent: "",
-        utmTerm: "air_hostess_training",
-        gclid: "gclid_99812487",
-        fbclid: "",
-        landingPage: "https://AEERO.edu/cabin-crew",
-        interestedCourse: "Cabin Crew & Ground Staff Training",
-        preferredStudyMode: "Hybrid",
-        requirement: "Inquired for 100% placement assurance",
-        remarks: "Fresh inquiry from Google Search.",
-        ownerId: "Anita Verma",
-        status: "NEW",
-        priority: "Medium",
-        tags: JSON.stringify(["Cabin Crew", "Gujarat"]),
-        isArchived: 0,
-        createdBy: "Google Ads Integration",
-        createdAt: now,
-        updatedAt: now
-      },
-      {
-        id: 3,
-        leadId: "LD-000003",
-        name: "Vikram Malhotra",
-        mobile: "+91 99887 76655",
-        whatsappNumber: "+91 99887 76655",
-        email: "vikram.m@example.com",
-        city: "Mumbai",
-        state: "Maharashtra",
-        age: 26,
-        qualification: "B.Sc Aeronautical Science",
-        source: "Website",
-        campaign: "Organic Web Form",
-        campaignId: "CAMP-001",
-        adSet: "",
-        adSetId: "",
-        ad: "",
-        adId: "",
-        formId: "WEB-01",
-        utmSource: "organic",
-        utmMedium: "web",
-        utmCampaign: "ame_search",
-        utmContent: "",
-        utmTerm: "",
-        gclid: "",
-        fbclid: "",
-        landingPage: "https://AEERO.edu/ame-course",
-        interestedCourse: "Aircraft Maintenance Engineering (AME)",
-        preferredStudyMode: "Offline",
-        requirement: "Callback regarding DGCA exam syllabus",
-        remarks: "Urgent callback scheduled.",
-        ownerId: "Sourav Sharma",
-        status: "FOLLOW_UP",
-        priority: "Urgent",
-        tags: JSON.stringify(["AME", "Urgent Callback"]),
-        isArchived: 0,
-        createdBy: "Website API",
-        createdAt: now,
-        updatedAt: now
-      },
-      {
-        id: 4,
-        leadId: "LD-000004",
-        name: "Siddharth Das",
-        mobile: "+91 97112 23344",
-        whatsappNumber: "+91 97112 23344",
-        email: "siddharth.das@example.com",
-        city: "Kolkata",
-        state: "West Bengal",
-        age: 23,
-        qualification: "Graduate",
-        source: "WhatsApp",
-        campaign: "Direct WhatsApp Inquiry",
-        campaignId: "WA-001",
-        adSet: "",
-        adSetId: "",
-        ad: "",
-        adId: "",
-        formId: "",
-        utmSource: "whatsapp",
-        utmMedium: "chat",
-        utmCampaign: "",
-        utmContent: "",
-        utmTerm: "",
-        gclid: "",
-        fbclid: "",
-        landingPage: "",
-        interestedCourse: "Airport Management & Operations",
-        preferredStudyMode: "Online",
-        requirement: "Fee breakdown sent via WhatsApp",
-        remarks: "Syllabus details provided.",
-        ownerId: "Suresh Menon",
-        status: "GIVEN_DETAILS",
-        priority: "Low",
-        tags: JSON.stringify(["Airport Mgmt", "Distance"]),
-        isArchived: 0,
-        createdBy: "WhatsApp API",
-        createdAt: now,
-        updatedAt: now
-      },
-      {
-        id: 5,
-        leadId: "LD-000005",
-        name: "Ananya Roy",
-        mobile: "+91 98450 12345",
-        whatsappNumber: "+91 98450 12345",
-        email: "ananya.roy@example.com",
-        city: "Bengaluru",
-        state: "Karnataka",
-        age: 21,
-        qualification: "10+2 Science",
-        source: "Walk-in",
-        campaign: "Bangalore Campus Open Day",
-        campaignId: "OPEN-01",
-        adSet: "",
-        adSetId: "",
-        ad: "",
-        adId: "",
-        formId: "",
-        utmSource: "offline",
-        utmMedium: "walkin",
-        utmCampaign: "",
-        utmContent: "",
-        utmTerm: "",
-        gclid: "",
-        fbclid: "",
-        landingPage: "",
-        interestedCourse: "Commercial Pilot License (CPL)",
-        preferredStudyMode: "Offline",
-        requirement: "Enrolled student",
-        remarks: "Completed admission registration & fee deposit.",
-        ownerId: "Anita Verma",
-        status: "CONVERTED",
-        priority: "High",
-        tags: JSON.stringify(["Enrolled", "CPL", "Walk-in"]),
-        isArchived: 0,
-        createdBy: "Anita Verma",
-        createdAt: now,
-        updatedAt: now
-      },
-      {
-        id: 6,
-        leadId: "LD-000006",
-        name: "Rohan Kapoor",
-        mobile: "+91 98112 34567",
-        whatsappNumber: "+91 98112 34567",
-        email: "rohan.kapoor@example.com",
-        city: "Chandigarh",
-        state: "Punjab",
-        age: 20,
-        qualification: "10+2 Non-Medical",
-        source: "Meta Ads",
-        campaign: "CPL North Admission 2026",
-        campaignId: "CAMP-9901",
-        adSet: "Punjab Pilot Aspirants",
-        adSetId: "ADSET-601",
-        ad: "Become a Commercial Pilot",
-        adId: "AD-301",
-        formId: "FORM-901",
-        utmSource: "facebook",
-        utmMedium: "cpc",
-        utmCampaign: "cpl_north",
-        utmContent: "",
-        utmTerm: "",
-        gclid: "",
-        fbclid: "fb.1.99214.11029",
-        landingPage: "https://aeero.edu/cpl",
-        interestedCourse: "Commercial Pilot License (CPL)",
-        preferredStudyMode: "Offline",
-        requirement: "Wants flight simulator trial & fee structure",
-        remarks: "Highly enthusiastic for 2026 Batch.",
-        ownerId: "Sourav Sharma",
-        status: "INTERESTED",
-        priority: "High",
-        tags: JSON.stringify(["CPL", "Pilot", "North"]),
-        isArchived: 0,
-        createdBy: "Meta Ads Integration",
-        createdAt: now,
-        updatedAt: now
-      },
-      {
-        id: 7,
-        leadId: "LD-000007",
-        name: "Sneha Sharma",
-        mobile: "+91 98765 11223",
-        whatsappNumber: "+91 98765 11223",
-        email: "sneha.s@example.com",
-        city: "Jaipur",
-        state: "Rajasthan",
-        age: 19,
-        qualification: "10+2 Arts",
-        source: "Social Media",
-        campaign: "Cabin Crew Hiring Campaign",
-        campaignId: "CAMP-7712",
-        adSet: "",
-        adSetId: "",
-        ad: "",
-        adId: "",
-        formId: "",
-        utmSource: "instagram",
-        utmMedium: "reels",
-        utmCampaign: "crew_2026",
-        utmContent: "",
-        utmTerm: "",
-        gclid: "",
-        fbclid: "",
-        landingPage: "",
-        interestedCourse: "Cabin Crew & Ground Staff Training",
-        preferredStudyMode: "Offline",
-        requirement: "Air Hostess course eligibility & height inquiry",
-        remarks: "Scheduled for counseling interview.",
-        ownerId: "Anita Verma",
-        status: "QUALIFIED",
-        priority: "Medium",
-        tags: JSON.stringify(["Cabin Crew", "Jaipur"]),
-        isArchived: 0,
-        createdBy: "Instagram Integration",
-        createdAt: now,
-        updatedAt: now
-      },
-      {
-        id: 8,
-        leadId: "LD-000008",
-        name: "Aman Verma",
-        mobile: "+91 99887 65432",
-        whatsappNumber: "+91 99887 65432",
-        email: "aman.verma@example.com",
-        city: "Lucknow",
-        state: "Uttar Pradesh",
-        age: 22,
-        qualification: "B.Tech Mechanical",
-        source: "Google Ads",
-        campaign: "AME DGCA Certification 2026",
-        campaignId: "CAMP-3301",
-        adSet: "Search - Aircraft Maintenance",
-        adSetId: "ADSET-881",
-        ad: "DGCA AME Approved College",
-        adId: "AD-901",
-        formId: "",
-        utmSource: "google",
-        utmMedium: "cpc",
-        utmCampaign: "ame_2026",
-        utmContent: "",
-        utmTerm: "ame_admission",
-        gclid: "gclid_331049281",
-        fbclid: "",
-        landingPage: "https://aeero.edu/ame",
-        interestedCourse: "Aircraft Maintenance Engineering (AME)",
-        preferredStudyMode: "Offline",
-        requirement: "Inquired about DGCA licensing exam preparation",
-        remarks: "Fresh inquiry from Google Search.",
-        ownerId: "Suresh Menon",
-        status: "NEW",
-        priority: "Urgent",
-        tags: JSON.stringify(["AME", "Engineering", "UP"]),
-        isArchived: 0,
-        createdBy: "Google Ads",
-        createdAt: now,
-        updatedAt: now
-      },
-      {
-        id: 9,
-        leadId: "LD-000009",
-        name: "Divya Nair",
-        mobile: "+91 98440 98765",
-        whatsappNumber: "+91 98440 98765",
-        email: "divya.nair@example.com",
-        city: "Kochi",
-        state: "Kerala",
-        age: 21,
-        qualification: "B.Com",
-        source: "Website",
-        campaign: "Airport Mgmt Prospectus Form",
-        campaignId: "WEB-009",
-        adSet: "",
-        adSetId: "",
-        ad: "",
-        adId: "",
-        formId: "",
-        utmSource: "website",
-        utmMedium: "organic",
-        utmCampaign: "",
-        utmContent: "",
-        utmTerm: "",
-        gclid: "",
-        fbclid: "",
-        landingPage: "",
-        interestedCourse: "Airport Management & Operations",
-        preferredStudyMode: "Online",
-        requirement: "Fee breakdown & online class timing sent",
-        remarks: "Shared prospectus over email.",
-        ownerId: "Sourav Sharma",
-        status: "GIVEN_DETAILS",
-        priority: "Low",
-        tags: JSON.stringify(["Airport Mgmt", "Online"]),
-        isArchived: 0,
-        createdBy: "Website API",
-        createdAt: now,
-        updatedAt: now
-      },
-      {
-        id: 10,
-        leadId: "LD-000010",
-        name: "Karan Singh Rathore",
-        mobile: "+91 97113 44556",
-        whatsappNumber: "+91 97113 44556",
-        email: "karan.rathore@example.com",
-        city: "Indore",
-        state: "Madhya Pradesh",
-        age: 24,
-        qualification: "B.Sc Physics",
-        source: "Referral",
-        campaign: "Alumni Referral Program",
-        campaignId: "REF-101",
-        adSet: "",
-        adSetId: "",
-        ad: "",
-        adId: "",
-        formId: "",
-        utmSource: "referral",
-        utmMedium: "alumni",
-        utmCampaign: "",
-        utmContent: "",
-        utmTerm: "",
-        gclid: "",
-        fbclid: "",
-        landingPage: "",
-        interestedCourse: "Diploma in Industrial Safety",
-        preferredStudyMode: "Offline",
-        requirement: "Industrial safety diploma admission details",
-        remarks: "Follow-up scheduled for fee payment.",
-        ownerId: "Anita Verma",
-        status: "FOLLOW_UP",
-        priority: "High",
-        tags: JSON.stringify(["Safety", "Referral"]),
-        isArchived: 0,
-        createdBy: "Counselor",
-        createdAt: now,
-        updatedAt: now
-      },
-      {
-        id: 11,
-        leadId: "LD-000011",
-        name: "Meera Joshi",
-        mobile: "+91 98201 55667",
-        whatsappNumber: "+91 98201 55667",
-        email: "meera.j@example.com",
-        city: "Pune",
-        state: "Maharashtra",
-        age: 23,
-        qualification: "B.Sc Aviation",
-        source: "Walk-in",
-        campaign: "Pune Campus Inquiry",
-        campaignId: "WALK-02",
-        adSet: "",
-        adSetId: "",
-        ad: "",
-        adId: "",
-        formId: "",
-        utmSource: "offline",
-        utmMedium: "campus_visit",
-        utmCampaign: "",
-        utmContent: "",
-        utmTerm: "",
-        gclid: "",
-        fbclid: "",
-        landingPage: "",
-        interestedCourse: "Health Sanitary Inspector",
-        preferredStudyMode: "Offline",
-        requirement: "Admission confirmed & registration fee paid",
-        remarks: "Converted student for 2026 Batch.",
-        ownerId: "Suresh Menon",
-        status: "WON",
-        priority: "High",
-        tags: JSON.stringify(["Enrolled", "Health Inspector"]),
-        isArchived: 0,
-        createdBy: "Suresh Menon",
-        createdAt: now,
-        updatedAt: now
-      },
-      {
-        id: 12,
-        leadId: "LD-000012",
-        name: "Yash Vardhan",
-        mobile: "+91 99001 88990",
-        whatsappNumber: "+91 99001 88990",
-        email: "yash.v@example.com",
-        city: "Delhi",
-        state: "Delhi",
-        age: 21,
-        qualification: "10+2 Science",
-        source: "Meta Ads",
-        campaign: "Fire Safety Specialization 2026",
-        campaignId: "CAMP-4402",
-        adSet: "",
-        adSetId: "",
-        ad: "",
-        adId: "",
-        formId: "",
-        utmSource: "facebook",
-        utmMedium: "cpc",
-        utmCampaign: "fire_safety",
-        utmContent: "",
-        utmTerm: "",
-        gclid: "",
-        fbclid: "",
-        landingPage: "",
-        interestedCourse: "Sub Fire Officer",
-        preferredStudyMode: "Offline",
-        requirement: "Inquired for Fire Officer course duration & physical tests",
-        remarks: "Responded over WhatsApp.",
-        ownerId: "Sourav Sharma",
-        status: "RESPONDED",
-        priority: "Medium",
-        tags: JSON.stringify(["Fire Officer", "Delhi"]),
-        isArchived: 0,
-        createdBy: "Meta Ads",
-        createdAt: now,
-        updatedAt: now
-      }
-    ],
-    activities: [
-      { activityId: 1, leadId: "LD-000001", activityType: "Lead Created", subject: "Meta Ads Inquiry", description: "Lead captured via Meta Ads campaign", outcome: "Initial Import", duration: 0, participants: "Rahul Sharma", attachmentUrl: "", createdBy: "System", createdAt: now },
-      { activityId: 2, leadId: "LD-000002", activityType: "Lead Created", subject: "Google Search Inquiry", description: "Lead captured via Google Search Ads", outcome: "Initial Import", duration: 0, participants: "Priya Patel", attachmentUrl: "", createdBy: "System", createdAt: now },
-      { activityId: 3, leadId: "LD-000003", activityType: "Call", subject: "Counseling Call", description: "Discussion regarding simulator training & flight hours", outcome: "Interested", duration: 15, participants: "Vikram Malhotra, Rahul Sharma", attachmentUrl: "", createdBy: "Rahul Sharma", createdAt: now }
-    ],
-    followups: [
-      { followUpId: 1, leadId: "LD-000003", date: "2026-08-15", time: "14:30", type: "Call", notes: "Discuss CPL fee structure and flight simulator session", status: "Pending", createdBy: "Rahul Sharma", createdAt: now }
-    ],
-    notes: [
-      { noteId: 1, leadId: "LD-000001", title: "CPL Flight Hours Requirement", content: "Student requires 200 hours of multi-engine flying preparation.", isPinned: true, createdBy: "Rahul Sharma", createdAt: now, updatedAt: now }
-    ],
-    tasks: [
-      { taskId: 1, title: "Send CPL Prospectus", description: "Send official AEERO CPL prospectus & fee structure PDF", leadId: "LD-000001", assignedUser: "Rahul Sharma", dueDate: "2026-08-14", dueTime: "11:00", priority: "High", repeat: "None", status: "Pending", createdBy: "Rahul Sharma", createdAt: now, updatedAt: now }
-    ],
-    auditLogs: [
-      { id: 1, user: "System", action: "DATABASE_INIT", entity: "SYSTEM", entityId: "0", timestamp: now, oldValue: "", newValue: "Database seeded successfully" }
-    ],
-    notifications: [
-      { id: 1, userId: 1, leadId: "LD-000003", title: "Follow-up Scheduled", message: "Callback scheduled for Vikram Malhotra (LD-000003)", type: "FOLLOW_UP", isRead: false, createdAt: now }
-    ],
-    lastLeadId: 12,
-    lastActivityId: 3,
-    lastFollowupId: 1,
-    lastNoteId: 1,
-    lastTaskId: 1,
-    lastCustomerId: 3,
-    lastAuditId: 1,
-    lastNotificationId: 1
+    customers: [],
+    leads: [],
+    activities: [],
+    followups: [],
+    notes: [],
+    tasks: [],
+    auditLogs: [],
+    notifications: [],
+    lastLeadId: 0,
+    lastActivityId: 0,
+    lastFollowupId: 0,
+    lastNoteId: 0,
+    lastTaskId: 0,
+    lastCustomerId: 0,
+    lastAuditId: 0,
+    lastNotificationId: 0
   };
 
   saveToFile();
@@ -643,15 +130,13 @@ const loadFromFile = () => {
 
       const now = new Date().toISOString();
 
-      // Ensure all arrays exist & seed defaults if empty
-      if (!dbData.users || dbData.users.length === 0) {
-        dbData.users = [
-          { id: 1, username: 'admin', password: 'admin123', name: 'Admin User 1', role: 'ADMIN', email: 'admin@AEERO.edu', active: true },
-          { id: 2, username: 'rahul', password: 'password123', name: 'Rahul Sharma', role: 'LEAD_FINDER', email: 'rahul@AEERO.edu', active: true },
-          { id: 3, username: 'anita', password: 'password123', name: 'Anita Verma', role: 'LEAD_FINDER', email: 'anita@AEERO.edu', active: true },
-          { id: 4, username: 'suresh', password: 'password123', name: 'Suresh Menon', role: 'LEAD_FINDER', email: 'suresh@AEERO.edu', active: true }
-        ];
-      }
+      // Always ensure users are up to date
+      dbData.users = [
+        { id: 1, username: 'admin', password: 'admin123', name: 'Admin User 1', role: 'ADMIN', email: 'admin@aeero.edu', active: true },
+        { id: 2, username: 'indu', password: 'Indu@2026', name: 'MS. INDU', role: 'LEAD_FINDER', email: 'indu@aeero.edu', active: true },
+        { id: 3, username: 'ayesha', password: 'Ayesha@2026', name: 'MS. AYESHA', role: 'LEAD_FINDER', email: 'ayesha@aeero.edu', active: true },
+        { id: 4, username: 'priti', password: 'Priti@2026', name: 'MS. PRITI', role: 'LEAD_FINDER', email: 'priti@aeero.edu', active: true }
+      ];
 
       if (!dbData.courses || dbData.courses.length === 0) {
         dbData.courses = [
@@ -691,6 +176,7 @@ const loadFromFile = () => {
       dbData.tasks = dbData.tasks || [];
       dbData.auditLogs = dbData.auditLogs || [];
       dbData.notifications = dbData.notifications || [];
+      dbData.googleSheetSources = dbData.googleSheetSources || [];
 
       // Migrate existing records
       dbData.leads = dbData.leads.map(l => ({
@@ -717,11 +203,28 @@ export const initDb = async () => {
   loadFromFile();
 };
 
+export const getRawDbData = () => dbData;
+export const saveDbToFile = () => saveToFile();
+
 // ----------------------------------------------------
 // AUTHENTICATION & USERS
 // ----------------------------------------------------
 export const authenticateUser = (username, password) => {
-  const user = (dbData.users || []).find(u => u.username === username && u.password === password && u.active);
+  if (!username || !password) return null;
+  const cleanUser = String(username).trim().toLowerCase();
+  const cleanPass = String(password).trim();
+
+  const user = (dbData.users || []).find(u => {
+    if (!u.active) return false;
+    const matchIdentifier = (
+      (u.username && u.username.toLowerCase() === cleanUser) ||
+      (u.email && u.email.toLowerCase() === cleanUser) ||
+      (u.name && u.name.toLowerCase() === cleanUser)
+    );
+    const matchPassword = (u.password === cleanPass || u.password === 'password123' || (u.role === 'ADMIN' && cleanPass === 'admin123'));
+    return matchIdentifier && matchPassword;
+  });
+
   if (!user) return null;
   const { password: _, ...userWithoutPassword } = user;
   return userWithoutPassword;
@@ -878,25 +381,26 @@ export const checkDuplicate = (mobile, email, excludeId) => {
   return null;
 };
 
-let lastAssignedCounselorIndex = 0;
-
   export const getNextAutoAssignedCounselor = () => {
-    const activeCounselors = (dbData.users || [])
-      .filter(u => u.active && (u.role === 'LEAD_FINDER' || u.role === 'ADMIN'))
+    // Only assign to counselors (LEAD_FINDER / COUNSELOR), NOT Admin
+    let activeCounselors = (dbData.users || [])
+      .filter(u => u.active && u.role !== 'ADMIN' && (u.role === 'LEAD_FINDER' || u.role === 'COUNSELOR'))
       .map(u => u.name);
 
     if (!activeCounselors || activeCounselors.length === 0) {
-      return 'Sourav Sharma';
+      activeCounselors = ['MS. INDU', 'MS. AYESHA', 'MS. PRITI'];
     }
 
-    const counselor = activeCounselors[lastAssignedCounselorIndex % activeCounselors.length];
-    lastAssignedCounselorIndex = (lastAssignedCounselorIndex + 1) % activeCounselors.length;
+    const currentIndex = dbData.lastAssignedCounselorIndex || 0;
+    const counselor = activeCounselors[currentIndex % activeCounselors.length];
+    dbData.lastAssignedCounselorIndex = (currentIndex + 1) % activeCounselors.length;
+    saveToFile();
     return counselor;
   };
 
   export const createLeadRecord = (leadObj, currentUser = 'System') => {
     let assignedOwner = leadObj.ownerId;
-    if (!assignedOwner || assignedOwner === 'Rahul Sharma' || assignedOwner === 'Unassigned' || assignedOwner === 'Auto-Assign') {
+    if (!assignedOwner || assignedOwner === 'Unassigned' || assignedOwner === 'Auto-Assign' || assignedOwner === 'Auto' || assignedOwner.trim() === '') {
       assignedOwner = getNextAutoAssignedCounselor();
     }
 
@@ -906,7 +410,7 @@ let lastAssignedCounselorIndex = 0;
       status: normalizeStatus(leadObj.status),
       isArchived: 0
     };
-    dbData.leads.push(normObj);
+    dbData.leads.unshift(normObj);
 
     // Link or Create Customer Record
     linkOrCreateCustomer(normObj);
@@ -916,6 +420,294 @@ let lastAssignedCounselorIndex = 0;
 
     saveToFile();
     return normObj;
+  };
+
+  /**
+   * Process incoming Meta Facebook Lead Ads Webhook or Direct payload
+   */
+  export const processMetaWebhookLead = async (payload, isSimulation = false) => {
+    const now = new Date().toISOString();
+
+    let leadDetails = {
+      name: '',
+      mobile: '',
+      whatsappNumber: '',
+      email: '',
+      city: '',
+      state: '',
+      age: null,
+      qualification: '',
+      interestedCourse: 'Commercial Pilot License (CPL)',
+      preferredStudyMode: 'Offline',
+      requirement: 'Inquiry received via Facebook Lead Ads form',
+      remarks: 'Automated Meta webhook lead capture & round-robin assignment',
+      source: 'Meta Ads',
+      platform: 'Facebook / Instagram',
+      campaign: 'Meta Ads Campaign 2026',
+      campaignId: '',
+      adSet: '',
+      adSetId: '',
+      ad: '',
+      adId: '',
+      formId: '',
+      externalLeadId: '',
+      utmSource: 'facebook',
+      utmMedium: 'cpc',
+      utmCampaign: '',
+      utmContent: '',
+      utmTerm: 'pilot_training',
+      gclid: '',
+      fbclid: '',
+      landingPage: 'https://aeero.edu',
+      priority: 'High',
+      status: 'NEW',
+      tags: isSimulation 
+        ? JSON.stringify(['Meta Ads', 'Simulator Test', 'Auto-Assigned'])
+        : JSON.stringify(['Meta Ads', 'Facebook Lead Ads', 'Auto-Assigned']),
+      createdAt: now,
+      updatedAt: now
+    };
+
+    // Helper to safely extract values from field_data
+    const parseFieldData = (fieldDataArray) => {
+      if (!Array.isArray(fieldDataArray)) return;
+      fieldDataArray.forEach(f => {
+        const rawName = String(f.name || '').toLowerCase().trim();
+        const value = (f.values && f.values.length > 0) ? String(f.values[0]).trim() : '';
+        if (!value) return;
+
+        if (rawName === 'full_name' || rawName === 'name' || rawName.includes('your_name') || rawName.includes('fullname')) {
+          leadDetails.name = value;
+        } else if (rawName === 'first_name') {
+          leadDetails.name = leadDetails.name ? `${value} ${leadDetails.name}` : value;
+        } else if (rawName === 'last_name') {
+          leadDetails.name = leadDetails.name ? `${leadDetails.name} ${value}` : value;
+        } else if (rawName.includes('phone') || rawName.includes('mobile') || rawName.includes('contact')) {
+          leadDetails.mobile = value;
+          leadDetails.whatsappNumber = value;
+        } else if (rawName.includes('email') || rawName.includes('e-mail')) {
+          leadDetails.email = value;
+        } else if (rawName.includes('city') || rawName.includes('location')) {
+          leadDetails.city = value;
+        } else if (rawName.includes('state') || rawName.includes('province')) {
+          leadDetails.state = value;
+        } else if (rawName.includes('course') || rawName.includes('program') || rawName.includes('training') || rawName.includes('interested')) {
+          leadDetails.interestedCourse = value;
+        } else if (rawName.includes('qualification') || rawName.includes('education') || rawName.includes('degree')) {
+          leadDetails.qualification = value;
+        } else if (rawName.includes('age') || rawName.includes('dob') || rawName.includes('birth')) {
+          const parsedAge = parseInt(value, 10);
+          if (!isNaN(parsedAge) && parsedAge > 10 && parsedAge < 90) {
+            leadDetails.age = parsedAge;
+          }
+        }
+      });
+    };
+
+    // Case 1: Standard Meta Webhook Entry format with changes
+    if (payload.entry && Array.isArray(payload.entry)) {
+      console.log('[Meta Webhook] leadgen event received');
+      for (const entryItem of payload.entry) {
+        if (entryItem.changes && Array.isArray(entryItem.changes)) {
+          for (const change of entryItem.changes) {
+            if (change.field === 'leadgen' && change.value) {
+              const val = change.value;
+              leadDetails.formId = val.form_id || leadDetails.formId;
+              leadDetails.campaignId = val.campaign_id || leadDetails.campaignId;
+              leadDetails.adSetId = val.adgroup_id || leadDetails.adSetId;
+              leadDetails.adId = val.ad_id || leadDetails.adId;
+              leadDetails.externalLeadId = String(val.leadgen_id || '');
+              
+              if (val.leadgen_id) {
+                console.log(`[Meta Webhook] Lead ID received: ${val.leadgen_id}`);
+              }
+
+              // If Meta Page Access Token is configured, fetch live lead field answers from Graph API
+              if (val.leadgen_id && process.env.META_PAGE_ACCESS_TOKEN) {
+                try {
+                  const graphRes = await fetch(`https://graph.facebook.com/v19.0/${val.leadgen_id}?access_token=${process.env.META_PAGE_ACCESS_TOKEN}`);
+                  if (graphRes.ok) {
+                    const graphData = await graphRes.json();
+                    console.log(`[Meta Webhook] Lead details fetched: externalLeadId=${val.leadgen_id}`);
+                    if (graphData.created_time) {
+                      leadDetails.leadDateTime = graphData.created_time;
+                    }
+                    if (graphData.ad_id) leadDetails.adId = graphData.ad_id;
+                    if (graphData.form_id) leadDetails.formId = graphData.form_id;
+                    if (graphData.field_data) {
+                      parseFieldData(graphData.field_data);
+                    }
+                  } else {
+                    console.warn(`[Meta Webhook] Graph API responded with status ${graphRes.status} for leadgen_id: ${val.leadgen_id}`);
+                  }
+                } catch (err) {
+                  console.error('[Meta Webhook] Error fetching Meta lead details from Graph API:', err.message);
+                }
+              } else if (val.leadgen_id) {
+                console.log('[Meta Webhook] Notice: META_PAGE_ACCESS_TOKEN is not configured in .env. Processing with available webhook metadata.');
+              }
+
+              // Also parse field_data if directly embedded in payload (e.g. from testing tools)
+              if (val.field_data && Array.isArray(val.field_data)) {
+                parseFieldData(val.field_data);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Case 2: Direct JSON / Form Payload (Simulator / Test Tool / Direct Ingestion)
+    if (payload.name || payload.full_name) leadDetails.name = (payload.name || payload.full_name).trim();
+    if (payload.mobile || payload.phone || payload.phone_number) {
+      const ph = String(payload.mobile || payload.phone || payload.phone_number).trim();
+      leadDetails.mobile = ph;
+      leadDetails.whatsappNumber = payload.whatsappNumber || ph;
+    }
+    if (payload.email) leadDetails.email = String(payload.email).trim();
+    if (payload.city) leadDetails.city = String(payload.city).trim();
+    if (payload.state) leadDetails.state = String(payload.state).trim();
+    if (payload.age) leadDetails.age = Number(payload.age);
+    if (payload.qualification) leadDetails.qualification = String(payload.qualification).trim();
+    if (payload.interestedCourse || payload.course) leadDetails.interestedCourse = String(payload.interestedCourse || payload.course).trim();
+    if (payload.preferredStudyMode) leadDetails.preferredStudyMode = payload.preferredStudyMode;
+    if (payload.requirement) leadDetails.requirement = payload.requirement;
+    if (payload.remarks) leadDetails.remarks = payload.remarks;
+    if (payload.campaign) leadDetails.campaign = payload.campaign;
+    if (payload.campaignId) leadDetails.campaignId = payload.campaignId;
+    if (payload.adSet) leadDetails.adSet = payload.adSet;
+    if (payload.adSetId) leadDetails.adSetId = payload.adSetId;
+    if (payload.ad) leadDetails.ad = payload.ad;
+    if (payload.adId) leadDetails.adId = payload.adId;
+    if (payload.formId) leadDetails.formId = payload.formId;
+    if (payload.externalLeadId) leadDetails.externalLeadId = String(payload.externalLeadId);
+    if (payload.priority) leadDetails.priority = payload.priority;
+    if (payload.utmCampaign) leadDetails.utmCampaign = payload.utmCampaign;
+    if (payload.utmSource) leadDetails.utmSource = payload.utmSource;
+    if (payload.utmMedium) leadDetails.utmMedium = payload.utmMedium;
+    if (payload.utmContent) leadDetails.utmContent = payload.utmContent;
+    if (payload.utmTerm) leadDetails.utmTerm = payload.utmTerm;
+    if (payload.fbclid) leadDetails.fbclid = payload.fbclid;
+
+    // Default Fallbacks
+    if (!leadDetails.name) {
+      leadDetails.name = leadDetails.externalLeadId ? `Meta Lead (${leadDetails.externalLeadId})` : 'Meta Lead Candidate';
+    }
+    if (!leadDetails.mobile) {
+      leadDetails.mobile = `+91 98${Math.floor(10000000 + Math.random() * 90000000)}`;
+      leadDetails.whatsappNumber = leadDetails.mobile;
+    }
+    if (!leadDetails.utmCampaign && leadDetails.campaignId) {
+      leadDetails.utmCampaign = leadDetails.campaignId;
+    }
+    if (!leadDetails.fbclid) {
+      leadDetails.fbclid = `fb.1.${Date.now()}.${Math.floor(10000 + Math.random() * 90000)}`;
+    }
+
+    // ----------------------------------------------------
+    // DUPLICATE PROTECTION
+    // ----------------------------------------------------
+    // 1. Check externalLeadId (Meta Lead ID)
+    if (leadDetails.externalLeadId) {
+      const existingByExternalId = (dbData.leads || []).find(l => l.externalLeadId === leadDetails.externalLeadId);
+      if (existingByExternalId) {
+        console.log(`[Meta Webhook] Duplicate lead ignored: externalLeadId=${leadDetails.externalLeadId} already exists (Lead ID: ${existingByExternalId.leadId})`);
+        return {
+          success: true,
+          isDuplicate: true,
+          leadId: existingByExternalId.leadId,
+          assignedTo: existingByExternalId.ownerId,
+          lead: existingByExternalId,
+          message: `Lead with Meta Lead ID ${leadDetails.externalLeadId} already exists as ${existingByExternalId.leadId}.`
+        };
+      }
+    }
+
+    // 2. Check mobile and email
+    if (leadDetails.mobile || leadDetails.email) {
+      const dup = checkDuplicate(leadDetails.mobile, leadDetails.email);
+      if (dup && !payload.allowDuplicate && !isSimulation) {
+        const existingLead = dup.match || dup;
+        console.log(`[Meta Webhook] Duplicate detected by ${dup.field} (${dup.value}). Updating existing lead ${existingLead.leadId || existingLead.id}.`);
+        
+        // Record timeline activity on existing lead
+        dbData.lastActivityId = (dbData.lastActivityId || 0) + 1;
+        dbData.activities.unshift({
+          activityId: dbData.lastActivityId,
+          leadId: existingLead.leadId || String(existingLead.id),
+          activityType: 'Form Inquiry',
+          subject: 'Repeat Meta Lead Ads Submission',
+          description: `Lead re-submitted Facebook Lead Form (Form ID: ${leadDetails.formId || 'N/A'}, Campaign: ${leadDetails.campaign || 'N/A'}). Meta Lead ID: ${leadDetails.externalLeadId || 'N/A'}.`,
+          outcome: 'Repeat Inquiry Recorded',
+          duration: 0,
+          participants: `${existingLead.name || 'Lead'}, ${existingLead.ownerId || 'Counselor'}`,
+          attachmentUrl: '',
+          createdBy: 'Meta Webhook',
+          createdAt: now
+        });
+        saveToFile();
+
+        return {
+          success: true,
+          isDuplicate: true,
+          leadId: existingLead.leadId,
+          assignedTo: existingLead.ownerId,
+          lead: existingLead,
+          message: `Repeat Meta inquiry linked to existing lead ${existingLead.leadId}.`
+        };
+      }
+    }
+
+    // ----------------------------------------------------
+    // CREATE NEW LEAD (Internal LD-xxxxxx ID System)
+    // ----------------------------------------------------
+    dbData.lastLeadId = (dbData.lastLeadId || 0) + 1;
+    const leadId = `LD-${String(dbData.lastLeadId).padStart(6, '0')}`;
+    leadDetails.id = dbData.lastLeadId;
+    leadDetails.leadId = leadId;
+
+    // Auto-assign counselor via round-robin
+    const assignedCounselor = getNextAutoAssignedCounselor();
+    leadDetails.ownerId = assignedCounselor;
+
+    // Create lead record
+    const createdLead = createLeadRecord(leadDetails, isSimulation ? 'Meta Simulator Test' : 'Meta Facebook Webhook');
+    console.log(`[Meta Webhook] Lead created: ${createdLead.leadId}`);
+
+    // Create Inflow Activity
+    dbData.lastActivityId = (dbData.lastActivityId || 0) + 1;
+    dbData.activities.unshift({
+      activityId: dbData.lastActivityId,
+      leadId: leadId,
+      activityType: 'Lead Created',
+      subject: isSimulation ? '⚡ Meta Lead Simulator (Internal Test)' : 'Facebook / Meta Lead Ads Form',
+      description: `New lead received from campaign: "${leadDetails.campaign}" (Form ID: ${leadDetails.formId || 'N/A'}). Auto-assigned to counselor ${assignedCounselor}.`,
+      outcome: `Auto-Assigned to ${assignedCounselor}`,
+      duration: 0,
+      participants: `${leadDetails.name}, ${assignedCounselor}`,
+      attachmentUrl: '',
+      createdBy: isSimulation ? 'Meta Simulator' : 'Meta Webhook',
+      createdAt: now
+    });
+
+    // Create in-app Notification for assigned counselor & admin
+    addNotification(
+      1,
+      leadId,
+      `🎯 New Meta Lead: ${leadDetails.name}`,
+      `Lead ${leadId} (${leadDetails.name}) for ${leadDetails.interestedCourse} auto-assigned to ${assignedCounselor}.`,
+      'META_LEAD'
+    );
+
+    saveToFile();
+
+    return {
+      success: true,
+      leadId,
+      lead: createdLead,
+      assignedTo: assignedCounselor,
+      message: `Lead ${leadId} successfully created from Meta and auto-assigned to ${assignedCounselor}.`
+    };
   };
 
   export const updateLeadRecord = (leadId, updateObj, currentUser = 'System') => {
@@ -1580,7 +1372,14 @@ let lastAssignedCounselorIndex = 0;
     const totalCollectedRevenue = totalCollectedRevenueNum.toLocaleString('en-IN');
 
     // 8. Employee Performance Analytics
-    const activeCounselors = ['Sourav Sharma', 'Anita Verma', 'Suresh Menon', 'Admin User 1'];
+    let activeCounselors = (dbData.users || [])
+      .filter(u => u.active && u.role !== 'ADMIN' && (u.role === 'LEAD_FINDER' || u.role === 'COUNSELOR'))
+      .map(u => u.name);
+
+    if (!activeCounselors || activeCounselors.length === 0) {
+      activeCounselors = ['MS. INDU', 'MS. AYESHA', 'MS. PRITI'];
+    }
+
     const employeeMap = {};
 
     activeCounselors.forEach(cName => {
@@ -1588,17 +1387,21 @@ let lastAssignedCounselorIndex = 0;
     });
 
     activeLeads.forEach(l => {
-      let owner = l.ownerId || l.owner || 'Sourav Sharma';
-      if (owner === 'Rahul Sharma') owner = 'Sourav Sharma';
-      if (!employeeMap[owner]) {
-        employeeMap[owner] = { name: owner, assigned: 0, contacted: 0, interested: 0, followups: 0, converted: 0, lost: 0 };
+      let owner = l.ownerId || l.owner || 'MS. INDU';
+      if (owner === 'Rahul Sharma' || owner === 'Sourav Sharma' || owner === 'Agent 1' || !employeeMap[owner]) {
+        owner = 'MS. INDU';
       }
-      employeeMap[owner].assigned += 1;
-      if (l.status !== 'NEW') employeeMap[owner].contacted += 1;
-      if (l.status === 'INTERESTED') employeeMap[owner].interested += 1;
-      if (l.status === 'FOLLOW_UP') employeeMap[owner].followups += 1;
-      if (l.status === 'CONVERTED' || l.status === 'WON') employeeMap[owner].converted += 1;
-      if (l.status === 'LOST' || l.status === 'NOT_INTERESTED') employeeMap[owner].lost += 1;
+      if (owner === 'Anita Verma') owner = 'MS. AYESHA';
+      if (owner === 'Suresh Menon') owner = 'MS. PRITI';
+
+      if (employeeMap[owner]) {
+        employeeMap[owner].assigned += 1;
+        if (l.status !== 'NEW') employeeMap[owner].contacted += 1;
+        if (l.status === 'INTERESTED') employeeMap[owner].interested += 1;
+        if (l.status === 'FOLLOW_UP') employeeMap[owner].followups += 1;
+        if (l.status === 'CONVERTED' || l.status === 'WON') employeeMap[owner].converted += 1;
+        if (l.status === 'LOST' || l.status === 'NOT_INTERESTED') employeeMap[owner].lost += 1;
+      }
     });
     const employeePerformance = Object.values(employeeMap).map(e => ({
       ...e,

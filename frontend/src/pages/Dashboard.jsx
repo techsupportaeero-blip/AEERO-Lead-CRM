@@ -1,3 +1,4 @@
+import Skeleton, { TableSkeleton, CardSkeleton } from '../components/Skeleton.jsx';
 import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../api/client';
 import {
@@ -12,9 +13,7 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  CartesianGrid,
-  ComposedChart,
-  Line
+  CartesianGrid
 } from 'recharts';
 
 export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) => {
@@ -181,8 +180,9 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
   };
 
   const handleResetDateFilter = () => {
-    const s = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
-    const e = now.toISOString().split('T')[0];
+    const freshNow = new Date();
+    const s = `${freshNow.getFullYear()}-${String(freshNow.getMonth() + 1).padStart(2, '0')}-01`;
+    const e = freshNow.toISOString().split('T')[0];
     setDateFrom(s);
     setDateTo(e);
     setIsCustomRangeActive(false);
@@ -401,7 +401,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
   const pipelineData = (stats.leadPipeline && stats.leadPipeline.length > 0)
     ? stats.leadPipeline
     : [
-      { name: 'New', count: stats.newLeads || 0, fill: '#3B82F6', label: String(stats.newLeads || 0) },
+      { name: 'New', count: stats.newLeads || 0, fill: '#D4AF37', label: String(stats.newLeads || 0) },
       { name: 'No Answer', count: stats.noAnswerLeads || 0, fill: '#F59E0B', label: String(stats.noAnswerLeads || 0) },
       { name: 'Given Details', count: stats.givenDetailsLeads || 0, fill: '#8B5CF6', label: String(stats.givenDetailsLeads || 0) },
       { name: 'Interested', count: stats.interestedLeads || 0, fill: '#10B981', label: String(stats.interestedLeads || 0) },
@@ -460,7 +460,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
         .join('')
         .toUpperCase()
         .slice(0, 2);
-      const badgeBgs = ['bg-amber-700 text-white', 'bg-amber-800 text-white', 'bg-amber-900 text-white', 'bg-[#5C4509] text-white', 'bg-blue-800 text-white'];
+      const badgeBgs = ['bg-amber-700 text-white', 'bg-amber-800 text-white', 'bg-amber-900 text-white', 'bg-[#5C4509] text-white', 'bg-amber-800 text-white'];
       const rateVal = parseFloat(emp.conversionRate) || 0;
       return {
         badge: initials,
@@ -498,7 +498,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
       {/* ---------------------------------------------------- */}
       {/* PAGE HEADER BAR WITH ACTIONS & DATE FILTER           */}
       {/* ---------------------------------------------------- */}
-      <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 rounded-2xl border shadow-xs transition-colors ${darkMode ? 'bg-[#181D26] border-[#262F3D] text-white' : 'bg-white border-slate-200 text-slate-900'
+      <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 rounded-2xl border shadow-xs transition-colors ${darkMode ? 'bg-[#2A220C] border-[#574719] text-white' : 'bg-white border-slate-200 text-slate-900'
         }`}>
         <div>
           <div className="flex items-center gap-3">
@@ -524,7 +524,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
             className={`flex items-center gap-2 border rounded-xl px-3 py-2 text-xs font-semibold shadow-xs cursor-pointer transition-all ${
               isCustomRangeActive
                 ? (darkMode ? 'bg-amber-950/40 border-[#E5A812] text-amber-200 ring-1 ring-[#E5A812]/50' : 'bg-amber-50 border-[#7D610F] text-[#7D610F] ring-1 ring-[#7D610F]/30')
-                : (darkMode ? 'bg-[#12161F] border-[#262F3D] text-slate-200 hover:bg-[#1C222D]' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100')
+                : (darkMode ? 'bg-[#1A1608] border-[#574719] text-slate-200 hover:bg-[#1C222D]' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100')
             }`}
             title="Click to select custom Start Date and End Date range for analytics"
           >
@@ -544,7 +544,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
                 applyPreset(val);
               }
             }}
-            className={`border rounded-xl px-3 py-2 text-xs font-semibold outline-none cursor-pointer shadow-xs focus:ring-2 focus:ring-[#D99B00] ${darkMode ? 'bg-[#12161F] border-[#262F3D] text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'
+            className={`border rounded-xl px-3 py-2 text-xs font-semibold outline-none cursor-pointer shadow-xs focus:ring-2 focus:ring-[#D99B00] ${darkMode ? 'bg-[#1A1608] border-[#574719] text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'
               }`}
           >
             <option value="This Month">This Month ({currentMonthShort})</option>
@@ -563,7 +563,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
           {/* Notifications Icon */}
           <button
             onClick={() => onNavigate('notifications')}
-            className={`relative w-9 h-9 rounded-xl border flex items-center justify-center transition-all shadow-xs ${darkMode ? 'bg-[#12161F] border-[#262F3D] text-slate-300 hover:text-white hover:bg-[#1C222D]' : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            className={`relative w-9 h-9 rounded-xl border flex items-center justify-center transition-all shadow-xs ${darkMode ? 'bg-[#1A1608] border-[#574719] text-slate-300 hover:text-white hover:bg-[#1C222D]' : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             title="Notifications"
           >
@@ -630,7 +630,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-7 gap-3.5">
 
         {/* Card 1: TOTAL LEADS */}
-        <div onClick={() => openDetail('totalLeads')} className={`rounded-xl p-3.5 border shadow-xs hover:shadow-md transition-all relative group flex flex-col justify-between cursor-pointer ${darkMode ? 'bg-[#181D26] border-[#262F3D] text-white hover:border-[#E5A812]/50' : 'bg-white border-slate-300/80 text-slate-900 hover:border-[#7D610F]/50'
+        <div onClick={() => openDetail('totalLeads')} className={`rounded-xl p-3.5 border shadow-xs hover:shadow-md transition-all relative group flex flex-col justify-between cursor-pointer ${darkMode ? 'bg-[#2A220C] border-[#574719] text-white hover:border-[#E5A812]/50' : 'bg-white border-slate-300/80 text-slate-900 hover:border-[#7D610F]/50'
           }`}>
           <div className="flex items-start justify-between">
             <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 shadow-2xs ${darkMode ? 'bg-[#E5A812]/20 text-[#E5A812]' : 'bg-amber-100 text-[#7D610F]'
@@ -639,7 +639,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
             </div>
             <button
               onClick={(e) => { e.stopPropagation(); showInfo('totalLeads'); }}
-              className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${darkMode ? 'bg-[#12161F] text-slate-400 hover:text-[#E5A812]' : 'bg-slate-100 hover:bg-amber-100 text-slate-400 hover:text-[#7D610F]'
+              className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${darkMode ? 'bg-[#1A1608] text-slate-400 hover:text-[#E5A812]' : 'bg-slate-100 hover:bg-amber-100 text-slate-400 hover:text-[#7D610F]'
                 }`}
               title="Click for metric explanation"
             >
@@ -649,7 +649,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
           <div className="mt-2">
             <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400 truncate">TOTAL LEADS</p>
             <h3 className={`text-xl md:text-2xl font-black mt-0.5 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-              {loading ? '...' : (stats.totalLeads ?? 0)}
+              {loading ? <Skeleton className="h-8 w-16 inline-block rounded" /> : (stats.totalLeads ?? 0)}
             </h3>
             <div className="flex items-center gap-1 text-[10px] font-semibold text-amber-500 mt-0.5 truncate">
               <span className="material-symbols-outlined text-xs flex-shrink-0">database</span>
@@ -659,16 +659,16 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
         </div>
 
         {/* Card 2: NEW LEADS */}
-        <div onClick={() => openDetail('newLeads')} className={`rounded-xl p-3.5 border shadow-xs hover:shadow-md transition-all relative group flex flex-col justify-between cursor-pointer ${darkMode ? 'bg-[#181D26] border-[#262F3D] text-white hover:border-[#3B82F6]/50' : 'bg-white border-slate-300/80 text-slate-900 hover:border-blue-400/50'
+        <div onClick={() => openDetail('newLeads')} className={`rounded-xl p-3.5 border shadow-xs hover:shadow-md transition-all relative group flex flex-col justify-between cursor-pointer ${darkMode ? 'bg-[#2A220C] border-[#574719] text-white hover:border-[#D4AF37]/50' : 'bg-white border-slate-300/80 text-slate-900 hover:border-amber-400/50'
           }`}>
           <div className="flex items-start justify-between">
-            <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 shadow-2xs ${darkMode ? 'bg-[#3B82F6]/20 text-[#3B82F6]' : 'bg-blue-100 text-blue-600'
+            <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 shadow-2xs ${darkMode ? 'bg-[#D4AF37]/20 text-[#D4AF37]' : 'bg-amber-100 text-amber-600'
               }`}>
               <span className="material-symbols-outlined text-xl">person_add</span>
             </div>
             <button
               onClick={(e) => { e.stopPropagation(); showInfo('newLeads'); }}
-              className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${darkMode ? 'bg-[#12161F] text-slate-400 hover:text-[#3B82F6]' : 'bg-slate-100 hover:bg-blue-100 text-slate-400 hover:text-blue-600'
+              className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${darkMode ? 'bg-[#1A1608] text-slate-400 hover:text-[#D4AF37]' : 'bg-slate-100 hover:bg-amber-100 text-slate-400 hover:text-amber-600'
                 }`}
               title="Click for metric explanation"
             >
@@ -678,9 +678,9 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
           <div className="mt-2">
             <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400 truncate">NEW LEADS</p>
             <h3 className={`text-xl md:text-2xl font-black mt-0.5 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-              {loading ? '...' : (stats.newLeads ?? 0)}
+              {loading ? <Skeleton className="h-8 w-16 inline-block rounded" /> : (stats.newLeads ?? 0)}
             </h3>
-            <div className="flex items-center gap-1 text-[10px] font-semibold text-blue-400 mt-0.5 truncate">
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-amber-400 mt-0.5 truncate">
               <span className="material-symbols-outlined text-xs flex-shrink-0">fiber_new</span>
               <span>{stats.totalLeads > 0 ? `${((stats.newLeads / stats.totalLeads) * 100).toFixed(1)}% of total` : '0% of total'}</span>
             </div>
@@ -688,7 +688,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
         </div>
 
         {/* Card 3: INTERESTED */}
-        <div onClick={() => openDetail('interested')} className={`rounded-xl p-3.5 border shadow-xs hover:shadow-md transition-all relative group flex flex-col justify-between cursor-pointer ${darkMode ? 'bg-[#181D26] border-[#262F3D] text-white hover:border-[#10B981]/50' : 'bg-white border-slate-300/80 text-slate-900 hover:border-emerald-400/50'
+        <div onClick={() => openDetail('interested')} className={`rounded-xl p-3.5 border shadow-xs hover:shadow-md transition-all relative group flex flex-col justify-between cursor-pointer ${darkMode ? 'bg-[#2A220C] border-[#574719] text-white hover:border-[#10B981]/50' : 'bg-white border-slate-300/80 text-slate-900 hover:border-emerald-400/50'
           }`}>
           <div className="flex items-start justify-between">
             <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 shadow-2xs ${darkMode ? 'bg-[#10B981]/20 text-[#10B981]' : 'bg-emerald-100 text-emerald-600'
@@ -697,7 +697,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
             </div>
             <button
               onClick={(e) => { e.stopPropagation(); showInfo('interestedLeads'); }}
-              className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${darkMode ? 'bg-[#12161F] text-slate-400 hover:text-[#10B981]' : 'bg-slate-100 hover:bg-emerald-100 text-slate-400 hover:text-emerald-600'
+              className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${darkMode ? 'bg-[#1A1608] text-slate-400 hover:text-[#10B981]' : 'bg-slate-100 hover:bg-emerald-100 text-slate-400 hover:text-emerald-600'
                 }`}
               title="Click for metric explanation"
             >
@@ -707,7 +707,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
           <div className="mt-2">
             <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400 truncate">INTERESTED</p>
             <h3 className={`text-xl md:text-2xl font-black mt-0.5 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-              {loading ? '...' : (stats.interestedLeads ?? 0)}
+              {loading ? <Skeleton className="h-8 w-16 inline-block rounded" /> : (stats.interestedLeads ?? 0)}
             </h3>
             <div className="flex items-center gap-1 text-[10px] font-semibold text-emerald-500 mt-0.5 truncate">
               <span className="material-symbols-outlined text-xs flex-shrink-0">thumb_up</span>
@@ -717,7 +717,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
         </div>
 
         {/* Card 4: FOLLOW-UPS TODAY */}
-        <div onClick={() => openDetail('followups')} className={`rounded-xl p-3.5 border shadow-xs hover:shadow-md transition-all relative group flex flex-col justify-between cursor-pointer ${darkMode ? 'bg-[#181D26] border-[#262F3D] text-white hover:border-[#F59E0B]/50' : 'bg-white border-slate-300/80 text-slate-900 hover:border-orange-400/50'
+        <div onClick={() => openDetail('followups')} className={`rounded-xl p-3.5 border shadow-xs hover:shadow-md transition-all relative group flex flex-col justify-between cursor-pointer ${darkMode ? 'bg-[#2A220C] border-[#574719] text-white hover:border-[#F59E0B]/50' : 'bg-white border-slate-300/80 text-slate-900 hover:border-orange-400/50'
           }`}>
           <div className="flex items-start justify-between">
             <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 shadow-2xs ${darkMode ? 'bg-[#F59E0B]/20 text-[#F59E0B]' : 'bg-orange-100 text-orange-600'
@@ -726,7 +726,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
             </div>
             <button
               onClick={(e) => { e.stopPropagation(); showInfo('followupsToday'); }}
-              className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${darkMode ? 'bg-[#12161F] text-slate-400 hover:text-[#F59E0B]' : 'bg-slate-100 hover:bg-orange-100 text-slate-400 hover:text-orange-600'
+              className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${darkMode ? 'bg-[#1A1608] text-slate-400 hover:text-[#F59E0B]' : 'bg-slate-100 hover:bg-orange-100 text-slate-400 hover:text-orange-600'
                 }`}
               title="Click for metric explanation"
             >
@@ -736,7 +736,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
           <div className="mt-2">
             <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400 truncate">FOLLOW-UPS TODAY</p>
             <h3 className={`text-xl md:text-2xl font-black mt-0.5 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-              {loading ? '...' : (stats.followupsToday ?? 0)}
+              {loading ? <Skeleton className="h-8 w-16 inline-block rounded" /> : (stats.followupsToday ?? 0)}
             </h3>
             <div className="flex items-center gap-1 text-[10px] font-semibold text-orange-400 mt-0.5 truncate">
               <span className="material-symbols-outlined text-xs flex-shrink-0">schedule</span>
@@ -746,7 +746,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
         </div>
 
         {/* Card 5: CONVERTED */}
-        <div onClick={() => openDetail('converted')} className={`rounded-xl p-3.5 border shadow-xs hover:shadow-md transition-all relative group flex flex-col justify-between cursor-pointer ${darkMode ? 'bg-[#181D26] border-[#262F3D] text-white hover:border-[#A855F7]/50' : 'bg-white border-slate-300/80 text-slate-900 hover:border-purple-400/50'
+        <div onClick={() => openDetail('converted')} className={`rounded-xl p-3.5 border shadow-xs hover:shadow-md transition-all relative group flex flex-col justify-between cursor-pointer ${darkMode ? 'bg-[#2A220C] border-[#574719] text-white hover:border-[#A855F7]/50' : 'bg-white border-slate-300/80 text-slate-900 hover:border-purple-400/50'
           }`}>
           <div className="flex items-start justify-between">
             <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 shadow-2xs ${darkMode ? 'bg-[#A855F7]/20 text-[#A855F7]' : 'bg-purple-100 text-purple-600'
@@ -755,7 +755,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
             </div>
             <button
               onClick={(e) => { e.stopPropagation(); showInfo('convertedLeads'); }}
-              className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${darkMode ? 'bg-[#12161F] text-slate-400 hover:text-[#A855F7]' : 'bg-slate-100 hover:bg-purple-100 text-slate-400 hover:text-purple-600'
+              className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${darkMode ? 'bg-[#1A1608] text-slate-400 hover:text-[#A855F7]' : 'bg-slate-100 hover:bg-purple-100 text-slate-400 hover:text-purple-600'
                 }`}
               title="Click for metric explanation"
             >
@@ -765,7 +765,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
           <div className="mt-2">
             <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400 truncate">CONVERTED</p>
             <h3 className={`text-xl md:text-2xl font-black mt-0.5 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-              {loading ? '...' : (stats.convertedLeads ?? 0)}
+              {loading ? <Skeleton className="h-8 w-16 inline-block rounded" /> : (stats.convertedLeads ?? 0)}
             </h3>
             <div className="flex items-center gap-1 text-[10px] font-semibold text-purple-400 mt-0.5 truncate">
               <span className="material-symbols-outlined text-xs flex-shrink-0">check_circle</span>
@@ -775,7 +775,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
         </div>
 
         {/* Card 6: CONVERSION RATE */}
-        <div className={`rounded-xl p-3.5 border shadow-xs hover:shadow-md transition-all relative group flex flex-col justify-between ${darkMode ? 'bg-[#181D26] border-[#262F3D] text-white' : 'bg-white border-slate-300/80 text-slate-900'
+        <div className={`rounded-xl p-3.5 border shadow-xs hover:shadow-md transition-all relative group flex flex-col justify-between ${darkMode ? 'bg-[#2A220C] border-[#574719] text-white' : 'bg-white border-slate-300/80 text-slate-900'
           }`}>
           <div className="flex items-start justify-between">
             <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 shadow-2xs ${darkMode ? 'bg-[#E5A812]/20 text-[#E5A812]' : 'bg-amber-100 text-amber-700'
@@ -784,7 +784,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
             </div>
             <button
               onClick={() => showInfo('conversionRate')}
-              className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${darkMode ? 'bg-[#12161F] text-slate-400 hover:text-[#E5A812]' : 'bg-slate-100 hover:bg-amber-100 text-slate-400 hover:text-amber-700'
+              className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${darkMode ? 'bg-[#1A1608] text-slate-400 hover:text-[#E5A812]' : 'bg-slate-100 hover:bg-amber-100 text-slate-400 hover:text-amber-700'
                 }`}
               title="Click for metric explanation"
             >
@@ -794,7 +794,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
           <div className="mt-2">
             <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400 truncate">CONVERSION RATE</p>
             <h3 className={`text-xl md:text-2xl font-black mt-0.5 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-              {loading ? '...' : `${stats.conversionRate ?? '0.0'}%`}
+              {loading ? <Skeleton className="h-8 w-16 inline-block rounded" /> : `${stats.conversionRate ?? '0.0'}%`}
             </h3>
             <div className="flex items-center gap-1 text-[10px] font-semibold text-emerald-500 mt-0.5 truncate">
               <span className="material-symbols-outlined text-xs flex-shrink-0">trending_up</span>
@@ -804,7 +804,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
         </div>
 
         {/* Card 7: TOTAL COLLECTED REVENUE */}
-        <div onClick={() => openDetail('payments')} className={`rounded-xl p-3.5 border shadow-xs hover:shadow-md transition-all relative group flex flex-col justify-between cursor-pointer ${darkMode ? 'bg-[#181D26] border-[#262F3D] text-white hover:border-emerald-500/50' : 'bg-white border-slate-300/80 text-slate-900 hover:border-emerald-400/50'
+        <div onClick={() => openDetail('payments')} className={`rounded-xl p-3.5 border shadow-xs hover:shadow-md transition-all relative group flex flex-col justify-between cursor-pointer ${darkMode ? 'bg-[#2A220C] border-[#574719] text-white hover:border-emerald-500/50' : 'bg-white border-slate-300/80 text-slate-900 hover:border-emerald-400/50'
           }`}>
           <div className="flex items-start justify-between">
             <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 shadow-2xs ${darkMode ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-100 text-emerald-700'
@@ -813,7 +813,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
             </div>
             <button
               onClick={(e) => { e.stopPropagation(); showInfo('totalCollectedRevenue'); }}
-              className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${darkMode ? 'bg-[#12161F] text-slate-400 hover:text-emerald-400' : 'bg-slate-100 hover:bg-emerald-100 text-slate-400 hover:text-emerald-700'
+              className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${darkMode ? 'bg-[#1A1608] text-slate-400 hover:text-emerald-400' : 'bg-slate-100 hover:bg-emerald-100 text-slate-400 hover:text-emerald-700'
                 }`}
               title="Recorded student course fee payments"
             >
@@ -823,7 +823,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
           <div className="mt-2">
             <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400 truncate">TOTAL COLLECTED INCOME</p>
             <h3 className={`text-lg md:text-xl font-black mt-0.5 ${darkMode ? 'text-emerald-400' : 'text-emerald-700'}`}>
-              ₹ {loading ? '...' : (stats.totalCollectedRevenue ?? '0')}
+              ₹ {loading ? <Skeleton className="h-8 w-16 inline-block rounded" /> : (stats.totalCollectedRevenue ?? '0')}
             </h3>
             <div className="flex items-center gap-1 text-[10px] font-semibold text-emerald-500 mt-0.5 truncate">
               <span className="material-symbols-outlined text-xs flex-shrink-0">verified</span>
@@ -840,7 +840,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
 
         {/* Chart 1: Lead Pipeline (Funnel Visual Bar Chart) */}
-        <div className={`p-4 rounded-xl border shadow-xs hover:shadow-md transition-all flex flex-col justify-between ${darkMode ? 'bg-[#181D26] border-[#262F3D] text-white' : 'bg-white border-slate-300/80 text-slate-900'
+        <div className={`p-4 rounded-xl border shadow-xs hover:shadow-md transition-all flex flex-col justify-between ${darkMode ? 'bg-[#2A220C] border-[#574719] text-white' : 'bg-white border-slate-300/80 text-slate-900'
           }`}>
           <div className={`flex items-center justify-between border-b pb-2 mb-2 ${darkMode ? 'border-[#222936]' : 'border-slate-100'}`}>
             <div className="cursor-pointer" onClick={() => openDetail('leadPipeline')}>
@@ -874,7 +874,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
                   <span className={`font-semibold truncate ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{item.name}</span>
                 </div>
                 {/* Horizontal Progress Bar Visual */}
-                <div className={`flex-1 max-w-[110px] h-2.5 rounded-full overflow-hidden mx-2 ${darkMode ? 'bg-[#12161F]' : 'bg-slate-100'}`}>
+                <div className={`flex-1 max-w-[110px] h-2.5 rounded-full overflow-hidden mx-2 ${darkMode ? 'bg-[#1A1608]' : 'bg-slate-100'}`}>
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{
@@ -890,7 +890,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
         </div>
 
         {/* Chart 2: Leads Trend (Smooth Curved Line Chart) */}
-        <div className={`p-4 rounded-xl border shadow-xs hover:shadow-md transition-all flex flex-col justify-between ${darkMode ? 'bg-[#181D26] border-[#262F3D] text-white' : 'bg-white border-slate-300/80 text-slate-900'
+        <div className={`p-4 rounded-xl border shadow-xs hover:shadow-md transition-all flex flex-col justify-between ${darkMode ? 'bg-[#2A220C] border-[#574719] text-white' : 'bg-white border-slate-300/80 text-slate-900'
           }`}>
           <div className={`flex items-center justify-between border-b pb-2 mb-2 ${darkMode ? 'border-[#222936]' : 'border-slate-100'}`}>
             <div className="cursor-pointer" onClick={() => openDetail('leadsTrend')}>
@@ -927,7 +927,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={darkMode ? '#222936' : '#F1F5F9'} />
                 <XAxis dataKey="label" tick={{ fontSize: 9, fill: darkMode ? '#9CA3AF' : '#64748B' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 9, fill: darkMode ? '#9CA3AF' : '#64748B' }} axisLine={false} tickLine={false} allowDecimals={false} />
-                <Tooltip contentStyle={darkMode ? { backgroundColor: '#12161F', borderColor: '#262F3D', color: '#FFF', borderRadius: '8px' } : undefined} />
+                <Tooltip contentStyle={darkMode ? { backgroundColor: '#1A1608', borderColor: '#574719', color: '#FFF', borderRadius: '8px' } : undefined} />
                 <Area
                   type="monotone"
                   dataKey="value"
@@ -944,7 +944,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
         </div>
 
         {/* Chart 3: Lead Source Performance (Donut Chart with Legend) */}
-        <div className={`p-4 rounded-xl border shadow-xs hover:shadow-md transition-all flex flex-col justify-between ${darkMode ? 'bg-[#181D26] border-[#262F3D] text-white' : 'bg-white border-slate-300/80 text-slate-900'
+        <div className={`p-4 rounded-xl border shadow-xs hover:shadow-md transition-all flex flex-col justify-between ${darkMode ? 'bg-[#2A220C] border-[#574719] text-white' : 'bg-white border-slate-300/80 text-slate-900'
           }`}>
           <div className={`flex items-center justify-between border-b pb-2 mb-1 ${darkMode ? 'border-[#222936]' : 'border-slate-100'}`}>
             <div className="cursor-pointer" onClick={() => openDetail('sourcePerformance')}>
@@ -986,7 +986,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
                     <Cell key={`src-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={darkMode ? { backgroundColor: '#12161F', borderColor: '#262F3D', color: '#FFF', borderRadius: '8px' } : undefined} />
+                <Tooltip contentStyle={darkMode ? { backgroundColor: '#1A1608', borderColor: '#574719', color: '#FFF', borderRadius: '8px' } : undefined} />
               </PieChart>
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
                 <span className={`text-xs font-black leading-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>{stats.totalLeads || 0}</span>
@@ -1012,7 +1012,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
         </div>
 
         {/* Chart 4: Activity Distribution (Donut Chart with Legend) */}
-        <div className={`p-4 rounded-xl border shadow-xs hover:shadow-md transition-all flex flex-col justify-between ${darkMode ? 'bg-[#181D26] border-[#262F3D] text-white' : 'bg-white border-slate-300/80 text-slate-900'
+        <div className={`p-4 rounded-xl border shadow-xs hover:shadow-md transition-all flex flex-col justify-between ${darkMode ? 'bg-[#2A220C] border-[#574719] text-white' : 'bg-white border-slate-300/80 text-slate-900'
           }`}>
           <div className={`flex items-center justify-between border-b pb-2 mb-1 ${darkMode ? 'border-[#222936]' : 'border-slate-100'}`}>
             <div className="cursor-pointer" onClick={() => openDetail('activityDistribution')}>
@@ -1054,7 +1054,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
                     <Cell key={`act-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={darkMode ? { backgroundColor: '#12161F', borderColor: '#262F3D', color: '#FFF', borderRadius: '8px' } : undefined} />
+                <Tooltip contentStyle={darkMode ? { backgroundColor: '#1A1608', borderColor: '#574719', color: '#FFF', borderRadius: '8px' } : undefined} />
               </PieChart>
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
                 <span className={`text-xs font-black leading-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>{totalActivitiesDisplay}</span>
@@ -1088,7 +1088,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
         {/* List 1: Today's Follow-ups */}
-        <div className={`rounded-2xl border p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between ${darkMode ? 'bg-[#181D26] border-[#262F3D] text-white' : 'bg-white border-slate-300/80 text-slate-900'
+        <div className={`rounded-2xl border p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between ${darkMode ? 'bg-[#2A220C] border-[#574719] text-white' : 'bg-white border-slate-300/80 text-slate-900'
           }`}>
           <div>
             <div className={`flex items-center justify-between border-b pb-3 mb-3 ${darkMode ? 'border-[#222936]' : 'border-slate-100'}`}>
@@ -1132,7 +1132,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
                         <p className="text-[11px] text-slate-400 mt-0.5 truncate">{item.sub}</p>
                       </div>
                     </div>
-                    <span className={`text-[10px] font-bold px-2 py-1 rounded-md flex-shrink-0 ${darkMode ? 'bg-[#12161F] text-amber-300 border border-[#262F3D]' : 'bg-amber-50 text-amber-800 border border-amber-200'
+                    <span className={`text-[10px] font-bold px-2 py-1 rounded-md flex-shrink-0 ${darkMode ? 'bg-[#1A1608] text-amber-300 border border-[#574719]' : 'bg-amber-50 text-amber-800 border border-amber-200'
                       }`}>
                       {item.time}
                     </span>
@@ -1144,7 +1144,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
         </div>
 
         {/* List 2: Overdue Follow-ups */}
-        <div className={`rounded-2xl border p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between ${darkMode ? 'bg-[#181D26] border-[#262F3D] text-white' : 'bg-white border-slate-300/80 text-slate-900'
+        <div className={`rounded-2xl border p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between ${darkMode ? 'bg-[#2A220C] border-[#574719] text-white' : 'bg-white border-slate-300/80 text-slate-900'
           }`}>
           <div>
             <div className={`flex items-center justify-between border-b pb-3 mb-3 ${darkMode ? 'border-[#222936]' : 'border-slate-100'}`}>
@@ -1200,12 +1200,12 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
         </div>
 
         {/* List 3: Recent Activities */}
-        <div className={`rounded-2xl border p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between ${darkMode ? 'bg-[#181D26] border-[#262F3D] text-white' : 'bg-white border-slate-300/80 text-slate-900'
+        <div className={`rounded-2xl border p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between ${darkMode ? 'bg-[#2A220C] border-[#574719] text-white' : 'bg-white border-slate-300/80 text-slate-900'
           }`}>
           <div>
             <div className={`flex items-center justify-between border-b pb-3 mb-3 ${darkMode ? 'border-[#222936]' : 'border-slate-100'}`}>
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-blue-500 text-xl">history</span>
+                <span className="material-symbols-outlined text-amber-500 text-xl">history</span>
                 <h3 className={`font-bold text-sm ${darkMode ? 'text-white' : 'text-slate-900'}`}>Recent Activities</h3>
               </div>
               <div className="flex items-center gap-2">
@@ -1262,7 +1262,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
         {/* Table 1: Employee Performance */}
-        <div className={`rounded-2xl border p-5 shadow-sm hover:shadow-md transition-all ${darkMode ? 'bg-[#181D26] border-[#262F3D] text-white' : 'bg-white border-slate-300/80 text-slate-900'
+        <div className={`rounded-2xl border p-5 shadow-sm hover:shadow-md transition-all ${darkMode ? 'bg-[#2A220C] border-[#574719] text-white' : 'bg-white border-slate-300/80 text-slate-900'
           }`}>
           <div className={`flex items-center justify-between border-b pb-3 mb-4 ${darkMode ? 'border-[#222936]' : 'border-slate-100'}`}>
             <div className="flex items-center gap-2">
@@ -1315,7 +1315,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
                     <td className="py-3 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <span className={`font-bold text-xs ${darkMode ? 'text-white' : 'text-slate-900'}`}>{emp.rate}</span>
-                        <div className={`w-12 h-2 rounded-full overflow-hidden ${darkMode ? 'bg-[#12161F]' : 'bg-slate-100'}`}>
+                        <div className={`w-12 h-2 rounded-full overflow-hidden ${darkMode ? 'bg-[#1A1608]' : 'bg-slate-100'}`}>
                           <div className="bg-[#D99B00] h-full rounded-full" style={{ width: emp.barWidth }}></div>
                         </div>
                       </div>
@@ -1328,11 +1328,11 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
         </div>
 
         {/* Table 2: Top Lead Sources */}
-        <div className={`rounded-2xl border p-5 shadow-sm hover:shadow-md transition-all ${darkMode ? 'bg-[#181D26] border-[#262F3D] text-white' : 'bg-white border-slate-300/80 text-slate-900'
+        <div className={`rounded-2xl border p-5 shadow-sm hover:shadow-md transition-all ${darkMode ? 'bg-[#2A220C] border-[#574719] text-white' : 'bg-white border-slate-300/80 text-slate-900'
           }`}>
           <div className={`flex items-center justify-between border-b pb-3 mb-4 ${darkMode ? 'border-[#222936]' : 'border-slate-100'}`}>
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-blue-500 text-xl">hub</span>
+              <span className="material-symbols-outlined text-amber-500 text-xl">hub</span>
               <h3 className={`font-bold text-sm ${darkMode ? 'text-white' : 'text-slate-900'}`}>Top Lead Sources</h3>
             </div>
             <div className="flex items-center gap-2">
@@ -1374,7 +1374,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
                     <td className="py-3 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <span className={`font-bold text-xs ${darkMode ? 'text-white' : 'text-slate-900'}`}>{src.rate}</span>
-                        <div className={`w-12 h-2 rounded-full overflow-hidden ${darkMode ? 'bg-[#12161F]' : 'bg-slate-100'}`}>
+                        <div className={`w-12 h-2 rounded-full overflow-hidden ${darkMode ? 'bg-[#1A1608]' : 'bg-slate-100'}`}>
                           <div className="bg-[#D99B00] h-full rounded-full" style={{ width: src.barWidth }}></div>
                         </div>
                       </div>
@@ -1393,7 +1393,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
       {/* ---------------------------------------------------- */}
       {activeInfoModal && (
         <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className={`rounded-3xl max-w-xl w-full p-6 shadow-2xl border space-y-4 max-h-[90vh] flex flex-col ${darkMode ? 'bg-[#181D26] border-[#262F3D] text-slate-100' : 'bg-white border-slate-100 text-slate-900'
+          <div className={`rounded-3xl max-w-xl w-full p-6 shadow-2xl border space-y-4 max-h-[90vh] flex flex-col ${darkMode ? 'bg-[#2A220C] border-[#574719] text-slate-100' : 'bg-white border-slate-100 text-slate-900'
             }`}>
 
             {/* Modal Header */}
@@ -1410,7 +1410,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
               </div>
               <button
                 onClick={() => setActiveInfoModal(null)}
-                className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${darkMode ? 'bg-[#12161F] text-slate-400 hover:text-white' : 'bg-slate-100 text-slate-400 hover:text-slate-700'
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${darkMode ? 'bg-[#1A1608] text-slate-400 hover:text-white' : 'bg-slate-100 text-slate-400 hover:text-slate-700'
                   }`}
               >
                 <span className="material-symbols-outlined text-xl">close</span>
@@ -1420,7 +1420,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
             {/* Modal Body with 4 Structured Guide Cards */}
             <div className="space-y-3 text-xs overflow-y-auto flex-1 pr-1">
               {/* Section 1: How it Works */}
-              <div className={`p-3.5 rounded-xl border ${darkMode ? 'bg-[#12161F] border-[#262F3D] text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>
+              <div className={`p-3.5 rounded-xl border ${darkMode ? 'bg-[#1A1608] border-[#574719] text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>
                 <h4 className={`font-bold mb-1.5 flex items-center gap-1.5 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
                   <span className="material-symbols-outlined text-[#E5A812] text-base">center_focus_strong</span>
                   <span>1. Kaise Work Karta Hai (How It Works)</span>
@@ -1429,9 +1429,9 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
               </div>
 
               {/* Section 2: Who & How */}
-              <div className={`p-3.5 rounded-xl border ${darkMode ? 'bg-[#161D2B] border-blue-900/40 text-blue-200' : 'bg-blue-50/80 border-blue-200 text-blue-950'}`}>
-                <h4 className="font-bold text-blue-400 mb-1.5 flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-blue-400 text-base">engineering</span>
+              <div className={`p-3.5 rounded-xl border ${darkMode ? 'bg-[#181200] border-amber-900/40 text-amber-200' : 'bg-amber-50/80 border-amber-200 text-amber-950'}`}>
+                <h4 className="font-bold text-amber-400 mb-1.5 flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-amber-400 text-base">engineering</span>
                   <span>2. Kisko Aur Kaise Karna Hai (Roles & Action Plan)</span>
                 </h4>
                 <p className="leading-relaxed whitespace-pre-line font-medium">{activeInfoModal.whoAndHow || activeInfoModal.action}</p>
@@ -1476,7 +1476,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
       {/* ---------------------------------------------------- */}
       {detailModal && (
         <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className={`rounded-2xl max-w-3xl w-full max-h-[80vh] flex flex-col shadow-2xl border ${darkMode ? 'bg-[#181D26] border-[#262F3D] text-slate-100' : 'bg-white border-slate-100 text-slate-900'}`}>
+          <div className={`rounded-2xl max-w-3xl w-full max-h-[80vh] flex flex-col shadow-2xl border ${darkMode ? 'bg-[#2A220C] border-[#574719] text-slate-100' : 'bg-white border-slate-100 text-slate-900'}`}>
 
             {/* Header */}
             <div className={`flex items-center justify-between p-5 border-b flex-shrink-0 ${darkMode ? 'border-[#222936]' : 'border-slate-100'}`}>
@@ -1486,7 +1486,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
               </div>
               <button
                 onClick={() => setDetailModal(null)}
-                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${darkMode ? 'hover:bg-[#262F3D] text-slate-400' : 'hover:bg-slate-100 text-slate-500'}`}
+                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${darkMode ? 'hover:bg-[#574719] text-slate-400' : 'hover:bg-slate-100 text-slate-500'}`}
               >
                 <span className="material-symbols-outlined text-xl">close</span>
               </button>
@@ -1497,7 +1497,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
               {detailLoading ? (
                 <div className="py-16 text-center">
                   <span className="material-symbols-outlined text-[36px] animate-spin text-[#7D610F]">sync</span>
-                  <p className="text-xs font-semibold mt-2 text-slate-400">Loading details...</p>
+                  <TableSkeleton columns={5} rows={5} />
                 </div>
               ) : detailData.length === 0 ? (
                 <div className="py-16 text-center text-slate-400">
@@ -1508,7 +1508,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
                 /* Payment Records Table */
                 <table className="w-full text-xs border-collapse">
                   <thead>
-                    <tr className={`font-bold uppercase text-[10px] ${darkMode ? 'bg-[#0F2438] text-slate-300' : 'bg-[#0F2438] text-white'}`}>
+                    <tr className={`font-bold uppercase text-[10px] ${darkMode ? 'bg-[#574719] text-slate-300' : 'bg-[#574719] text-white'}`}>
                       <th className="py-2.5 px-3 text-left">Lead ID</th>
                       <th className="py-2.5 px-3 text-left">Student Name</th>
                       <th className="py-2.5 px-3 text-left">Course</th>
@@ -1530,7 +1530,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
                     ))}
                   </tbody>
                   <tfoot>
-                    <tr className={`font-bold ${darkMode ? 'bg-[#12161F] text-emerald-400' : 'bg-slate-50 text-emerald-700'}`}>
+                    <tr className={`font-bold ${darkMode ? 'bg-[#1A1608] text-emerald-400' : 'bg-slate-50 text-emerald-700'}`}>
                       <td colSpan={3} className="py-2.5 px-3">TOTAL ({detailData.length} payments)</td>
                       <td className="py-2.5 px-3 text-right">₹ {detailData.reduce((s, p) => s + Number(p.amount || 0), 0).toLocaleString('en-IN')}</td>
                       <td colSpan={2}></td>
@@ -1541,7 +1541,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
                 /* Follow-ups / Tasks Table */
                 <table className="w-full text-xs border-collapse">
                   <thead>
-                    <tr className={`font-bold uppercase text-[10px] ${darkMode ? 'bg-[#0F2438] text-slate-300' : 'bg-[#0F2438] text-white'}`}>
+                    <tr className={`font-bold uppercase text-[10px] ${darkMode ? 'bg-[#574719] text-slate-300' : 'bg-[#574719] text-white'}`}>
                       <th className="py-2.5 px-3 text-left">Task</th>
                       <th className="py-2.5 px-3 text-left">Assigned To</th>
                       <th className="py-2.5 px-3 text-left">Linked Lead</th>
@@ -1567,7 +1567,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
                 /* Activity Logs Table */
                 <table className="w-full text-xs border-collapse">
                   <thead>
-                    <tr className={`font-bold uppercase text-[10px] ${darkMode ? 'bg-[#0F2438] text-slate-300' : 'bg-[#0F2438] text-white'}`}>
+                    <tr className={`font-bold uppercase text-[10px] ${darkMode ? 'bg-[#574719] text-slate-300' : 'bg-[#574719] text-white'}`}>
                       <th className="py-2.5 px-3 text-left">Action</th>
                       <th className="py-2.5 px-3 text-left">User</th>
                       <th className="py-2.5 px-3 text-left">Entity</th>
@@ -1580,7 +1580,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
                       <tr key={i} className={`${darkMode ? 'hover:bg-[#1C222D]' : 'hover:bg-slate-50'} transition-colors`}>
                         <td className="py-2.5 px-3 font-semibold">{log.action || '-'}</td>
                         <td className="py-2.5 px-3 font-medium">{log.user || '-'}</td>
-                        <td className="py-2.5 px-3"><span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-[#12161F] text-slate-700 dark:text-slate-300">{log.entity || '-'}</span></td>
+                        <td className="py-2.5 px-3"><span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-[#1A1608] text-slate-700 dark:text-slate-300">{log.entity || '-'}</span></td>
                         <td className="py-2.5 px-3 font-mono font-bold text-[#E5A812]">{log.entityId || '-'}</td>
                         <td className="py-2.5 px-3 text-slate-400">{log.timestamp ? new Date(log.timestamp).toLocaleString() : '-'}</td>
                       </tr>
@@ -1591,7 +1591,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
                 /* Leads Table (totalLeads, newLeads, interested, converted) */
                 <table className="w-full text-xs border-collapse">
                   <thead>
-                    <tr className={`font-bold uppercase text-[10px] ${darkMode ? 'bg-[#0F2438] text-slate-300' : 'bg-[#0F2438] text-white'}`}>
+                    <tr className={`font-bold uppercase text-[10px] ${darkMode ? 'bg-[#574719] text-slate-300' : 'bg-[#574719] text-white'}`}>
                       <th className="py-2.5 px-3 text-left">Lead ID</th>
                       <th className="py-2.5 px-3 text-left">Name</th>
                       <th className="py-2.5 px-3 text-left">Mobile</th>
@@ -1612,7 +1612,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                             l.status === 'CONVERTED' ? 'bg-purple-100 text-purple-800' :
                             l.status === 'INTERESTED' ? 'bg-emerald-100 text-emerald-800' :
-                            l.status === 'NEW' ? 'bg-blue-100 text-blue-800' :
+                            l.status === 'NEW' ? 'bg-amber-100 text-amber-800' :
                             'bg-slate-100 text-slate-700'
                           }`}>{l.status || '-'}</span>
                         </td>
@@ -1645,12 +1645,12 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
       {showDatePickerModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
           <div className={`relative w-full max-w-lg rounded-2xl border shadow-2xl overflow-hidden transition-colors ${
-            darkMode ? 'bg-[#151B24] border-[#262F3D] text-slate-200' : 'bg-white border-slate-200 text-slate-800'
+            darkMode ? 'bg-[#151B24] border-[#574719] text-slate-200' : 'bg-white border-slate-200 text-slate-800'
           }`}>
             
             {/* Header */}
             <div className={`p-5 border-b flex items-center justify-between ${
-              darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-slate-50 border-slate-200'
+              darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-slate-50 border-slate-200'
             }`}>
               <div className="flex items-center gap-2.5">
                 <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
@@ -1669,7 +1669,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
               <button
                 onClick={() => setShowDatePickerModal(false)}
                 className={`p-1.5 rounded-lg border transition-colors ${
-                  darkMode ? 'bg-[#12161F] hover:bg-[#1E2633] text-slate-400 hover:text-white border-[#262F3D]' : 'bg-white hover:bg-slate-100 text-slate-500 border-slate-200'
+                  darkMode ? 'bg-[#1A1608] hover:bg-[#3D3212] text-slate-400 hover:text-white border-[#574719]' : 'bg-white hover:bg-slate-100 text-slate-500 border-slate-200'
                 }`}
               >
                 <span className="material-symbols-outlined text-[18px]">close</span>
@@ -1701,7 +1701,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
                       className={`px-2.5 py-2 rounded-xl text-xs font-semibold border transition-all text-center ${
                         selectedPeriod === preset && isCustomRangeActive
                           ? (darkMode ? 'bg-[#E5A812] text-black font-bold border-[#E5A812]' : 'bg-[#7D610F] text-white font-bold border-[#7D610F]')
-                          : (darkMode ? 'bg-[#181D26] hover:bg-[#1E2633] text-slate-300 border-[#262F3D]' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200')
+                          : (darkMode ? 'bg-[#2A220C] hover:bg-[#3D3212] text-slate-300 border-[#574719]' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200')
                       }`}
                     >
                       {preset}
@@ -1711,7 +1711,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
               </div>
 
               {/* Custom Date Inputs (Date to Date) */}
-              <div className={`p-4 rounded-xl border ${darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-200'}`}>
+              <div className={`p-4 rounded-xl border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-200'}`}>
                 <label className={`block text-xs font-bold uppercase tracking-wider mb-3 ${darkMode ? 'text-amber-300' : 'text-[#7D610F]'}`}>
                   Custom Date-to-Date Filter
                 </label>
@@ -1724,7 +1724,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
                       value={dateFrom}
                       onChange={(e) => setDateFrom(e.target.value)}
                       className={`w-full px-3 py-2 text-xs font-semibold rounded-lg border outline-none ${
-                        darkMode ? 'bg-[#181D26] border-[#262F3D] text-white focus:border-[#E5A812]' : 'bg-white border-slate-300 text-slate-900 focus:border-[#7D610F]'
+                        darkMode ? 'bg-[#2A220C] border-[#574719] text-white focus:border-[#E5A812]' : 'bg-white border-slate-300 text-slate-900 focus:border-[#7D610F]'
                       }`}
                     />
                   </div>
@@ -1736,7 +1736,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
                       value={dateTo}
                       onChange={(e) => setDateTo(e.target.value)}
                       className={`w-full px-3 py-2 text-xs font-semibold rounded-lg border outline-none ${
-                        darkMode ? 'bg-[#181D26] border-[#262F3D] text-white focus:border-[#E5A812]' : 'bg-white border-slate-300 text-slate-900 focus:border-[#7D610F]'
+                        darkMode ? 'bg-[#2A220C] border-[#574719] text-white focus:border-[#E5A812]' : 'bg-white border-slate-300 text-slate-900 focus:border-[#7D610F]'
                       }`}
                     />
                   </div>
@@ -1747,12 +1747,12 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
 
             {/* Footer */}
             <div className={`p-4 border-t flex flex-wrap items-center justify-between gap-2 ${
-              darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-slate-50 border-slate-200'
+              darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-slate-50 border-slate-200'
             }`}>
               <button
                 onClick={handleResetDateFilter}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
-                  darkMode ? 'bg-[#12161F] hover:bg-[#1E2633] text-slate-300 border-[#262F3D]' : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300'
+                  darkMode ? 'bg-[#1A1608] hover:bg-[#3D3212] text-slate-300 border-[#574719]' : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300'
                 }`}
               >
                 Reset to Full Range

@@ -1,3 +1,4 @@
+import Skeleton, { TableSkeleton, CardSkeleton } from '../components/Skeleton.jsx';
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import { StatusBadge } from '../components/StatusBadge';
@@ -8,7 +9,7 @@ export const KanbanBoard = ({ onSelectLead, currentUser, onNotify, darkMode }) =
   const [draggedLeadId, setDraggedLeadId] = useState(null);
 
   const columns = [
-    { code: 'NEW', title: 'New Leads', color: 'border-blue-500' },
+    { code: 'NEW', title: 'New Leads', color: 'border-amber-500' },
     { code: 'NO_ANSWER', title: 'No Answer', color: 'border-amber-500' },
     { code: 'GIVEN_DETAILS', title: 'Given Details', color: 'border-[#7D610F]' },
     { code: 'INTERESTED', title: 'Interested', color: 'border-emerald-500' },
@@ -67,7 +68,7 @@ export const KanbanBoard = ({ onSelectLead, currentUser, onNotify, darkMode }) =
     return (
       <div className="py-20 text-center text-slate-500">
         <span className="material-symbols-outlined text-[36px] animate-spin text-[#7D610F]">sync</span>
-        <p className="text-xs font-semibold mt-2">Loading Pipeline Kanban...</p>
+        <TableSkeleton columns={6} rows={8} />
       </div>
     );
   }
@@ -79,7 +80,7 @@ export const KanbanBoard = ({ onSelectLead, currentUser, onNotify, darkMode }) =
 
       {/* Board Header */}
       <div className={`p-3.5 rounded-xl border shadow-xs flex justify-between items-center flex-shrink-0 transition-colors ${
-        darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+        darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
       }`}>
         <div>
           <h2 className={`font-bold text-base flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
@@ -91,7 +92,7 @@ export const KanbanBoard = ({ onSelectLead, currentUser, onNotify, darkMode }) =
         <button
           onClick={loadLeads}
           className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 border transition-colors ${
-            darkMode ? 'bg-[#12161F] hover:bg-[#1E2633] text-slate-300 border-[#262F3D]' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'
+            darkMode ? 'bg-[#1A1608] hover:bg-[#3D3212] text-slate-300 border-[#574719]' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'
           }`}
         >
           <span className="material-symbols-outlined text-[16px]">refresh</span>
@@ -109,16 +110,16 @@ export const KanbanBoard = ({ onSelectLead, currentUser, onNotify, darkMode }) =
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, col.code)}
               className={`w-[265px] min-w-[265px] h-full rounded-xl border-t-4 ${col.color} border-x border-b p-2.5 flex flex-col shadow-xs flex-shrink-0 min-h-0 transition-colors ${
-                darkMode ? 'bg-[#141A23] border-[#262F3D]' : 'bg-white border-slate-200/80'
+                darkMode ? 'bg-[#141A23] border-[#574719]' : 'bg-white border-slate-200/80'
               }`}
             >
               {/* Column Header */}
               <div className={`flex items-center justify-between pb-2 mb-2 border-b flex-shrink-0 ${
-                darkMode ? 'border-[#262F3D]' : 'border-slate-200/70'
+                darkMode ? 'border-[#574719]' : 'border-slate-200/70'
               }`}>
                 <span className={`font-bold text-xs tracking-tight ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>{col.title}</span>
                 <span className={`w-5 h-5 rounded-full border font-bold text-[10px] flex items-center justify-center shadow-xs ${
-                  darkMode ? 'bg-[#1E2633] border-[#262F3D] text-[#E5A812]' : 'bg-white border-slate-300 text-[#7D610F]'
+                  darkMode ? 'bg-[#3D3212] border-[#574719] text-[#E5A812]' : 'bg-white border-slate-300 text-[#7D610F]'
                 }`}>
                   {colLeads.length}
                 </span>
@@ -128,7 +129,7 @@ export const KanbanBoard = ({ onSelectLead, currentUser, onNotify, darkMode }) =
               <div className="flex-1 min-h-0 space-y-2 overflow-y-auto custom-scrollbar pr-0.5">
                 {colLeads.length === 0 ? (
                   <div className={`h-16 rounded-lg border-2 border-dashed flex items-center justify-center text-[11px] italic ${
-                    darkMode ? 'border-[#262F3D] text-slate-600' : 'border-slate-200 text-slate-400'
+                    darkMode ? 'border-[#574719] text-slate-600' : 'border-slate-200 text-slate-400'
                   }`}>
                     Drop leads here
                   </div>
@@ -140,7 +141,7 @@ export const KanbanBoard = ({ onSelectLead, currentUser, onNotify, darkMode }) =
                       onDragStart={(e) => handleDragStart(e, lead.leadId || lead.id)}
                       onClick={() => onSelectLead(lead.leadId || lead.id)}
                       className={`rounded-lg border p-2.5 shadow-xs transition-all cursor-grab active:cursor-grabbing border-l-4 border-l-[#7D610F] space-y-1 group ${
-                        darkMode ? 'bg-[#181D26] border-[#262F3D] hover:bg-[#1E2633]' : 'bg-white border-slate-200 hover:shadow-md'
+                        darkMode ? 'bg-[#2A220C] border-[#574719] hover:bg-[#3D3212]' : 'bg-white border-slate-200 hover:shadow-md'
                       }`}
                     >
                       {/* Top Bar: ID + Status */}
@@ -164,7 +165,7 @@ export const KanbanBoard = ({ onSelectLead, currentUser, onNotify, darkMode }) =
                       <div className="flex items-center justify-between text-[10px] gap-1 pt-0.5">
                         <span className={`truncate font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>📞 {lead.mobile}</span>
                         <span className={`truncate font-semibold px-1.5 py-0.5 rounded text-[9px] ${
-                          darkMode ? 'bg-[#12161F] text-slate-300 border border-[#262F3D]' : 'bg-slate-100 text-slate-800'
+                          darkMode ? 'bg-[#1A1608] text-slate-300 border border-[#574719]' : 'bg-slate-100 text-slate-800'
                         }`}>
                           {lead.interestedCourse || 'General'}
                         </span>
@@ -172,7 +173,7 @@ export const KanbanBoard = ({ onSelectLead, currentUser, onNotify, darkMode }) =
 
                       {/* Footer Row: Source & Owner */}
                       <div className={`pt-1 border-t flex justify-between items-center text-[9px] ${
-                        darkMode ? 'border-[#262F3D] text-slate-500' : 'border-slate-100 text-slate-400'
+                        darkMode ? 'border-[#574719] text-slate-500' : 'border-slate-100 text-slate-400'
                       }`}>
                         <span>Source: <strong className={darkMode ? 'text-slate-300' : 'text-slate-600'}>{lead.source || 'Direct'}</strong></span>
                         <span className={`font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{lead.ownerId || 'Agent'}</span>

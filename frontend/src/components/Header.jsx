@@ -34,7 +34,7 @@ export const Header = ({ onOpenAddLead, onToggleMobileSidebar, globalSearch, set
       title: 'All Leads Directory',
       subtitle: 'Centralized prospective student database',
       icon: 'groups',
-      color: 'bg-blue-100 text-blue-700',
+      color: 'bg-amber-100 text-amber-700',
       purpose: 'Yeh CRM ki main master table hai jisme Meta Ads, Google Ads, Website Forms, WhatsApp, aur manual entry se aane wali har ek student inquiry mehfooz (save) hoti hai.',
       features: [
         'Live Instant Search: Student ke Naam, Mobile Number, Email, ya City se 1 second me search karein.',
@@ -155,7 +155,7 @@ export const Header = ({ onOpenAddLead, onToggleMobileSidebar, globalSearch, set
       title: 'Lead Sources & Marketing Channels',
       subtitle: 'Inbound channel attribution setup',
       icon: 'hub',
-      color: 'bg-blue-100 text-blue-800',
+      color: 'bg-amber-100 text-amber-800',
       purpose: 'Is page par incoming marketing channels (Meta Ads, Google Ads, Website, WhatsApp, Referral, Walk-in) ko configure kiya jata hai.',
       features: [
         'Lead Source Creation & Channel Code Setup.',
@@ -226,7 +226,7 @@ export const Header = ({ onOpenAddLead, onToggleMobileSidebar, globalSearch, set
 
   return (
     <>
-      <header className={`fixed top-0 right-0 w-full md:w-[calc(100%-220px)] h-[55px] border-b shadow-xs flex justify-between items-center px-4 md:px-6 z-20 transition-colors ${darkMode ? 'bg-[#12161F] border-[#222936] text-slate-100' : 'bg-white border-slate-200 text-slate-900'
+      <header className={`fixed top-0 right-0 w-full md:w-[calc(100%-220px)] h-[55px] border-b shadow-xs flex justify-between items-center px-4 md:px-6 z-20 transition-colors ${darkMode ? 'bg-[#1A1608] border-[#222936] text-slate-100' : 'bg-white border-slate-200 text-slate-900'
         }`}>
         <div className="flex items-center gap-3">
           {/* Mobile Sidebar Hamburger Toggle */}
@@ -276,7 +276,7 @@ export const Header = ({ onOpenAddLead, onToggleMobileSidebar, globalSearch, set
             onClick={handleRefreshClick}
             title="Refresh Page Data (Without full website reload)"
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all active:scale-95 shadow-xs ${darkMode
-                ? 'bg-[#181D26] hover:bg-[#222936] text-[#E5A812] border-[#262F3D]'
+                ? 'bg-[#2A220C] hover:bg-[#222936] text-[#E5A812] border-[#574719]'
                 : 'bg-amber-50 hover:bg-amber-100 text-[#7D610F] border-amber-200'
               }`}
           >
@@ -341,8 +341,8 @@ export const Header = ({ onOpenAddLead, onToggleMobileSidebar, globalSearch, set
               </div>
 
               {/* Section 2: Key Features */}
-              <div className={`p-3.5 rounded-2xl border ${darkMode ? 'bg-[#122438] border-[#1a3c5e] text-[#90caf9]' : 'bg-blue-50/70 border-blue-200 text-slate-800'}`}>
-                <h4 className={`font-bold mb-2 flex items-center gap-1.5 text-xs ${darkMode ? 'text-[#90caf9]' : 'text-blue-900'}`}>
+              <div className={`p-3.5 rounded-2xl border ${darkMode ? 'bg-[#3D3212] border-[#574719] text-[#90caf9]' : 'bg-amber-50/70 border-amber-200 text-slate-800'}`}>
+                <h4 className={`font-bold mb-2 flex items-center gap-1.5 text-xs ${darkMode ? 'text-[#90caf9]' : 'text-amber-900'}`}>
                   <span className="material-symbols-outlined text-base">featured_play_list</span>
                   <span>Key Features & Tools</span>
                 </h4>

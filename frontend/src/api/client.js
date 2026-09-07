@@ -265,7 +265,10 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(taskData),
     });
-    if (!res.ok) throw new Error('Failed to create task');
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      throw new Error(errBody.error?.message || errBody.message || 'Failed to create task');
+    }
     return res.json();
   },
 
@@ -275,7 +278,10 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(taskData),
     });
-    if (!res.ok) throw new Error('Failed to update task');
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      throw new Error(errBody.error?.message || errBody.message || 'Failed to update task');
+    }
     return res.json();
   },
 

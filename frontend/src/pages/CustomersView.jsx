@@ -1,3 +1,4 @@
+import Skeleton, { TableSkeleton, CardSkeleton } from '../components/Skeleton.jsx';
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 
@@ -35,7 +36,7 @@ export const CustomersView = ({ onSelectLead, darkMode }) => {
       
       {/* Header */}
       <div className={`p-5 rounded-xl border shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors ${
-        darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+        darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
       }`}>
         <div>
           <h2 className={`font-bold text-xl flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
@@ -53,7 +54,7 @@ export const CustomersView = ({ onSelectLead, darkMode }) => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className={`w-full border rounded-lg pl-9 pr-3 py-2 text-xs outline-none focus:ring-1 focus:ring-[#7D610F] transition-colors ${
-              darkMode ? 'bg-[#12161F] border-[#262F3D] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
+              darkMode ? 'bg-[#1A1608] border-[#574719] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
             }`}
           />
         </div>
@@ -61,12 +62,12 @@ export const CustomersView = ({ onSelectLead, darkMode }) => {
 
       {/* Customer Directory Table */}
       <div className={`rounded-xl border shadow-sm overflow-hidden transition-colors ${
-        darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+        darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
       }`}>
         {loading ? (
           <div className="py-16 text-center text-slate-500">
             <span className="material-symbols-outlined text-[36px] animate-spin text-[#7D610F]">sync</span>
-            <p className="text-xs font-semibold mt-2">Loading customer records...</p>
+            <TableSkeleton columns={6} rows={8} />
           </div>
         ) : filtered.length === 0 ? (
           <div className="py-16 text-center text-slate-400">
@@ -76,7 +77,7 @@ export const CustomersView = ({ onSelectLead, darkMode }) => {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-[#0F2438] text-white font-bold uppercase text-[11px]">
+                <tr className="bg-[#574719] text-white font-bold uppercase text-[11px]">
                   <th className="py-3 px-4">Customer ID</th>
                   <th className="py-3 px-4">Student Name</th>
                   <th className="py-3 px-4">Mobile & WhatsApp</th>
@@ -90,7 +91,7 @@ export const CustomersView = ({ onSelectLead, darkMode }) => {
               <tbody className={`divide-y ${darkMode ? 'divide-[#222936]' : 'divide-slate-100'}`}>
                 {filtered.map(c => (
                   <tr key={c.customerId} className={`transition-colors ${
-                    darkMode ? 'hover:bg-[#1E2633]' : 'hover:bg-slate-50'
+                    darkMode ? 'hover:bg-[#3D3212]' : 'hover:bg-slate-50'
                   }`}>
                     <td className="py-3 px-4 font-mono font-bold text-[#7D610F]">
                       CUST-{String(c.customerId).padStart(4, '0')}

@@ -8,7 +8,7 @@ export const DuplicateModal = ({ duplicateData, onViewExisting, onCreateAnyway, 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 animate-fade-in">
       <div className={`rounded-xl shadow-2xl border w-full max-w-lg overflow-hidden transition-all transform scale-100 ${
-        darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+        darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
       }`}>
         
         {/* Header Warning Bar */}
@@ -38,9 +38,9 @@ export const DuplicateModal = ({ duplicateData, onViewExisting, onCreateAnyway, 
           </p>
 
           <div className={`rounded-lg p-4 space-y-3 border ${
-            darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-200'
+            darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-200'
           }`}>
-            <div className={`flex justify-between items-start border-b pb-3 ${darkMode ? 'border-[#262F3D]' : 'border-slate-200'}`}>
+            <div className={`flex justify-between items-start border-b pb-3 ${darkMode ? 'border-[#574719]' : 'border-slate-200'}`}>
               <div>
                 <h4 className={`font-bold text-base ${darkMode ? 'text-white' : 'text-slate-900'}`}>{lead.name || 'Unnamed Lead'}</h4>
                 <p className="text-xs font-mono text-amber-400 font-semibold">{lead.leadId || 'LD-XXXXXX'}</p>
@@ -75,7 +75,7 @@ export const DuplicateModal = ({ duplicateData, onViewExisting, onCreateAnyway, 
 
         {/* Modal Actions */}
         <div className={`px-6 py-4 border-t flex flex-col sm:flex-row justify-end gap-3 ${
-          darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-200'
+          darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-200'
         }`}>
           <button
             onClick={() => onViewExisting(lead.leadId || lead.id)}
@@ -88,7 +88,7 @@ export const DuplicateModal = ({ duplicateData, onViewExisting, onCreateAnyway, 
           <button
             onClick={onCreateAnyway}
             className={`w-full sm:w-auto px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center justify-center gap-2 ${
-              darkMode ? 'bg-[#181D26] hover:bg-[#1E2633] text-slate-300 border border-[#262F3D]' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+              darkMode ? 'bg-[#2A220C] hover:bg-[#3D3212] text-slate-300 border border-[#574719]' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
             }`}
           >
             <span className="material-symbols-outlined text-[18px]">add</span>

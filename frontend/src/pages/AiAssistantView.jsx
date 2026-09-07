@@ -357,7 +357,7 @@ export const AiAssistantView = ({ onSelectLead, onNotify }) => {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-[#0F2438] text-white font-bold uppercase text-[11px]">
+                  <tr className="bg-[#574719] text-white font-bold uppercase text-[11px]">
                     <th className="py-3 px-4">Lead ID</th>
                     <th className="py-3 px-4">Student Name</th>
                     <th className="py-3 px-4">Interested Course</th>
@@ -370,7 +370,7 @@ export const AiAssistantView = ({ onSelectLead, onNotify }) => {
                 <tbody className="divide-y divide-slate-100">
                   {leads.map(lead => {
                     const score = getLeadScore(lead);
-                    let badgeColor = 'bg-blue-100 text-blue-800';
+                    let badgeColor = 'bg-amber-100 text-amber-800';
                     let badgeText = 'Warm Lead';
                     if (score >= 80) {
                       badgeColor = 'bg-emerald-100 text-emerald-800 border-emerald-300';

@@ -54,12 +54,12 @@ export const ColumnModal = ({ visibleColumns, setVisibleColumns, onClose, darkMo
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 animate-fade-in">
       <div className={`rounded-xl shadow-2xl border w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden ${
-        darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+        darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
       }`}>
         
         {/* Header */}
         <div className={`px-6 py-4 border-b flex justify-between items-center ${
-          darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-200'
+          darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-200'
         }`}>
           <div>
             <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-slate-800'}`}>Column Settings</h3>
@@ -72,7 +72,7 @@ export const ColumnModal = ({ visibleColumns, setVisibleColumns, onClose, darkMo
 
         {/* Quick Selection Toolbar */}
         <div className={`px-6 py-3 border-b flex justify-between items-center text-xs ${
-          darkMode ? 'bg-[#141A23] border-[#262F3D]' : 'bg-slate-100/70 border-slate-200'
+          darkMode ? 'bg-[#141A23] border-[#574719]' : 'bg-slate-100/70 border-slate-200'
         }`}>
           <span className={`font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
             Showing <strong className="text-[#E5A812]">{visibleColumns.length}</strong> of {ALL_COLUMNS.length} fields
@@ -100,7 +100,7 @@ export const ColumnModal = ({ visibleColumns, setVisibleColumns, onClose, darkMo
                   className={`flex items-center gap-3 p-2.5 rounded-lg border text-xs cursor-pointer transition-all ${
                     isChecked
                       ? (darkMode ? 'bg-amber-950/40 border-amber-800/50 text-amber-200' : 'bg-amber-50/60 border-[#D7B967] text-slate-800')
-                      : (darkMode ? 'bg-[#12161F] border-[#262F3D] text-slate-400 hover:bg-[#1E2633]' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50')
+                      : (darkMode ? 'bg-[#1A1608] border-[#574719] text-slate-400 hover:bg-[#3D3212]' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50')
                   } ${isRequired ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
                   <input
@@ -119,7 +119,7 @@ export const ColumnModal = ({ visibleColumns, setVisibleColumns, onClose, darkMo
 
         {/* Footer */}
         <div className={`px-6 py-4 border-t flex justify-end gap-3 ${
-          darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-200'
+          darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-200'
         }`}>
           <button
             onClick={onClose}

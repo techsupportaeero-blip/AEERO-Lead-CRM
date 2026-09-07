@@ -1,348 +1,260 @@
-# AEERO CRM — Complete System Architecture & Tech Stack Guide
-> **Comprehensive Production Blueprint for Frontend, Backend, Database, and Cloud Infrastructure**
+# ⚠️ MANDATORY AI AGENT INSTRUCTION — READ THIS FIRST!
+> **CRITICAL TOKEN-EFFICIENCY PROTOCOL FOR ALL AI AGENTS & CODING ASSISTANTS:**
+> **BEFORE reading or scanning multiple files across `frontend/` or `backend/`, READ THIS SINGLE FILE FIRST.**
+> This document is the **Authoritative System Architecture & Codebase Map** for the AEERO Lead Management CRM.
+> It contains the complete frontend routing, component inventory, backend API endpoints, Prisma database schema, authentication credentials, business logic rules, and integration workflows.
+> Reading this single file provides 100% full-stack context in a minimal token budget. DO NOT scan unrelated repository files.
 
 ---
 
-## 📌 Executive Summary
-AEERO Lead Management CRM is a specialized Aviation Academy CRM designed for high-velocity prospective student inquiry handling, multi-channel marketing attribution, counselor productivity tracking, automated communication dispatch, fee payment recording, and executive reporting.
+# AEERO CRM — Complete System Architecture & Codebase Blueprint
 
-This document outlines the **recommended production technology stack**, **database schema**, **API architecture**, and **implementation rationale** for scaling the CRM to 1,000,000+ leads, hundreds of concurrent counselors, and instant multi-channel lead ingestion.
+## 📌 1. Executive Overview & Core Mission
+**AEERO CRM** is an enterprise-grade Lead Management & Student Admission CRM developed specifically for Aviation & Professional Academies (Commercial Pilot License - CPL, Private Pilot License - PPL, Cabin Crew & Ground Staff, Aircraft Maintenance Engineering - AME, Industrial Safety, Sub Fire Officer, and Health Sanitary Inspector).
+
+### Core Capabilities & Business Rules:
+1. **Multi-Channel Ingestion**:
+   - **Meta Ads Webhook**: Real-time webhook (`POST /api/webhook/meta`) for Facebook & Instagram Lead Ads with HMAC-SHA256 signature verification.
+   - **Google Sheets Lead Bridge**: Auto-discovery and batch sync (`POST /api/integrations/google-sheets/*`) from a Google Drive folder (`AEERO LEADS`) with course-specific spreadsheets. Zero hardcoded spreadsheet IDs.
+   - **Website / Landing Pages**: Direct REST API endpoint (`POST /api/leads/public`) for web inquiries and UTM campaign attribution.
+   - **Manual Inquiries**: Modal-based creation with duplicate detection.
+2. **Multi-Tier Idempotency & Duplicate Protection**:
+   - **Tier 1 (Primary)**: External Meta Lead ID (`externalLeadId`).
+   - **Tier 2 (Secondary)**: Normalized Mobile Number (E.164) + Lowercase Email.
+   - **Tier 3 (Tertiary)**: Normalized Mobile Number + Source within a 48-hour tolerance window.
+3. **Dynamic Round-Robin Counselor Routing**:
+   - Automatically distributes incoming leads among active eligible counselors (`MS. INDU`, `MS. AYESHA`, `MS. PRITI`, `Admin User 1`) dynamically retrieved from the database (`role: LEAD_FINDER` or `ADMIN`, `active: true`). Zero hardcoded names in routing logic.
+4. **Complete 360° Lead Lifecycle**:
+   - `Inquiry` ➔ `Qualification` ➔ `Call Activity Logs` ➔ `Follow-up Reminders (Calendar & Tasks)` ➔ `Token Advance & Fee Payment Receipts` ➔ `Customer Admission Won`.
+5. **Database Architecture**:
+   - **Primary**: Neon PostgreSQL Cloud via Prisma ORM 5.x.
+   - **Offline / Standalone Fallback**: In-memory indexed engine with disk persistence to `backend/aeero_crm_data.json`.
 
 ---
 
-```mermaid
-graph TD
-    subgraph Client Layer
-        A[React SPA + TailwindCSS + Vite]
-        B[Mobile & Tablet Responsive UI]
-    end
+## 🏗️ 2. Global Architecture Flowchart
 
-    subgraph API Gateway & Security
-        C[NGINX Reverse Proxy + SSL]
-        D[JWT Authentication + RBAC Middleware]
-        E[Rate Limiter & Helmet Security]
-    end
-
-    subgraph Backend Application Layer
-        F[Node.js + NestJS / Express API]
-        G[Socket.io Real-time WebSocket Hub]
-        H[BullMQ Background Task Queue]
-    end
-
-    subgraph Data & Storage Layer
-        I[(PostgreSQL Primary Database)]
-        J[(Redis Cache & Session Store)]
-        K[Cloudflare R2 / AWS S3 Document Storage]
-    end
-
-    subgraph External Integrations
-        L[Meta Lead Ads Webhook]
-        M[Google Ads Webhook]
-        N[WhatsApp Cloud API]
-        O[Razorpay / UPI Payment Gateway]
-    end
-
-    A --> C
-    B --> C
-    C --> D --> E --> F
-    F --> I
-    F --> J
-    F --> K
-    F --> G
-    F --> H
-    H --> N
-    L --> F
-    M --> F
-    O --> F
-    G -.-> A
+```
+                            ┌─────────────────────────────────────────────────────────┐
+                            │              EXTERNAL INGESTION CHANNELS                │
+                            └─────────────────────────────────────────────────────────┘
+                                       │                                    │
+                ┌──────────────────────┴─────────────┐          ┌───────────┴──────────┐
+                │    Meta Facebook / Instagram Ads   │          │ Google Drive Folder  │
+                │         (Real-time Webhook)        │          │   ("AEERO LEADS")    │
+                └──────────────────────┬─────────────┘          └───────────┬──────────┘
+                                       │                                    │
+                                       ▼                                    ▼
+                          POST /api/webhook/meta               Google Apps Script Bridge
+                                       │                                    │
+                                       │                        POST /api/integrations/
+                                       │                         google-sheets/ingest
+                                       │                                    │
+                                       └──────────────────┬─────────────────┘
+                                                          │
+                                                          ▼
+                                       ┌──────────────────────────────────────┐
+                                       │   BACKEND VALIDATION & NORMALIZER    │
+                                       ├──────────────────────────────────────┤
+                                       │ • Column Alias Mapping (mapper.js)   │
+                                       │ • Mobile/Email Clean & E.164 format  │
+                                       │ • Course Resolution (courseMatcher)  │
+                                       └──────────────────┬───────────────────┘
+                                                          │
+                                                          ▼
+                                       ┌──────────────────────────────────────┐
+                                       │      MULTI-TIER DUPLICATE CHECK      │
+                                       ├──────────────────────────────────────┤
+                                       │ Tier 1: Meta Lead ID                 │
+                                       │ Tier 2: Phone + Email                │
+                                       │ Tier 3: Phone + Source in 48h window │
+                                       └──────────────────┬───────────────────┘
+                                                          │
+                                           ┌──────────────┴──────────────┐
+                                           │                             │
+                                     [Duplicate]                    [New Lead]
+                                           │                             │
+                                           ▼                             ▼
+                                    Record Skipped             Generate ID: LD-XXXXXX
+                                   Update Statistics          Dynamic Counselor Assign
+                                                                         │
+                                                                         ▼
+                                                          ┌──────────────────────────────┐
+                                                          │  AUTHORITATIVE CRM STORAGE   │
+                                                          ├──────────────────────────────┤
+                                                          │ • Primary: Neon PostgreSQL   │
+                                                          │ • Fallback: JSON File Store  │
+                                                          └──────────────┬───────────────┘
+                                                                         │
+                                                                         ▼
+                                                          ┌─────────────────────────────┐
+                                                          │    FRONTEND REACT 18 SPA    │
+                                                          ├─────────────────────────────┤
+                                                          │ • Dashboard & Analytics     │
+                                                          │ • All Leads & Kanban        │
+                                                          │ • Lead Workspace 360        │
+                                                          │ • Calendar & Task Manager   │
+                                                          │ • Fee Ledger & Receipts     │
+                                                          │ • Lead Sources Hub          │
+                                                          └─────────────────────────────┘
 ```
 
 ---
 
-## 🖥️ 1. Frontend Architecture & Recommendations
+## 💻 3. Frontend Architecture (`frontend/src/`)
 
-### 1.1 Tech Stack Selection
+### 3.1 Technology Stack & State Management
+- **Framework**: React 18 SPA built with Vite.
+- **Styling**: Tailwind CSS + Custom CSS (`index.css`) with unified Dark (`#0A0D14` / `#151C24`) and Light (`#F1F8FC` / `#FFFFFF`) themes.
+- **Icons**: Google Material Symbols & Heroicons.
+- **Router Pattern**: State-based client-side router in [`frontend/src/App.jsx`](file:///frontend/src/App.jsx). Active route stored in `localStorage.getItem('aeero_route')`.
+- **Session Persistence**: Current user stored in `localStorage.getItem('aeero_user')`. User remains authenticated until explicit Logout button click.
 
-| Technology | Category | Why Use It? |
+### 3.2 Page & Route Directory (`frontend/src/pages/`)
+
+| Route ID | Component File | Primary Responsibility & Features |
 | :--- | :--- | :--- |
-| **React 18 / 19** | UI Framework | Component-based modularity, virtual DOM speed, ecosystem maturity, seamless SPA rendering. |
-| **Vite** | Build Tool & Dev Server | Ultra-fast Hot Module Replacement (HMR < 50ms), optimized Rollup production bundling, ES modules support. |
-| **TailwindCSS v3 / v4** | CSS Framework | Utility-first rapid styling, zero dead CSS in production, flexible dark/light theme switching without runtime overhead. |
-| **Lucide React & Material Symbols** | Iconography | Crisp vector icons for aviation courses, counseling states, status badges, and communication touchpoints. |
-| **TanStack Query (React Query)** | Server State & Cache | Auto-caching, background re-fetching, optimistic UI updates for lead stage drag-and-drop, zero loading lag. |
-| **Zustand** | Client State Management | Minimal lightweight state store (< 1kB) for session user, active dark/light theme, column visibility, and active filters. |
-| **Chart.js / Recharts** | Data Visualizations | Responsive interactive area trends, funnel pipelines, source donuts, and counselor performance graphs. |
+| `login` | [`frontend/src/pages/Login.jsx`](file:///frontend/src/pages/Login.jsx) | Authentication screen. Quick-fill credentials box for `admin`, `indu`, `ayesha`, `priti`. Authenticates via `/api/auth/login`. |
+| `dashboard` | [`frontend/src/pages/Dashboard.jsx`](file:///frontend/src/pages/Dashboard.jsx) | KPI analytics dashboard. 4 KPI cards (Total Leads, Follow-ups, Won Leads, Conversion Rate), charts, Today's Follow-ups, Overdue Follow-ups, Recent Activities, and Employee Performance table. |
+| `leads` | [`frontend/src/pages/AllLeads.jsx`](file:///frontend/src/pages/AllLeads.jsx) | Central Leads Data Grid. Multi-column filters (Status, Counselor, Source, Date range), full-text search, column picker modal, bulk status changes, and Excel/CSV export. |
+| `lead-details` | [`frontend/src/pages/LeadWorkspace.jsx`](file:///frontend/src/pages/LeadWorkspace.jsx) | 360° Lead Drawer/Profile. Interaction timeline, quick call outcome logging, follow-up scheduler, notepad, and fee payment receipt generator. |
+| `kanban` | [`frontend/src/pages/KanbanBoard.jsx`](file:///frontend/src/pages/KanbanBoard.jsx) | Visual drag & drop stage pipeline. Columns for New, No Answer, Given Details, Interested, Follow-up, Converted, Lost. |
+| `tasks` | [`frontend/src/pages/TasksView.jsx`](file:///frontend/src/pages/TasksView.jsx) | Operational task manager. Grouped by priority & due date with counselor filter. |
+| `calendar` | [`frontend/src/pages/CalendarView.jsx`](file:///frontend/src/pages/CalendarView.jsx) | Interactive monthly & weekly callback calendar for student appointments & follow-ups. |
+| `customers` | [`frontend/src/pages/CustomersView.jsx`](file:///frontend/src/pages/CustomersView.jsx) | Directory of converted leads / enrolled students with course details and fee agreements. |
+| `products` | [`frontend/src/pages/CoursesView.jsx`](file:///frontend/src/pages/CoursesView.jsx) | Academy course catalog, fees, durations, and active status toggle. |
+| `lead-sources` | [`frontend/src/pages/LeadSourcesView.jsx`](file:///frontend/src/pages/LeadSourcesView.jsx) | Multi-channel integration hub for Meta Webhooks, Google Sheets bridge, and UTM builder. |
+| `activities` | [`frontend/src/pages/AuditLogsView.jsx`](file:///frontend/src/pages/AuditLogsView.jsx) | System-wide audit log and counselor activity trail. |
+| `ai-assistant` | [`frontend/src/pages/AiAssistantView.jsx`](file:///frontend/src/pages/AiAssistantView.jsx) | AI counseling assistant (Currently disabled/blocked in UI via `ModuleView.jsx`). |
+| *(fallback)* | [`frontend/src/pages/ModuleView.jsx`](file:///frontend/src/pages/ModuleView.jsx) | Route distributor for secondary pages. Renders SVG loader for in-progress modules. |
 
-### 1.2 Recommended Frontend Directory Structure
-```
-frontend/
-├── public/
-│   ├── favicon.ico
-│   └── aeero-logo.png
-├── src/
-│   ├── api/                 # Axios / Fetch client with auto JWT refresh interceptors
-│   │   ├── client.js
-│   │   ├── leads.api.js
-│   │   └── stats.api.js
-│   ├── assets/              # Static icons, flight simulator illustrations
-│   ├── components/          # Reusable UI components
-│   │   ├── common/          # Buttons, Badges, Modals, Inputs, Dropdowns
-│   │   ├── layout/          # Header, Sidebar, BottomNav, PageContainer
-│   │   └── charts/          # FunnelChart, TrendAreaChart, SourceDonut
-│   ├── context/             # ThemeContext, AuthContext, SocketContext
-│   ├── hooks/               # useLeads, useDebounce, useAutoRefresh, useSocket
-│   ├── pages/               # Route Views (Dashboard, AllLeads, Kanban, Calendar, etc.)
-│   ├── store/               # Zustand state stores (authStore, filterStore)
-│   ├── types/               # TypeScript interface schemas (Lead, Task, User, Payment)
-│   ├── utils/               # Date formatters, currency INR parser, CSV exporter
-│   ├── App.jsx
-│   ├── index.css            # Dark Reader + Light Mode Theme Variables
-│   └── main.jsx
-├── tailwind.config.js
-└── vite.config.js
-```
+### 3.3 Reusable Modals & Components (`frontend/src/components/`)
 
----
-
-## ⚙️ 2. Backend Architecture & Recommendations
-
-### 2.1 Tech Stack Selection
-
-| Technology | Category | Why Use It? |
+| Component File | Type | Responsibility |
 | :--- | :--- | :--- |
-| **Node.js (LTS)** | Runtime | High-throughput asynchronous event-driven I/O ideal for thousands of incoming ad inquiries. |
-| **NestJS (or Express + TS)** | API Framework | Enterprise architectural patterns (Controllers ➔ Services ➔ Repositories), Dependency Injection, built-in validation. |
-| **TypeScript** | Language | End-to-end type safety, eliminating runtime `undefined` bugs across leads, payments, and activity records. |
-| **Prisma ORM / Drizzle** | Database ORM | Auto-generated type-safe database queries, declarative migrations, connection pooling, fast SQL execution. |
-| **Socket.io** | WebSockets | Real-time bi-directional events (new lead popups, task completion sync, lead collision avoidance). |
-| **BullMQ + Redis** | Background Queue | Delayed callback reminders, automated brochure dispatch, cron job processing without blocking main thread. |
-| **Zod / class-validator** | Validation | Strict schema validation preventing invalid phone numbers, malicious payload injections, and duplicate emails. |
-| **Helmet + CORS + RateLimit**| Security | HTTP security headers, CORS origin whitelisting, API brute-force protection (100 reqs/min per IP). |
+| [`frontend/src/pages/AddLeadModal.jsx`](file:///frontend/src/pages/AddLeadModal.jsx) | Modal | Manual inquiry entry modal with instant duplicate verification. |
+| [`frontend/src/pages/EditLeadModal.jsx`](file:///frontend/src/pages/EditLeadModal.jsx) | Modal | Modal to edit lead fields (Name, Phone, Email, Course, Counselor, Status, Priority). |
+| [`frontend/src/components/DuplicateModal.jsx`](file:///frontend/src/components/DuplicateModal.jsx) | Modal | Duplicate alert dialog showing existing lead info, assigned counselor, and "View Existing" or "Create Anyway" options. |
+| [`frontend/src/components/ColumnModal.jsx`](file:///frontend/src/components/ColumnModal.jsx) | Modal | Table column selector modal with presets and individual column visibility toggles. |
+| [`frontend/src/components/RecordPaymentModal.jsx`](file:///frontend/src/components/RecordPaymentModal.jsx) | Modal | Token advance and tuition installment payment collection modal. |
+| [`frontend/src/components/ConfirmModal.jsx`](file:///frontend/src/components/ConfirmModal.jsx) | Modal | Reusable dialog for confirming deletions, archives, and bulk actions. |
+| [`frontend/src/components/Header.jsx`](file:///frontend/src/components/Header.jsx) | Component | Top bar with global search, Dark/Light mode toggle, notifications bell, and user menu. |
+| [`frontend/src/components/Sidebar.jsx`](file:///frontend/src/components/Sidebar.jsx) | Component | Left navigation bar with badge counters and role-aware navigation links. |
+| [`frontend/src/components/DashboardCharts.jsx`](file:///frontend/src/components/DashboardCharts.jsx) | Component | Funnel chart, Monthly Trend line chart, Lead Source donut chart, Course bar chart. |
+| [`frontend/src/components/NotificationToast.jsx`](file:///frontend/src/components/NotificationToast.jsx) | Component | Animated toast notification for success, error, and info feedback. |
+| [`frontend/src/components/Skeleton.jsx`](file:///frontend/src/components/Skeleton.jsx) | Component | Modern loading skeleton components for cards and data tables. |
 
-### 2.2 Core Security & Role-Based Access (RBAC) Matrix
-
-| User Role | View All Leads | Edit / Move Stages | Reassign Leads | Record Payments | Delete / Archive | Access Reports & Settings |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Super Admin** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Branch Manager** | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
-| **Senior Counselor**| ✅ (Assigned + Team) | ✅ | ❌ | ✅ | ❌ | ❌ |
-| **Tele-Counselor** | ❌ (Own Assigned Only)| ✅ | ❌ | ❌ | ❌ | ❌ |
-| **Marketing / Lead Finder** | ✅ (Read Only) | ❌ | ❌ | ❌ | ❌ | ✅ (Sources Only) |
-| **Accountant** | ❌ (View Payments Only)| ❌ | ❌ | ✅ | ❌ | ✅ (Revenue Only) |
+### 3.4 API Client & Constants
+- [`frontend/src/api/client.js`](file:///frontend/src/api/client.js): Single Axios/Fetch abstraction for all API calls to `http://localhost:3001/api`.
+- [`frontend/src/config/constants.js`](file:///frontend/src/config/constants.js): Global enums (`STATUS_MAP`, `PRIORITIES`, `COUNSELORS`, `COURSES`, `LEAD_SOURCES`).
 
 ---
 
-## 🗄️ 3. Database Architecture & Schema Design (PostgreSQL)
+## ⚙️ 4. Backend Architecture (`backend/`)
 
-### 3.1 Why PostgreSQL?
-1. **Relational Integrity**: Strict foreign keys guarantee that an activity, payment, or follow-up is never orphaned if a lead exists.
-2. **ACID Transactions**: When recording a course fee payment, student balance update, invoice generation, and audit logging happen atomically (all succeed or all rollback).
-3. **High Performance Indexing**: Multi-column composite indexes and B-Tree indexes allow searching across 1,000,000+ leads in < 15 milliseconds.
-4. **JSONB Hybrid Support**: Allows storing custom dynamic aviation metadata (e.g. Flight Medical Class 1/2 status, Passport validity, Simulator slots) without altering core SQL tables.
+### 4.1 Server Runtime & Environment
+- **Runtime**: Node.js + TypeScript executed with `tsx watch src/server.ts` (listening on `http://localhost:3001`).
+- **Configuration**: [`backend/.env`](file:///backend/.env) parsed and validated via Zod in [`backend/src/config/env.ts`](file:///backend/src/config/env.ts).
+- **ORM / Database**: Prisma Client 5.x connecting to Neon PostgreSQL.
 
----
+### 4.2 API Routes Map (`backend/src/routes/`)
 
-### 3.2 Complete PostgreSQL Entity-Relationship (ER) Schema
-
-```mermaid
-erDiagram
-    USERS ||--o{ LEADS : "assigned to"
-    USERS ||--o{ ACTIVITIES : "logs"
-    USERS ||--o{ TASKS : "owns"
-    USERS ||--o{ AUDIT_LOGS : "triggers"
-    
-    LEADS ||--o{ ACTIVITIES : "has"
-    LEADS ||--o{ TASKS : "has"
-    LEADS ||--o{ PAYMENTS : "deposits"
-    LEADS ||--o{ AUDIT_LOGS : "tracked in"
-    
-    COURSES ||--o{ LEADS : "interested in"
-    LEAD_SOURCES ||--o{ LEADS : "originates from"
-    
-    USERS {
-        uuid id PK
-        varchar name
-        varchar email UK
-        varchar password_hash
-        varchar role
-        varchar phone
-        boolean is_active
-        timestamp last_login_at
-        timestamp created_at
-    }
-
-    LEADS {
-        uuid id PK
-        varchar lead_id UK "e.g. LD-001045"
-        varchar name
-        varchar email
-        varchar phone
-        varchar alternate_phone
-        varchar city
-        varchar state
-        varchar status "NEW, INTERESTED, CONVERTED, etc."
-        varchar priority "Urgent, High, Medium, Low"
-        varchar source "Meta Ads, Google, Website, etc."
-        uuid course_id FK
-        uuid assigned_to_user_id FK
-        numeric course_fee
-        numeric fee_paid
-        numeric fee_balance
-        date next_followup_date
-        time next_followup_time
-        boolean is_archived
-        jsonb custom_attributes
-        timestamp created_at
-        timestamp updated_at
-    }
-
-    ACTIVITIES {
-        uuid id PK
-        uuid lead_id FK
-        uuid user_id FK
-        varchar activity_type "CALL, WHATSAPP, EMAIL, MEETING, NOTE"
-        varchar outcome "Interested, No Answer, Busy, Callback"
-        integer call_duration_seconds
-        text summary_notes
-        timestamp created_at
-    }
-
-    TASKS {
-        uuid id PK
-        uuid lead_id FK
-        uuid assigned_user_id FK
-        varchar title
-        text description
-        varchar priority "High, Medium, Low"
-        date due_date
-        time due_time
-        boolean is_completed
-        timestamp completed_at
-        timestamp created_at
-    }
-
-    PAYMENTS {
-        uuid id PK
-        varchar transaction_ref UK "e.g. TXN-891024"
-        uuid lead_id FK
-        uuid recorded_by_user_id FK
-        numeric amount
-        varchar payment_mode "UPI, CASH, NEFT, CARD, CHEQUE"
-        varchar receipt_number
-        varchar notes
-        timestamp payment_date
-        timestamp created_at
-    }
-
-    COURSES {
-        uuid id PK
-        varchar name "e.g. Commercial Pilot License"
-        varchar code "CPL"
-        numeric base_fee
-        integer duration_months
-        boolean is_active
-    }
-
-    LEAD_SOURCES {
-        uuid id PK
-        varchar name "Meta Ads"
-        varchar utm_source
-        varchar campaign_name
-        boolean is_active
-    }
-
-    AUDIT_LOGS {
-        uuid id PK
-        uuid user_id FK
-        uuid lead_id FK
-        varchar action "STATUS_CHANGE, REASSIGN, PAYMENT_RECORDED"
-        jsonb previous_state
-        jsonb new_state
-        varchar ip_address
-        timestamp created_at
-    }
-```
-
----
-
-## ⚡ 4. Caching, Queue & Real-time Integration
-
-### 4.1 Redis Caching Strategy
-- **Dashboard Summary Cache**: Store computed results of `/api/stats` with a 60-second TTL (`stats:overview:today`).
-- **Counselor Online Status**: Redis sets tracking live counselors for automated round-robin lead routing.
-- **Rate-Limiting Token Buckets**: Prevent API abuse from public forms and scrapers.
-
-### 4.2 BullMQ Background Jobs
-1. **`lead-welcome-dispatcher`**:
-   - Triggers when a new lead is inserted.
-   - Automatically sends an official AEERO Academy Welcome WhatsApp message + Syllabus PDF.
-2. **`callback-reminder-worker`**:
-   - Runs every 5 minutes.
-   - Queries callbacks scheduled for the next 15 minutes and sends push notification + WebSocket alert to assigned counselor.
-3. **`overdue-status-updater`**:
-   - Runs every night at 12:01 AM.
-   - Flags all uncompleted past follow-up tasks as `OVERDUE`.
-
----
-
-## ☁️ 5. Storage & Cloud Infrastructure
-
-| Infrastructure Layer | Recommended Service | Functionality |
+| Mount Path | Router File | Key Endpoints & Methods |
 | :--- | :--- | :--- |
-| **App Hosting** | AWS EC2 / DigitalOcean Droplet / Hetzner | Hosts Docker containers for Backend API and Redis. |
-| **Frontend CDN** | Cloudflare Pages / Vercel / AWS S3 + CloudFront | Ultra-fast global edge caching of compiled static HTML/JS/CSS. |
-| **Managed Database** | AWS RDS PostgreSQL / Supabase / DigitalOcean DB | Automatic daily backups, read replicas, 99.99% high availability. |
-| **Object Storage** | Cloudflare R2 / AWS S3 | Stores student enrollment documents, ID proofs, payment slips (Zero egress fees with Cloudflare R2). |
-| **Process Manager** | PM2 or Docker Compose | Auto-restarts Node.js processes on crash, cluster mode load balancing across CPU cores. |
-| **SSL & DNS** | Cloudflare DNS + Free Managed SSL | DDoS protection, automated HTTPS encryption, global DNS routing. |
+| `/api/health` | `health.routes.ts` | `GET /` — Health check & DB connection status. |
+| `/api/auth` | `auth.routes.ts` | `POST /login`, `GET /me`, `POST /logout`. |
+| `/api/leads` | `lead.routes.ts` | `GET /` (filters & pagination), `POST /`, `GET /:id`, `PATCH /:id`, `DELETE /:id`, `POST /check-duplicate`, `POST /bulk-status`. |
+| `/api/leads/public` | `publicLead.routes.ts` | `POST /` — Unauthenticated public inquiry endpoint for website landing pages. |
+| `/api/activities` | `activity.routes.ts` | `GET /` (leadId filter), `POST /` (log call, note, meeting). |
+| `/api/followups` | `followup.routes.ts` | `GET /`, `POST /`, `PATCH /:id`, `GET /today`, `GET /overdue`. |
+| `/api/tasks` | `task.routes.ts` | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id`. |
+| `/api/notes` | `note.routes.ts` | `GET /`, `POST /`, `DELETE /:id`. |
+| `/api/customers` | `customer.routes.ts` | `GET /`, `POST /`, `GET /:id`. |
+| `/api/courses` | `course.routes.ts` | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id`. |
+| `/api/lead-sources` | `leadSource.routes.ts` | `GET /`, `POST /`, `PATCH /:id`. |
+| `/api/payments` | `payment.routes.ts` | `GET /`, `POST /`, `GET /receipt/:id`. |
+| `/api/stats` | `dashboard.routes.ts` | `GET /` — Aggregated KPI metrics, conversion rates, and employee performance. |
+| `/api/audit-logs` | `auditLog.routes.ts` | `GET /` — System audit logs and event history. |
+| `/api/notifications` | `notification.routes.ts` | `GET /`, `PATCH /:id/read`. |
+| `/api/webhook/meta` | `webhook.routes.ts` | `GET /` (verification challenge), `POST /` (real-time lead ingestion). |
+| `/api/integrations/google-sheets` | `googleSheets.routes.ts` | `POST /discover`, `POST /sync`, `POST /ingest`, `GET /sources`. |
 
 ---
 
-## 🔄 6. External Webhooks & API Ingestion Flow
+## 🗄️ 5. Database Schema & Prisma Models (`backend/prisma/schema.prisma`)
 
-### 6.1 Meta Ads (Facebook & Instagram) Direct Ingestion
-```
-[Student submits Facebook Lead Form]
-                  │
-                  ▼ (Instant Webhook POST)
-[Meta Graph Webhook: /api/webhooks/meta-lead]
-                  │
-                  ▼
-[Verify Meta SHA256 Signature & Token]
-                  │
-                  ▼
-[Check Duplicate Phone / Email in PostgreSQL]
-        ├── If Found: Append as Activity Touchpoint
-        └── If New:   Insert Lead ➔ Auto-Assign via Round-Robin
-                  │
-                  ▼
-[Emit Socket.io Event to Counselor Workspace]
-                  │
-                  ▼
-[Queue BullMQ Job: Send Instant WhatsApp Brochure]
+### 5.1 Enums
+- `Role`: `ADMIN`, `MANAGER`, `LEAD_FINDER`, `VIEWER`
+- `LeadStatus`: `NEW`, `NO_ANSWER`, `GIVEN_DETAILS`, `INTERESTED`, `FOLLOW_UP`, `CONVERTED`, `LOST`, `NOT_INTERESTED`, `INVALID`
+- `Priority`: `LOW`, `MEDIUM`, `HIGH`, `URGENT`
+- `ActivityType`: `CALL`, `WHATSAPP`, `EMAIL`, `SMS`, `MEETING`, `VIDEO_CALL`, `NOTE`, `OTHER`
+- `FollowUpType`: `CALL`, `WHATSAPP`, `EMAIL`, `MEETING`, `CAMPUS_VISIT`
+
+### 5.2 Core Models
+1. **`User`**: System counselors and administrators (`id`, `email`, `username`, `password`, `name`, `role`, `active`, `createdAt`).
+2. **`Lead`**: Authoritative lead record (`id`, `leadId` [e.g. `LD-000001`], `name`, `email`, `mobile`, `city`, `state`, `courseName`, `source`, `status`, `priority`, `counselorName`, `counselorId`, `feeQuoted`, `tokenAmountPaid`, `externalLeadId`, `metadata`, `createdAt`, `updatedAt`).
+3. **`Activity`**: Interactions logged by counselors (`id`, `leadId`, `userId`, `userName`, `type`, `title`, `notes`, `duration`, `createdAt`).
+4. **`FollowUp`**: Scheduled callbacks and reminders (`id`, `leadId`, `scheduledAt`, `status`, `notes`, `counselorName`, `createdAt`).
+5. **`Task`**: Counselor tasks (`id`, `title`, `description`, `priority`, `dueDate`, `status`, `assignedToId`, `assignedToName`, `leadId`).
+6. **`Payment`**: Token advances and tuition installments (`id`, `leadId`, `customerId`, `amount`, `paymentMethod`, `receiptNumber`, `notes`, `createdAt`).
+7. **`Customer`**: Converted student directory (`id`, `leadId`, `name`, `email`, `phone`, `course`, `feeAgreed`, `createdAt`).
+8. **`Course`**: Academy course catalog (`id`, `code`, `name`, `fee`, `duration`, `active`).
+9. **`LeadSource`**: Tracking channels (`id`, `name`, `type`, `active`).
+10. **`GoogleSheetSource`**: Spreadsheet sync registry (`id`, `spreadsheetId`, `sheetName`, `status`, `lastProcessedRow`).
+11. **`AuditLog`**: System actions audit trail (`id`, `userId`, `action`, `entity`, `entityId`, `details`, `createdAt`).
+12. **`Notification`**: User alerts (`id`, `userId`, `title`, `message`, `read`, `type`, `createdAt`).
+13. **`LeadCounter`**: Atomic counter for sequential `LD-XXXXXX` IDs.
+
+---
+
+## 🔐 6. Credentials, Ports & Network Configuration
+
+### 6.1 Network Ports
+- **Frontend Development Server**: `http://localhost:5173` (or `3000`)
+- **Backend API Server**: `http://localhost:3001`
+
+### 6.2 Default User Accounts
+| Role | Full Name | Username *(Case-Insensitive)* | Password |
+| :--- | :--- | :--- | :--- |
+| 👑 **Administrator** | Admin User 1 | `admin` | `admin123` |
+| 👩‍💼 **Counselor 1** | MS. INDU | `indu` *(or `MS. INDU`)* | `Indu@2026` |
+| 👩‍💼 **Counselor 2** | MS. AYESHA | `ayesha` *(or `MS. AYESHA`)* | `Ayesha@2026` |
+| 👩‍💼 **Counselor 3** | MS. PRITI | `priti` *(or `MS. PRITI`)* | `Priti@2026` |
+
+### 6.3 Database Routing Notice (Neon PostgreSQL on Windows)
+Neon's domain publishes both IPv6 and IPv4 DNS records. If local IPv6 routing to AWS is blocked, Prisma's Rust query engine hangs on IPv6 timeout.
+To guarantee instant connection, `.env` routes via IPv4 with the explicit Neon project option:
+```env
+DATABASE_URL="postgresql://neondb_owner:npg_Fl1vKWxV5XsT@18.226.241.3:5432/neondb?sslmode=require&options=project%3Dep-purple-field-axi6hd7i"
+DIRECT_URL="postgresql://neondb_owner:npg_Fl1vKWxV5XsT@18.226.241.3:5432/neondb?sslmode=require&options=project%3Dep-purple-field-axi6hd7i"
 ```
 
 ---
 
-## 🚀 7. Recommended Implementation Roadmap
+## 🚀 7. Operational Commands
 
-1. **Phase 1 (Database & ORM Setup)**:
-   - Initialize PostgreSQL database.
-   - Write Prisma schema and run initial migrations (`npx prisma migrate dev`).
-   - Populate default admin users, aviation courses (`CPL`, `AME`, `Cabin Crew`, `Industrial Safety`), and lead sources.
+### Development Server:
+```bash
+# Terminal 1: Backend (Express + TypeScript + Prisma)
+cd backend
+npm run dev
 
-2. **Phase 2 (Core REST API & Auth)**:
-   - Implement JWT authentication, password hashing (`bcrypt`), and RBAC middleware.
-   - Build CRUD endpoints for Leads, Activities, Tasks, Payments, and Stats.
+# Terminal 2: Frontend (Vite + React)
+cd frontend
+npm run dev
+```
 
-3. **Phase 3 (Real-Time WebSockets & Meta Webhooks)**:
-   - Configure Socket.io server for live lead alerts and counselor task synchronization.
-   - Setup Meta Lead Ads and WhatsApp Cloud API webhook listeners.
+### Prisma Commands:
+```bash
+cd backend
+npx prisma generate     # Regenerate Prisma Client
+npx prisma db pull       # Introspect live database schema
+npx prisma db push       # Push schema changes to database
+```
 
-4. **Phase 4 (Frontend Connect & Optimization)**:
-   - Connect React UI components to backend endpoints via TanStack Query.
-   - Implement Dark Reader / Light theme persistence, live search debouncing, and export handlers.
-
-5. **Phase 5 (Production Deployment & Monitoring)**:
-   - Deploy Docker containers behind NGINX with SSL.
-   - Setup automated daily database backups and uptime health checks.
+### Automated Integration Test Suite:
+```bash
+cd backend
+node scripts/test-google-sheets-bridge.js
+```
+*(All 39 automated integration test assertions pass locally).*

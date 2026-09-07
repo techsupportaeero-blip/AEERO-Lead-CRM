@@ -1,3 +1,4 @@
+import Skeleton, { TableSkeleton, CardSkeleton } from '../components/Skeleton.jsx';
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import { StatusBadge, PriorityBadge } from '../components/StatusBadge';
@@ -150,7 +151,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
     return (
       <div className="py-20 text-center text-slate-500">
         <span className="material-symbols-outlined text-[36px] animate-spin text-[#7D610F]">sync</span>
-        <p className="text-xs font-semibold mt-2">Loading Lead Workspace...</p>
+        <TableSkeleton columns={6} rows={8} />
       </div>
     );
   }
@@ -171,7 +172,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
       
       {/* Top Header Card */}
       <div className={`p-6 rounded-xl border shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-colors ${
-        darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+        darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
       }`}>
         
         <div className="space-y-1">
@@ -179,7 +180,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
             <button
               onClick={onBack}
               className={`p-1.5 rounded-full transition-colors ${
-                darkMode ? 'text-slate-400 hover:text-white hover:bg-[#1E2633]' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+                darkMode ? 'text-slate-400 hover:text-white hover:bg-[#3D3212]' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
               }`}
               title="Back to All Leads"
             >
@@ -212,7 +213,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
           <button
             onClick={() => onEditLead(lead)}
             className={`px-4 py-2 rounded-lg text-xs font-semibold border transition-colors flex items-center gap-1.5 ${
-              darkMode ? 'bg-[#12161F] hover:bg-[#1E2633] text-slate-200 border-[#262F3D]' : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300'
+              darkMode ? 'bg-[#1A1608] hover:bg-[#3D3212] text-slate-200 border-[#574719]' : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300'
             }`}
           >
             <span className="material-symbols-outlined text-[16px]">edit</span>
@@ -238,43 +239,43 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
           
           {/* SECTION 1: CONTACT INFORMATION */}
           <div className={`p-5 rounded-xl border shadow-sm space-y-4 transition-colors ${
-            darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+            darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
           }`}>
-            <div className={`flex items-center gap-2 border-b pb-3 ${darkMode ? 'border-[#262F3D]' : 'border-slate-200'}`}>
+            <div className={`flex items-center gap-2 border-b pb-3 ${darkMode ? 'border-[#574719]' : 'border-slate-200'}`}>
               <span className="material-symbols-outlined text-[#7D610F] text-[20px]">badge</span>
               <h3 className={`font-bold text-base ${darkMode ? 'text-white' : 'text-slate-800'}`}>SECTION 1: Contact Information</h3>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-100'}`}>
+              <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-100'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">Full Name</span>
                 <span className={`font-bold text-sm ${darkMode ? 'text-white' : 'text-slate-900'}`}>{lead.name}</span>
               </div>
-              <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-100'}`}>
+              <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-100'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">Mobile Phone</span>
                 <span className={`font-bold text-sm ${darkMode ? 'text-white' : 'text-slate-900'}`}>{lead.mobile}</span>
               </div>
-              <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-100'}`}>
+              <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-100'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">WhatsApp Number</span>
                 <span className={`font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{lead.whatsappNumber || lead.mobile}</span>
               </div>
-              <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-100'}`}>
+              <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-100'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">Email Address</span>
                 <span className={`font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{lead.email || 'N/A'}</span>
               </div>
-              <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-100'}`}>
+              <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-100'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">City</span>
                 <span className={`font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{lead.city || 'N/A'}</span>
               </div>
-              <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-100'}`}>
+              <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-100'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">State</span>
                 <span className={`font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{lead.state || 'N/A'}</span>
               </div>
-              <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-100'}`}>
+              <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-100'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">Age</span>
                 <span className={`font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{lead.age ? `${lead.age} years` : 'N/A'}</span>
               </div>
-              <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-100'}`}>
+              <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-100'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">Qualification</span>
                 <span className={`font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{lead.qualification || 'N/A'}</span>
               </div>
@@ -283,9 +284,9 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
 
           {/* SECTION 2: COURSE INTEREST */}
           <div className={`p-5 rounded-xl border shadow-sm space-y-4 transition-colors ${
-            darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+            darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
           }`}>
-            <div className={`flex items-center gap-2 border-b pb-3 ${darkMode ? 'border-[#262F3D]' : 'border-slate-200'}`}>
+            <div className={`flex items-center gap-2 border-b pb-3 ${darkMode ? 'border-[#574719]' : 'border-slate-200'}`}>
               <span className="material-symbols-outlined text-[#7D610F] text-[20px]">school</span>
               <h3 className={`font-bold text-base ${darkMode ? 'text-white' : 'text-slate-800'}`}>SECTION 2: Course Interest & Requirements</h3>
             </div>
@@ -297,16 +298,16 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">Interested Aviation Course</span>
                 <span className={`font-bold text-base ${darkMode ? 'text-amber-300' : 'text-[#7D610F]'}`}>{lead.interestedCourse}</span>
               </div>
-              <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-100'}`}>
+              <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-100'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">Preferred Study Mode</span>
                 <span className={`font-bold ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>{lead.preferredStudyMode || 'Offline'}</span>
               </div>
-              <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-100'}`}>
+              <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-100'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">Lead Owner / Counselor</span>
                 <span className={`font-bold ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>{lead.ownerId}</span>
               </div>
               {lead.requirement && (
-                <div className={`p-3 rounded-lg border sm:col-span-2 ${darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-100'}`}>
+                <div className={`p-3 rounded-lg border sm:col-span-2 ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-100'}`}>
                   <span className="text-slate-400 block uppercase font-semibold text-[10px]">Student Requirement</span>
                   <p className={`font-medium ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{lead.requirement}</p>
                 </div>
@@ -316,43 +317,43 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
 
           {/* SECTION 3: SOURCE & MARKETING */}
           <div className={`p-5 rounded-xl border shadow-sm space-y-4 transition-colors ${
-            darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+            darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
           }`}>
-            <div className={`flex items-center gap-2 border-b pb-3 ${darkMode ? 'border-[#262F3D]' : 'border-slate-200'}`}>
+            <div className={`flex items-center gap-2 border-b pb-3 ${darkMode ? 'border-[#574719]' : 'border-slate-200'}`}>
               <span className="material-symbols-outlined text-[#7D610F] text-[20px]">campaign</span>
               <h3 className={`font-bold text-base ${darkMode ? 'text-white' : 'text-slate-800'}`}>SECTION 3: Source & Marketing Metadata</h3>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-              <div className={`p-2.5 rounded border ${darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-200'}`}>
+              <div className={`p-2.5 rounded border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-200'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">Lead Source</span>
                 <span className={`font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{lead.source}</span>
               </div>
-              <div className={`p-2.5 rounded border ${darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-200'}`}>
+              <div className={`p-2.5 rounded border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-200'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">Campaign</span>
                 <span className={`font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{lead.campaign || 'N/A'}</span>
               </div>
-              <div className={`p-2.5 rounded border ${darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-200'}`}>
+              <div className={`p-2.5 rounded border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-200'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">Campaign ID</span>
                 <span className={`font-mono ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{lead.campaignId || 'N/A'}</span>
               </div>
-              <div className={`p-2.5 rounded border ${darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-200'}`}>
+              <div className={`p-2.5 rounded border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-200'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">Ad Set</span>
                 <span className={`font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{lead.adSet || 'N/A'}</span>
               </div>
-              <div className={`p-2.5 rounded border ${darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-200'}`}>
+              <div className={`p-2.5 rounded border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-200'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">Ad Set ID</span>
                 <span className={`font-mono ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{lead.adSetId || 'N/A'}</span>
               </div>
-              <div className={`p-2.5 rounded border ${darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-200'}`}>
+              <div className={`p-2.5 rounded border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-200'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">Ad Name</span>
                 <span className={`font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{lead.ad || 'N/A'}</span>
               </div>
-              <div className={`p-2.5 rounded border ${darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-200'}`}>
+              <div className={`p-2.5 rounded border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-200'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">Form ID</span>
                 <span className={`font-mono ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{lead.formId || 'N/A'}</span>
               </div>
-              <div className={`p-2.5 rounded border ${darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-200'}`}>
+              <div className={`p-2.5 rounded border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-200'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">UTM Source</span>
                 <span className={`font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{lead.utmSource || 'N/A'}</span>
               </div>
@@ -361,9 +362,9 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
 
           {/* CUSTOM NOTES & PINNED NOTES CARD */}
           <div className={`p-5 rounded-xl border shadow-sm space-y-4 transition-colors ${
-            darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+            darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
           }`}>
-            <div className={`flex items-center justify-between border-b pb-3 ${darkMode ? 'border-[#262F3D]' : 'border-slate-200'}`}>
+            <div className={`flex items-center justify-between border-b pb-3 ${darkMode ? 'border-[#574719]' : 'border-slate-200'}`}>
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-[#7D610F] text-[20px]">sticky_note_2</span>
                 <h3 className={`font-bold text-base ${darkMode ? 'text-white' : 'text-slate-800'}`}>Counselor Notes & Pinned Instructions</h3>
@@ -377,7 +378,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
 
             {/* Add Note Form */}
             <form onSubmit={handleAddNote} className={`rounded-lg p-3 space-y-2 border ${
-              darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-200'
+              darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-200'
             }`}>
               <div className="flex gap-2">
                 <input
@@ -386,7 +387,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
                   value={newNoteTitle}
                   onChange={(e) => setNewNoteTitle(e.target.value)}
                   className={`flex-1 border rounded px-2.5 py-1.5 text-xs outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                    darkMode ? 'bg-[#181D26] border-[#262F3D] text-white placeholder:text-slate-500' : 'bg-white border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#2A220C] border-[#574719] text-white placeholder:text-slate-500' : 'bg-white border-slate-300 text-slate-900'
                   }`}
                 />
                 <label className={`flex items-center gap-1.5 text-xs font-semibold cursor-pointer px-2 ${
@@ -407,7 +408,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
                 value={newNoteContent}
                 onChange={(e) => setNewNoteContent(e.target.value)}
                 className={`w-full border rounded p-2 text-xs outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                  darkMode ? 'bg-[#181D26] border-[#262F3D] text-white placeholder:text-slate-500' : 'bg-white border-slate-300 text-slate-900'
+                  darkMode ? 'bg-[#2A220C] border-[#574719] text-white placeholder:text-slate-500' : 'bg-white border-slate-300 text-slate-900'
                 }`}
               />
               <button
@@ -430,7 +431,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
                     className={`p-3.5 rounded-lg border transition-all ${
                       n.isPinned
                         ? (darkMode ? 'bg-amber-950/30 border-amber-800/40 shadow-sm' : 'bg-amber-50/70 border-[#CDB46A] shadow-sm')
-                        : (darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-200')
+                        : (darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-200')
                     }`}
                   >
                     <div className="flex justify-between items-start mb-1">
@@ -473,9 +474,9 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
 
           {/* ACTIVITY HISTORY TIMELINE */}
           <div className={`p-5 rounded-xl border shadow-sm space-y-4 transition-colors ${
-            darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+            darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
           }`}>
-            <div className={`flex items-center justify-between border-b pb-3 ${darkMode ? 'border-[#262F3D]' : 'border-slate-200'}`}>
+            <div className={`flex items-center justify-between border-b pb-3 ${darkMode ? 'border-[#574719]' : 'border-slate-200'}`}>
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-[#7D610F] text-[20px]">history</span>
                 <h3 className={`font-bold text-base ${darkMode ? 'text-white' : 'text-slate-800'}`}>Activity History Timeline</h3>
@@ -498,7 +499,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
                     <div className="absolute -left-6 top-1.5 w-3.5 h-3.5 rounded-full bg-[#7D610F] border-2 border-white ring-2 ring-amber-200" />
                     
                     <div className={`border rounded-lg p-3 space-y-1 ${
-                      darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-50 border-slate-200'
+                      darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-200'
                     }`}>
                       <div className="flex justify-between items-center text-xs">
                         <span className={`font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
@@ -511,7 +512,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
                       {act.remarks && <p className={`text-xs font-medium ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{act.remarks}</p>}
                       {act.additionalInformation && (
                         <p className={`text-xs p-2 rounded border mt-1 ${
-                          darkMode ? 'bg-[#181D26] border-[#262F3D] text-slate-300' : 'bg-white border-slate-200 text-slate-500'
+                          darkMode ? 'bg-[#2A220C] border-[#574719] text-slate-300' : 'bg-white border-slate-200 text-slate-500'
                         }`}>
                           {act.additionalInformation}
                         </p>
@@ -531,10 +532,10 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
           
           {/* CALL & UPDATE ACTION CARD */}
           <div className={`rounded-xl border-2 p-5 shadow-lg space-y-4 sticky top-[76px] transition-colors ${
-            darkMode ? 'bg-[#181D26] border-amber-500/40' : 'bg-white border-[#CDB46A]'
+            darkMode ? 'bg-[#2A220C] border-amber-500/40' : 'bg-white border-[#CDB46A]'
           }`}>
             <div className={`flex items-center gap-2 border-b -mx-5 -mt-5 p-4 rounded-t-xl ${
-              darkMode ? 'bg-amber-950/30 border-[#262F3D]' : 'bg-amber-50/60 border-slate-200'
+              darkMode ? 'bg-amber-950/30 border-[#574719]' : 'bg-amber-50/60 border-slate-200'
             }`}>
               <span className="material-symbols-outlined text-[#7D610F] text-[22px] font-bold">phone_in_talk</span>
               <div>
@@ -554,7 +555,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
                   value={outcome}
                   onChange={(e) => setOutcome(e.target.value)}
                   className={`w-full border rounded-lg p-2.5 font-semibold focus:ring-2 focus:ring-[#7D610F] outline-none ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 >
                   {callOutcomes.map(o => (
@@ -574,7 +575,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
                   value={remarks}
                   onChange={(e) => setRemarks(e.target.value)}
                   className={`w-full border rounded-lg p-2 focus:ring-2 focus:ring-[#7D610F] outline-none ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -590,7 +591,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
                   value={additionalInformation}
                   onChange={(e) => setAdditionalInformation(e.target.value)}
                   className={`w-full border rounded-lg p-2 outline-none ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -610,7 +611,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
                     value={followUpDate}
                     onChange={(e) => setFollowUpDate(e.target.value)}
                     className={`border rounded p-1.5 text-xs ${
-                      darkMode ? 'bg-[#181D26] border-[#262F3D] text-white' : 'bg-white border-slate-300 text-slate-800'
+                      darkMode ? 'bg-[#2A220C] border-[#574719] text-white' : 'bg-white border-slate-300 text-slate-800'
                     }`}
                   />
                   <input
@@ -618,7 +619,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
                     value={followUpTime}
                     onChange={(e) => setFollowUpTime(e.target.value)}
                     className={`border rounded p-1.5 text-xs ${
-                      darkMode ? 'bg-[#181D26] border-[#262F3D] text-white' : 'bg-white border-slate-300 text-slate-800'
+                      darkMode ? 'bg-[#2A220C] border-[#574719] text-white' : 'bg-white border-slate-300 text-slate-800'
                     }`}
                   />
                 </div>
@@ -629,7 +630,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
                     value={followUpType}
                     onChange={(e) => setFollowUpType(e.target.value)}
                     className={`w-full border rounded p-1.5 text-xs font-semibold ${
-                      darkMode ? 'bg-[#181D26] border-[#262F3D] text-white' : 'bg-white border-slate-300 text-slate-800'
+                      darkMode ? 'bg-[#2A220C] border-[#574719] text-white' : 'bg-white border-slate-300 text-slate-800'
                     }`}
                   >
                     {FOLLOWUP_TYPES.map(t => (
@@ -648,7 +649,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
                   value={updateStatus}
                   onChange={(e) => setUpdateStatus(e.target.value)}
                   className={`w-full border rounded-lg p-2 font-bold ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 >
                   {LEAD_STATUSES.map(s => (
@@ -678,9 +679,9 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
 
           {/* SCHEDULED FOLLOW-UPS CARD */}
           <div className={`p-5 rounded-xl border shadow-sm space-y-3 transition-colors ${
-            darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+            darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
           }`}>
-            <div className={`flex justify-between items-center border-b pb-2 ${darkMode ? 'border-[#262F3D]' : 'border-slate-200'}`}>
+            <div className={`flex justify-between items-center border-b pb-2 ${darkMode ? 'border-[#574719]' : 'border-slate-200'}`}>
               <h4 className={`font-bold text-sm flex items-center gap-1.5 ${darkMode ? 'text-white' : 'text-slate-800'}`}>
                 <span className="material-symbols-outlined text-[#7D610F] text-[18px]">event_upcoming</span>
                 <span>Scheduled Follow-Ups</span>

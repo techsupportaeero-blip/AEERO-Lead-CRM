@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "npx concurrently \"npm run backend\" \"npm run frontend\"",
+    "dev:prisma": "npx concurrently \"npm run backend:prisma\" \"npm run frontend\"",
     "backend": "npm --prefix backend start",
+    "backend:prisma": "npm --prefix backend run dev:prisma",
     "frontend": "npm --prefix frontend dev",
     "build:frontend": "npm --prefix frontend build"
   },

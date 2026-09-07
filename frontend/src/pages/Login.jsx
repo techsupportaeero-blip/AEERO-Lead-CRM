@@ -3,8 +3,8 @@ import { api } from '../api/client';
 import aeeroLogo from '../assets/logo/aeero-logo.png';
 
 export const Login = ({ onLoginSuccess }) => {
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin123');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -50,23 +50,6 @@ export const Login = ({ onLoginSuccess }) => {
           <p className="text-xs text-slate-500 font-medium mt-1">Lead Management Core System</p>
         </div>
 
-        {/* Credentials Box */}
-        <div className="mb-6 p-3.5 bg-amber-50/80 border border-[#CDB46A]/50 rounded-xl text-xs space-y-1">
-          <div className="flex items-center gap-1.5 font-bold text-[#7D610F]">
-            <span className="material-symbols-outlined text-[16px]">key</span>
-            <span>Default System Accounts:</span>
-          </div>
-          <div className="grid grid-cols-2 gap-2 pt-1 text-slate-700 text-[11px]">
-            <div>
-              <span className="text-slate-400 block font-sans text-[10px] font-semibold">ADMIN Role</span>
-              <strong className="font-mono">admin / admin123</strong>
-            </div>
-            <div>
-              <span className="text-slate-400 block font-sans text-[10px] font-semibold">LEAD_FINDER Role</span>
-              <strong className="font-mono">sourav / password123</strong>
-            </div>
-          </div>
-        </div>
 
         {/* Error Alert */}
         {error && (
@@ -94,7 +77,7 @@ export const Login = ({ onLoginSuccess }) => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                placeholder="admin"
+                placeholder="Enter username"
                 className="w-full bg-slate-50 border border-slate-300 rounded-xl h-[42px] pl-10 pr-3 text-sm text-slate-900 focus:ring-2 focus:ring-[#7D610F] focus:border-[#7D610F] outline-none transition-all font-medium"
               />
             </div>

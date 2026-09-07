@@ -94,11 +94,11 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-xs p-3 sm:p-4 animate-fadeIn">
       <div className={`rounded-xl shadow-2xl border w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden ${
-        darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-300'
+        darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-300'
       }`}>
 
         {/* Navy Header */}
-        <div className="bg-[#0F2438] text-white px-6 py-3.5 flex justify-between items-center shadow-md">
+        <div className="bg-[#574719] text-white px-6 py-3.5 flex justify-between items-center shadow-md">
           <div className="flex items-center gap-2.5">
             <span className="material-symbols-outlined text-[20px]">add</span>
             <h3 className="font-bold text-base tracking-wide">+ Add Lead</h3>
@@ -124,7 +124,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
           {/* 1. Customer & Company Details Section */}
           <div className="space-y-3">
             <div className={`flex items-center gap-2 pb-1.5 border-b font-bold uppercase tracking-wider text-[11px] ${
-              darkMode ? 'border-[#262F3D] text-amber-400' : 'border-slate-200 text-[#0F2438]'
+              darkMode ? 'border-[#574719] text-amber-400' : 'border-slate-200 text-[#574719]'
             }`}>
               <span className="material-symbols-outlined text-[18px]">business</span>
               <span>Company & Customer Details</span>
@@ -140,7 +140,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   className={`w-full border rounded px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -153,7 +153,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                   value={formData.company}
                   onChange={(e) => handleInputChange('company', e.target.value)}
                   className={`w-full border rounded px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -167,7 +167,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                   value={formData.mobile}
                   onChange={(e) => handleInputChange('mobile', e.target.value)}
                   className={`w-full border rounded px-3 py-2 text-xs font-mono outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -180,7 +180,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   className={`w-full border rounded px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -193,7 +193,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                   value={formData.jobTitle}
                   onChange={(e) => handleInputChange('jobTitle', e.target.value)}
                   className={`w-full border rounded px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -206,7 +206,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                   value={formData.industry}
                   onChange={(e) => handleInputChange('industry', e.target.value)}
                   className={`w-full border rounded px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -216,7 +216,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
           {/* 2. Classification Section */}
           <div className="space-y-3">
             <div className={`flex items-center gap-2 pb-1.5 border-b font-bold uppercase tracking-wider text-[11px] ${
-              darkMode ? 'border-[#262F3D] text-amber-400' : 'border-slate-200 text-[#0F2438]'
+              darkMode ? 'border-[#574719] text-amber-400' : 'border-slate-200 text-[#574719]'
             }`}>
               <span className="material-symbols-outlined text-[18px]">sell</span>
               <span>Classification</span>
@@ -229,7 +229,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                   value={formData.source}
                   onChange={(e) => handleInputChange('source', e.target.value)}
                   className={`w-full border rounded px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 >
                   {LEAD_SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
@@ -242,7 +242,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                   value={formData.status}
                   onChange={(e) => handleInputChange('status', e.target.value)}
                   className={`w-full border rounded px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 >
                   {LEAD_STATUSES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
@@ -255,7 +255,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                   value={formData.priority}
                   onChange={(e) => handleInputChange('priority', e.target.value)}
                   className={`w-full border rounded px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 >
                   <option value="Low">Low</option>
@@ -273,7 +273,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                   value={formData.estimatedValue}
                   onChange={(e) => handleInputChange('estimatedValue', e.target.value)}
                   className={`w-full border rounded px-3 py-2 text-xs font-bold outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -285,7 +285,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                   readOnly
                   value="INR (₹)"
                   className={`w-full border rounded px-3 py-2 text-xs font-bold ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-slate-400' : 'bg-slate-100 border-slate-300 text-slate-700'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-slate-400' : 'bg-slate-100 border-slate-300 text-slate-700'
                   }`}
                 />
               </div>
@@ -295,7 +295,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
           {/* 3. Assignment & Follow-up Section */}
           <div className="space-y-3">
             <div className={`flex items-center gap-2 pb-1.5 border-b font-bold uppercase tracking-wider text-[11px] ${
-              darkMode ? 'border-[#262F3D] text-amber-400' : 'border-slate-200 text-[#0F2438]'
+              darkMode ? 'border-[#574719] text-amber-400' : 'border-slate-200 text-[#574719]'
             }`}>
               <span className="material-symbols-outlined text-[18px]">person_add</span>
               <span>Assignment & Follow-up</span>
@@ -308,7 +308,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                   value={formData.ownerId}
                   onChange={(e) => handleInputChange('ownerId', e.target.value)}
                   className={`w-full border rounded px-3 py-2 text-xs font-semibold outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 >
                   {COUNSELORS.map(c => <option key={c} value={c}>{c}</option>)}
@@ -322,7 +322,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                   value={formData.nextFollowupDate}
                   onChange={(e) => handleInputChange('nextFollowupDate', e.target.value)}
                   className={`w-full border rounded px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -334,7 +334,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                   value={formData.lastContactDate}
                   onChange={(e) => handleInputChange('lastContactDate', e.target.value)}
                   className={`w-full border rounded px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -344,7 +344,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
           {/* 4. Location Section */}
           <div className="space-y-3">
             <div className={`flex items-center gap-2 pb-1.5 border-b font-bold uppercase tracking-wider text-[11px] ${
-              darkMode ? 'border-[#262F3D] text-amber-400' : 'border-slate-200 text-[#0F2438]'
+              darkMode ? 'border-[#574719] text-amber-400' : 'border-slate-200 text-[#574719]'
             }`}>
               <span className="material-symbols-outlined text-[18px]">location_on</span>
               <span>Location</span>
@@ -358,7 +358,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                   value={formData.country}
                   onChange={(e) => handleInputChange('country', e.target.value)}
                   className={`w-full border rounded px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -371,7 +371,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                   value={formData.city}
                   onChange={(e) => handleInputChange('city', e.target.value)}
                   className={`w-full border rounded px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -384,7 +384,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                   value={formData.address}
                   onChange={(e) => handleInputChange('address', e.target.value)}
                   className={`w-full border rounded px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -394,7 +394,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
           {/* 5. Additional Information Section */}
           <div className="space-y-3">
             <div className={`flex items-center gap-2 pb-1.5 border-b font-bold uppercase tracking-wider text-[11px] ${
-              darkMode ? 'border-[#262F3D] text-amber-400' : 'border-slate-200 text-[#0F2438]'
+              darkMode ? 'border-[#574719] text-amber-400' : 'border-slate-200 text-[#574719]'
             }`}>
               <span className="material-symbols-outlined text-[18px]">info</span>
               <span>Additional Information</span>
@@ -407,7 +407,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                   value={formData.interestedCourse}
                   onChange={(e) => handleInputChange('interestedCourse', e.target.value)}
                   className={`w-full border rounded px-3 py-2 text-xs font-semibold outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 >
                   {AVIATION_COURSES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -422,7 +422,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                   value={formData.website}
                   onChange={(e) => handleInputChange('website', e.target.value)}
                   className={`w-full border rounded px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -435,7 +435,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                   value={formData.linkedin}
                   onChange={(e) => handleInputChange('linkedin', e.target.value)}
                   className={`w-full border rounded px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -451,14 +451,14 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                       onChange={(e) => setTagInput(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleAddTag(e)}
                       className={`flex-1 border rounded px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                        darkMode ? 'bg-[#12161F] border-[#262F3D] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
+                        darkMode ? 'bg-[#1A1608] border-[#574719] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
                       }`}
                     />
                     <button
                       type="button"
                       onClick={handleAddTag}
                       className={`px-3 py-1.5 rounded text-xs font-bold ${
-                        darkMode ? 'bg-[#1E2633] text-slate-200 hover:bg-slate-700' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                        darkMode ? 'bg-[#3D3212] text-slate-200 hover:bg-slate-700' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                       }`}
                     >
                       + Add
@@ -487,7 +487,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                   value={formData.remarks}
                   onChange={(e) => handleInputChange('remarks', e.target.value)}
                   className={`w-full border rounded px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -495,11 +495,11 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
           </div>
 
           {/* Footer Actions */}
-          <div className={`pt-4 border-t flex justify-end items-center gap-3 ${darkMode ? 'border-[#262F3D]' : 'border-slate-200'}`}>
+          <div className={`pt-4 border-t flex justify-end items-center gap-3 ${darkMode ? 'border-[#574719]' : 'border-slate-200'}`}>
             <button
               type="submit"
               disabled={loading}
-              className="bg-[#0F2438] hover:bg-[#16385C] text-white font-bold text-xs px-5 py-2.5 rounded shadow transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+              className="bg-[#574719] hover:bg-[#6B540A] text-white font-bold text-xs px-5 py-2.5 rounded shadow transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
             >
               {loading ? (
                 <>
@@ -518,7 +518,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
               type="button"
               onClick={onClose}
               className={`font-bold text-xs px-5 py-2.5 rounded transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 ${
-                darkMode ? 'bg-[#12161F] hover:bg-[#1E2633] text-slate-300 border border-[#262F3D]' : 'bg-slate-600 hover:bg-slate-700 text-white'
+                darkMode ? 'bg-[#1A1608] hover:bg-[#3D3212] text-slate-300 border border-[#574719]' : 'bg-slate-600 hover:bg-slate-700 text-white'
               }`}
             >
               <span className="material-symbols-outlined text-sm">close</span>

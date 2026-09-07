@@ -21,14 +21,14 @@ const COLORS = {
   lightGold: '#CDB46A',
   amber: '#D97706',
   emerald: '#10B981',
-  blue: '#3B82F6',
+  blue: '#D4AF37',
   indigo: '#6366F1',
   purple: '#8B5CF6',
   red: '#EF4444',
   slate: '#64748B'
 };
 
-const PIE_COLORS = ['#3B82F6', '#D97706', '#8B5CF6', '#10B981', '#EF4444', '#64748B', '#CDB46A'];
+const PIE_COLORS = ['#D4AF37', '#D97706', '#8B5CF6', '#10B981', '#EF4444', '#64748B', '#CDB46A'];
 
 // Custom Tooltip Component for Sleek Styling
 const CustomTooltip = ({ active, payload, label }) => {
@@ -173,12 +173,12 @@ const DashboardChartsInternal = ({ stats = {}, loading }) => {
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
               <div>
                 <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                  <span className="material-symbols-outlined text-blue-600 text-lg">show_chart</span>
+                  <span className="material-symbols-outlined text-amber-600 text-lg">show_chart</span>
                   <span>Monthly Lead Influx & Conversion Growth</span>
                 </h3>
                 <p className="text-[11px] text-slate-500">Historical trend showing total volume vs converted students</p>
               </div>
-              <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md border border-blue-200">
+              <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-amber-50 text-amber-700 rounded-md border border-amber-200">
                 Timeline Area Plot
               </span>
             </div>
@@ -188,8 +188,8 @@ const DashboardChartsInternal = ({ stats = {}, loading }) => {
                 <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.0} />
+                      <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="#D4AF37" stopOpacity={0.0} />
                     </linearGradient>
                     <linearGradient id="colorConverted" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#10B981" stopOpacity={0.5} />
@@ -201,7 +201,7 @@ const DashboardChartsInternal = ({ stats = {}, loading }) => {
                   <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-                  <Area type="monotone" dataKey="total" name="Total Influx" stroke="#3B82F6" strokeWidth={2.5} fillOpacity={1} fill="url(#colorTotal)" />
+                  <Area type="monotone" dataKey="total" name="Total Influx" stroke="#D4AF37" strokeWidth={2.5} fillOpacity={1} fill="url(#colorTotal)" />
                   <Area type="monotone" dataKey="converted" name="Enrolled Admissions" stroke="#10B981" strokeWidth={2.5} fillOpacity={1} fill="url(#colorConverted)" />
                 </AreaChart>
               </ResponsiveContainer>
@@ -316,7 +316,7 @@ const DashboardChartsInternal = ({ stats = {}, loading }) => {
                   <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
-                  <Bar dataKey="Total" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Total" fill="#D4AF37" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="Interested" fill="#D97706" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="Converted" fill="#10B981" radius={[4, 4, 0, 0]} />
                 </BarChart>
@@ -348,7 +348,7 @@ const DashboardChartsInternal = ({ stats = {}, loading }) => {
                   <Tooltip content={<CustomTooltip />} />
                   <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
                   <Bar dataKey="Assigned" fill="#6366F1" radius={[0, 4, 4, 0]} barSize={12} />
-                  <Bar dataKey="Contacted" fill="#3B82F6" radius={[0, 4, 4, 0]} barSize={12} />
+                  <Bar dataKey="Contacted" fill="#D4AF37" radius={[0, 4, 4, 0]} barSize={12} />
                   <Bar dataKey="Converted" fill="#10B981" radius={[0, 4, 4, 0]} barSize={12} />
                 </BarChart>
               </ResponsiveContainer>

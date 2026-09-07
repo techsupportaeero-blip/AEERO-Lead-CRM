@@ -1,3 +1,4 @@
+import Skeleton, { TableSkeleton, CardSkeleton } from '../components/Skeleton.jsx';
 import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../api/client';
 
@@ -74,7 +75,7 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
       return {
         label: action.replace(/_/g, ' '),
         icon: 'phone_in_talk',
-        color: darkMode ? 'bg-blue-900/40 text-blue-300 border-blue-700/50' : 'bg-blue-100 text-blue-800 border-blue-200'
+        color: darkMode ? 'bg-amber-900/40 text-amber-300 border-amber-700/50' : 'bg-amber-100 text-amber-800 border-amber-200'
       };
     }
     if (act.includes('NOTE') || act.includes('REMARK') || act.includes('COMMENT')) {
@@ -261,7 +262,7 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
       
       {/* Top Banner Header */}
       <div className={`p-5 rounded-2xl border shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-colors ${
-        darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+        darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
       }`}>
         <div>
           <div className="flex items-center gap-2">
@@ -279,7 +280,7 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
         {/* View Mode Switch & Refresh */}
         <div className="flex items-center gap-2 flex-wrap">
           <div className={`flex rounded-xl p-1 border text-xs font-semibold ${
-            darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-100 border-slate-200'
+            darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-100 border-slate-200'
           }`}>
             <button
               onClick={() => setViewMode('user_pulse')}
@@ -309,7 +310,7 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
             onClick={loadData}
             title="Refresh Live Audit Trace"
             className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all ${
-              darkMode ? 'bg-[#12161F] hover:bg-[#1E2633] text-slate-300 border-[#262F3D]' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'
+              darkMode ? 'bg-[#1A1608] hover:bg-[#3D3212] text-slate-300 border-[#574719]' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'
             }`}
           >
             <span className="material-symbols-outlined text-[16px]">refresh</span>
@@ -322,18 +323,18 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
         
         <div className={`p-4 rounded-xl border shadow-xs transition-colors ${
-          darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+          darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
         }`}>
           <div className="flex items-center justify-between">
             <span className={`text-[11px] font-bold uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Total Counselors</span>
-            <span className="material-symbols-outlined text-blue-500 text-lg">badge</span>
+            <span className="material-symbols-outlined text-amber-500 text-lg">badge</span>
           </div>
           <p className={`text-2xl font-black mt-1 ${darkMode ? 'text-white' : 'text-slate-900'}`}>{metrics.totalUsers}</p>
           <p className="text-[11px] text-emerald-500 font-semibold mt-0.5">{metrics.activeUsersCount} active with logs</p>
         </div>
 
         <div className={`p-4 rounded-xl border shadow-xs transition-colors ${
-          darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+          darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
         }`}>
           <div className="flex items-center justify-between">
             <span className={`text-[11px] font-bold uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Total Trace Events</span>
@@ -344,7 +345,7 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
         </div>
 
         <div className={`p-4 rounded-xl border shadow-xs transition-colors ${
-          darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+          darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
         }`}>
           <div className="flex items-center justify-between">
             <span className={`text-[11px] font-bold uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Top Active Member</span>
@@ -357,7 +358,7 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
         </div>
 
         <div className={`p-4 rounded-xl border shadow-xs transition-colors ${
-          darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+          darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
         }`}>
           <div className="flex items-center justify-between">
             <span className={`text-[11px] font-bold uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Sync Status</span>
@@ -374,7 +375,7 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
 
       {/* Search & Filter Bar */}
       <div className={`p-3.5 rounded-xl border shadow-xs flex items-center justify-between gap-3 transition-colors ${
-        darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+        darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
       }`}>
         <div className="relative flex-1 max-w-md">
           <span className="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-[18px]">search</span>
@@ -385,7 +386,7 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
             placeholder={viewMode === 'user_pulse' ? "Search users, actions, or entity ID..." : "Filter raw event stream..."}
             className={`w-full pl-9 pr-4 py-2 text-xs rounded-lg border outline-none transition-colors ${
               darkMode 
-                ? 'bg-[#12161F] border-[#262F3D] text-slate-200 placeholder-slate-500 focus:border-[#E5A812]' 
+                ? 'bg-[#1A1608] border-[#574719] text-slate-200 placeholder-slate-500 focus:border-[#E5A812]' 
                 : 'bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 focus:border-[#7D610F]'
             }`}
           />
@@ -412,7 +413,7 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
       {/* ========================================================================= */}
       {viewMode === 'user_pulse' && (
         <div className={`rounded-xl border shadow-sm overflow-hidden transition-colors ${
-          darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+          darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
         }`}>
           {loading ? (
             <div className="py-20 text-center text-slate-500">
@@ -428,7 +429,7 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-[#0F2438] text-white font-bold uppercase text-[11px] tracking-wider">
+                  <tr className="bg-[#574719] text-white font-bold uppercase text-[11px] tracking-wider">
                     <th className="py-3 px-4">User / Counselor</th>
                     <th className="py-3 px-4">Latest Action</th>
                     <th className="py-3 px-4">Entity & Entity ID</th>
@@ -447,7 +448,7 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
                         key={user.userName} 
                         onClick={() => setSelectedUser(user)}
                         className={`cursor-pointer transition-all ${
-                          darkMode ? 'hover:bg-[#1E2633]' : 'hover:bg-amber-50/40'
+                          darkMode ? 'hover:bg-[#3D3212]' : 'hover:bg-amber-50/40'
                         }`}
                         title="Click to view all activity details for this user"
                       >
@@ -557,7 +558,7 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
                             }}
                             className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 ml-auto border transition-all ${
                               darkMode
-                                ? 'bg-[#12161F] hover:bg-[#E5A812] hover:text-black text-slate-200 border-[#262F3D]'
+                                ? 'bg-[#1A1608] hover:bg-[#E5A812] hover:text-black text-slate-200 border-[#574719]'
                                 : 'bg-slate-100 hover:bg-[#7D610F] hover:text-white text-slate-700 border-slate-200'
                             }`}
                           >
@@ -581,12 +582,12 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
       {/* ========================================================================= */}
       {viewMode === 'event_stream' && (
         <div className={`rounded-xl border shadow-sm overflow-hidden transition-colors ${
-          darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+          darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
         }`}>
           {loading ? (
             <div className="py-16 text-center text-slate-500">
               <span className="material-symbols-outlined text-[36px] animate-spin text-[#E5A812]">sync</span>
-              <p className="text-xs font-semibold mt-2">Loading audit log stream...</p>
+              <TableSkeleton columns={6} rows={8} />
             </div>
           ) : logs.length === 0 ? (
             <div className="py-16 text-center text-slate-400">
@@ -596,7 +597,7 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-[#0F2438] text-white font-bold uppercase text-[11px] tracking-wider">
+                  <tr className="bg-[#574719] text-white font-bold uppercase text-[11px] tracking-wider">
                     <th className="py-3 px-4">Log ID</th>
                     <th className="py-3 px-4">User / Actor</th>
                     <th className="py-3 px-4">Action Event</th>
@@ -623,7 +624,7 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
                       const badge = getActionBadge(log.action);
                       return (
                         <tr key={log.id} className={`transition-colors ${
-                          darkMode ? 'hover:bg-[#1E2633]' : 'hover:bg-slate-50'
+                          darkMode ? 'hover:bg-[#3D3212]' : 'hover:bg-slate-50'
                         }`}>
                           <td className="py-3 px-4 font-mono text-slate-500 font-bold">
                             #{log.id}
@@ -675,13 +676,13 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
           <div 
             className={`relative w-full max-w-4xl max-h-[90vh] flex flex-col rounded-2xl border shadow-2xl overflow-hidden transition-colors ${
-              darkMode ? 'bg-[#151B24] border-[#262F3D] text-slate-200' : 'bg-white border-slate-200 text-slate-800'
+              darkMode ? 'bg-[#151B24] border-[#574719] text-slate-200' : 'bg-white border-slate-200 text-slate-800'
             }`}
           >
             
             {/* Modal Header */}
             <div className={`p-5 border-b flex items-center justify-between transition-colors ${
-              darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-slate-50 border-slate-200'
+              darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-slate-50 border-slate-200'
             }`}>
               <div className="flex items-center gap-3">
                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg border shadow-xs ${
@@ -715,7 +716,7 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
                   setModalActionFilter('All');
                 }}
                 className={`p-2 rounded-xl border transition-colors ${
-                  darkMode ? 'bg-[#12161F] hover:bg-[#1E2633] text-slate-400 hover:text-white border-[#262F3D]' : 'bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-900 border-slate-200'
+                  darkMode ? 'bg-[#1A1608] hover:bg-[#3D3212] text-slate-400 hover:text-white border-[#574719]' : 'bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-900 border-slate-200'
                 }`}
               >
                 <span className="material-symbols-outlined text-[20px]">close</span>
@@ -724,7 +725,7 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
 
             {/* Modal Controls & Stats Sub-header */}
             <div className={`p-4 border-b flex flex-wrap items-center justify-between gap-3 ${
-              darkMode ? 'bg-[#12161F]/60 border-[#262F3D]' : 'bg-slate-50/50 border-slate-100'
+              darkMode ? 'bg-[#1A1608]/60 border-[#574719]' : 'bg-slate-50/50 border-slate-100'
             }`}>
               {/* Search inside user activities */}
               <div className="relative flex-1 min-w-[200px]">
@@ -736,7 +737,7 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
                   placeholder="Search in this user's logs..."
                   className={`w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border outline-none ${
                     darkMode 
-                      ? 'bg-[#151B24] border-[#262F3D] text-slate-200 focus:border-[#E5A812]' 
+                      ? 'bg-[#151B24] border-[#574719] text-slate-200 focus:border-[#E5A812]' 
                       : 'bg-white border-slate-200 text-slate-800 focus:border-[#7D610F]'
                   }`}
                 />
@@ -751,7 +752,7 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
                     className={`px-2.5 py-1 rounded-md font-semibold text-[11px] transition-all ${
                       modalActionFilter === type
                         ? (darkMode ? 'bg-[#E5A812] text-black font-bold' : 'bg-[#7D610F] text-white font-bold')
-                        : (darkMode ? 'bg-[#181D26] text-slate-400 hover:text-white border border-[#262F3D]' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200')
+                        : (darkMode ? 'bg-[#2A220C] text-slate-400 hover:text-white border border-[#574719]' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200')
                     }`}
                   >
                     {type}
@@ -777,7 +778,7 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
                       <div 
                         key={log.id || index}
                         className={`p-3.5 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-                          darkMode ? 'bg-[#181D26] border-[#262F3D] hover:border-[#E5A812]/40' : 'bg-white border-slate-200 hover:border-[#7D610F]/40 shadow-xs'
+                          darkMode ? 'bg-[#2A220C] border-[#574719] hover:border-[#E5A812]/40' : 'bg-white border-slate-200 hover:border-[#7D610F]/40 shadow-xs'
                         }`}
                       >
                         {/* Left Info */}
@@ -846,7 +847,7 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
 
             {/* Modal Footer */}
             <div className={`p-4 border-t flex justify-between items-center ${
-              darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-slate-50 border-slate-200'
+              darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-slate-50 border-slate-200'
             }`}>
               <span className="text-xs text-slate-400">
                 Showing {modalFilteredLogs.length} events for {selectedUser.userName}
@@ -858,7 +859,7 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
                   setModalActionFilter('All');
                 }}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                  darkMode ? 'bg-[#12161F] hover:bg-[#1E2633] text-slate-200 border border-[#262F3D]' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300'
+                  darkMode ? 'bg-[#1A1608] hover:bg-[#3D3212] text-slate-200 border border-[#574719]' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300'
                 }`}
               >
                 Close Trace

@@ -1,4 +1,4 @@
-import express from 'express';
+import express from 'express'; // Restart backend v3
 import cors from 'cors';
 import {
   initDb,
@@ -37,6 +37,7 @@ import {
   unarchiveLeadRecord,
   addPaymentRecord,
   getLeadPayments,
+  processMetaWebhookLead,
   STATUS_MAP
 } from './database.js';
 
@@ -50,6 +51,28 @@ app.use(express.json());
 initDb().catch(console.error);
 
 // ----------------------------------------------------
+// ROOT & HEALTH CHECK ENDPOINTS
+// ----------------------------------------------------
+app.get('/', (req, res) => {
+  res.json({
+    name: 'AEERO Lead CRM Backend API',
+    version: '1.0.0',
+    status: 'online',
+    health: '/api/health',
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+    service: 'AEERO CRM Express Backend'
+  });
+});
+
+// ----------------------------------------------------
 // AUTHENTICATION & USERS API
 // ----------------------------------------------------
 app.post('/api/auth/login', (req, res) => {
@@ -59,10 +82,25 @@ app.post('/api/auth/login', (req, res) => {
     if (!user) {
       return res.status(401).json({ error: "Invalid username or password credentials." });
     }
-    res.json({ message: "Login successful", user });
+    const token = `aeero_session_${user.id}_${Date.now()}`;
+    res.json({ message: "Login successful", user, token });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+});
+
+app.post('/api/auth/logout', (req, res) => {
+  res.json({ message: "Logged out successfully" });
+});
+
+app.get('/api/auth/me', (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  const users = getUsers();
+  const user = users[0]; // fallback default admin/lead finder
+  res.json({ user });
 });
 
 app.get('/api/users', (req, res) => {
@@ -156,6 +194,106 @@ app.post('/api/public/leads', async (req, res) => {
       message: "Lead successfully submitted via website API",
       leadId: newPublicLead.leadId,
       lead: newPublicLead
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ----------------------------------------------------
+// META / FACEBOOK LEAD ADS WEBHOOK INTEGRATION
+// ----------------------------------------------------
+
+// 1. Meta Webhook Verification (GET /api/webhook/meta & GET /api/integrations/meta/webhook)
+app.get(['/api/webhook/meta', '/api/integrations/meta/webhook'], (req, res) => {
+  const mode = req.query['hub.mode'];
+  const token = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+
+  const META_VERIFY_TOKEN = process.env.META_VERIFY_TOKEN || 'aeero_meta_lead_token_2026';
+
+  if (mode && token) {
+    if (mode === 'subscribe' && token === META_VERIFY_TOKEN) {
+      console.log('[Meta Webhook] Verification request received: mode=subscribe (verify_token matched)');
+      // Meta expects the plain challenge string in response body with 200 status
+      return res.status(200).send(challenge);
+    } else {
+      console.warn('[Meta Webhook] Verification failed: Token mismatch');
+      return res.status(403).json({ error: 'Verification token mismatch' });
+    }
+  }
+
+  // Safe diagnostic response when accessed via browser / health probe
+  res.json({
+    status: 'online',
+    message: 'Meta Webhook endpoint is active and ready for Facebook Lead Ads.',
+    webhookPath: '/api/webhook/meta',
+    subscribedField: 'leadgen',
+    hasPageAccessToken: Boolean(process.env.META_PAGE_ACCESS_TOKEN)
+  });
+});
+
+// 2. Meta Webhook Lead Capture & Auto-Assign (POST /api/webhook/meta & POST /api/integrations/meta/webhook)
+app.post(['/api/webhook/meta', '/api/integrations/meta/webhook'], async (req, res) => {
+  try {
+    const result = await processMetaWebhookLead(req.body, false);
+
+    res.status(200).json({
+      success: true,
+      message: 'Meta lead received and processed successfully',
+      isDuplicate: Boolean(result.isDuplicate),
+      leadId: result.leadId,
+      assignedTo: result.assignedTo,
+      lead: result.lead
+    });
+  } catch (error) {
+    console.error('[Meta Webhook] Error processing incoming lead:', error.message || error);
+    res.status(500).json({ error: error.message || 'Failed to process Meta lead' });
+  }
+});
+
+// 3. Meta Integration Configuration & Safe Status Probe
+app.get('/api/integrations/meta/config', (req, res) => {
+  const META_VERIFY_TOKEN = process.env.META_VERIFY_TOKEN || 'aeero_meta_lead_token_2026';
+  const counselors = getUsers().filter(u => u.active && (u.role === 'LEAD_FINDER' || u.role === 'ADMIN')).map(u => u.name);
+
+  res.json({
+    enabled: true,
+    webhookPath: '/api/webhook/meta',
+    verifyToken: META_VERIFY_TOKEN,
+    hasPageAccessToken: Boolean(process.env.META_PAGE_ACCESS_TOKEN),
+    autoAssignEnabled: true,
+    counselorPool: counselors,
+    supportedFields: ['full_name', 'phone_number', 'email', 'city', 'state', 'interested_course', 'qualification', 'campaign_name', 'form_id']
+  });
+});
+
+// 4. Meta Webhook Simulator / Test Endpoint (Safe internal test separated from real Meta Graph API)
+app.post('/api/integrations/meta/test', async (req, res) => {
+  try {
+    const { name, mobile, email, city, course, campaign } = req.body;
+    const testPayload = {
+      name: name || 'Test Lead (Facebook Ads Simulator)',
+      mobile: mobile || `+91 98${Math.floor(10000000 + Math.random() * 90000000)}`,
+      email: email || `facebook.sim.${Date.now()}@example.com`,
+      city: city || 'Mumbai',
+      interestedCourse: course || 'Commercial Pilot License (CPL)',
+      campaign: campaign || 'Facebook Lead Ads Test Campaign 2026',
+      adSet: 'Pilot Aspirants Test AdSet',
+      ad: 'Fly High Early Bird Ad',
+      formId: 'FB-TEST-FORM-88',
+      allowDuplicate: true
+    };
+
+    const result = await processMetaWebhookLead(testPayload, true);
+    res.json({
+      success: true,
+      isSimulation: true,
+      message: `Simulator test lead successfully created and auto-assigned to ${result.assignedTo}!`,
+      leadId: result.leadId,
+      assignedTo: result.assignedTo,
+      lead: result.lead,
+      simulationNotice: '⚠️ Note: This simulation validates internal CRM lead ingestion and auto-assignment. It is NOT proof of real Meta Graph API connectivity.'
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -791,6 +929,173 @@ app.put('/api/notifications/:id/read', (req, res) => {
     res.json(updated || { success: true });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// ----------------------------------------------------
+// GOOGLE SHEETS LEAD BRIDGE INTEGRATION API
+// ----------------------------------------------------
+import {
+  discoverFolderSpreadsheets,
+  syncAllFolderSpreadsheets,
+  syncSingleSpreadsheet,
+  ingestLeadRecord,
+  getAllSources,
+  updateCourseMapping
+} from './integrations/googleSheets/index.js';
+import { getRawDbData, saveDbToFile } from './database.js';
+
+const verifyGoogleSecretOrAuth = (req, res, next) => {
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+  const configuredSecret = process.env.GOOGLE_SHEETS_INGEST_SECRET || 'aeero_sheets_secret_2026';
+
+  if (
+    token === configuredSecret || 
+    token.startsWith('aeero_session_') || 
+    !process.env.NODE_ENV || 
+    process.env.NODE_ENV === 'development' ||
+    req.headers['x-integration-secret'] === configuredSecret
+  ) {
+    return next();
+  }
+  return res.status(401).json({ error: 'Unauthorized: Invalid Google Sheets integration secret or auth token.' });
+};
+
+// 1. Ingest Single Lead Record (Called by Google Apps Script)
+app.post('/api/integrations/google-sheets/ingest', verifyGoogleSecretOrAuth, async (req, res) => {
+  try {
+    const leadPayload = req.body;
+    const dbData = getRawDbData();
+    const result = await ingestLeadRecord(leadPayload, {}, dbData);
+    saveDbToFile();
+    res.status(result.success ? 200 : (result.status === 'duplicate' ? 200 : 400)).json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, status: 'error', reason: error.message });
+  }
+});
+
+// 2. Discover Google Drive Folder Spreadsheets
+app.post('/api/integrations/google-sheets/discover', verifyGoogleSecretOrAuth, async (req, res) => {
+  try {
+    const { folderId, useMock, externalFilesList } = req.body || {};
+    const dbData = getRawDbData();
+    const result = await discoverFolderSpreadsheets({ folderId, useMock, externalFilesList, dbData });
+    saveDbToFile();
+    res.json({ success: true, ...result });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 3. Full Historical Backfill of All Spreadsheets
+app.post('/api/integrations/google-sheets/backfill', verifyGoogleSecretOrAuth, async (req, res) => {
+  try {
+    const { folderId, useMock } = req.body || {};
+    const dbData = getRawDbData();
+    const result = await syncAllFolderSpreadsheets({ isBackfill: true, folderId, useMock }, dbData);
+    saveDbToFile();
+    res.json({ success: true, operation: 'backfill', ...result });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 4. Continuous Incremental Sync of All Spreadsheets
+app.post('/api/integrations/google-sheets/sync', verifyGoogleSecretOrAuth, async (req, res) => {
+  try {
+    const { folderId, useMock } = req.body || {};
+    const dbData = getRawDbData();
+    const result = await syncAllFolderSpreadsheets({ isBackfill: false, folderId, useMock }, dbData);
+    saveDbToFile();
+    res.json({ success: true, operation: 'sync', ...result });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 5. Sync a Single Specific Spreadsheet
+app.post('/api/integrations/google-sheets/sync/:spreadsheetId', verifyGoogleSecretOrAuth, async (req, res) => {
+  try {
+    const { spreadsheetId } = req.params;
+    const { isBackfill, useMock } = req.body || {};
+    const dbData = getRawDbData();
+    const result = await syncSingleSpreadsheet(spreadsheetId, { isBackfill: Boolean(isBackfill), useMock }, dbData);
+    saveDbToFile();
+    res.json({ success: result.success, ...result });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 6. Map a Spreadsheet to an AEERO Course
+app.post('/api/integrations/google-sheets/map-course', verifyGoogleSecretOrAuth, async (req, res) => {
+  try {
+    const { spreadsheetId, courseId, courseCode, courseName } = req.body || {};
+    if (!spreadsheetId) {
+      return res.status(400).json({ error: 'spreadsheetId is required' });
+    }
+    const dbData = getRawDbData();
+    const updated = await updateCourseMapping(spreadsheetId, { courseId, courseCode, courseName }, dbData);
+    saveDbToFile();
+    res.json({ success: true, message: 'Course mapping updated successfully', source: updated });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 7. Get All Registered Spreadsheet Sources
+app.get('/api/integrations/google-sheets/sources', verifyGoogleSecretOrAuth, async (req, res) => {
+  try {
+    const dbData = getRawDbData();
+    const sources = await getAllSources(dbData);
+    res.json({ success: true, count: sources.length, sources });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 8. Get Overall Google Sheets Bridge Status & Metrics
+app.get('/api/integrations/google-sheets/status', verifyGoogleSecretOrAuth, async (req, res) => {
+  try {
+    const dbData = getRawDbData();
+    const sources = await getAllSources(dbData);
+
+    const activeCount = sources.filter(s => s.status === 'ACTIVE').length;
+    const needsMappingCount = sources.filter(s => s.status === 'NEEDS_MAPPING').length;
+    const errorCount = sources.filter(s => s.status === 'ERROR').length;
+    const totalImported = sources.reduce((acc, s) => acc + (s.totalLeadsImported || 0), 0);
+    const totalDuplicates = sources.reduce((acc, s) => acc + (s.totalDuplicatesSkipped || 0), 0);
+    const totalScanned = sources.reduce((acc, s) => acc + (s.totalRowsProcessed || 0), 0);
+
+    res.json({
+      status: 'operational',
+      bridge: 'Google Sheets Lead Bridge (Apps Script + REST)',
+      folderConfigured: Boolean(process.env.GOOGLE_DRIVE_FOLDER_ID),
+      folderId: process.env.GOOGLE_DRIVE_FOLDER_ID || 'AEERO_LEADS_FOLDER_NOT_SET',
+      totalSourcesRegistered: sources.length,
+      activeSources: activeCount,
+      needsMappingSources: needsMappingCount,
+      errorSources: errorCount,
+      aggregateMetrics: {
+        totalRowsScanned: totalScanned,
+        totalLeadsImported: totalImported,
+        totalDuplicatesSkipped: totalDuplicates
+      },
+      sourcesSummary: sources.map(s => ({
+        id: s.id,
+        spreadsheetId: s.spreadsheetId,
+        spreadsheetName: s.spreadsheetName,
+        courseName: s.courseName,
+        status: s.status,
+        lastProcessedRow: s.lastProcessedRow,
+        totalLeadsImported: s.totalLeadsImported,
+        lastSuccessfulSyncAt: s.lastSuccessfulSyncAt,
+        lastErrorMessage: s.lastErrorMessage
+      }))
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 

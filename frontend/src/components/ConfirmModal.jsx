@@ -17,13 +17,13 @@ export const ConfirmModal = ({
   const isWarning = type === 'warning';
 
   const iconName = isDanger ? 'delete_forever' : isWarning ? 'help' : 'info';
-  const iconBg = isDanger ? 'bg-rose-100 text-rose-600 border-rose-200' : isWarning ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-blue-100 text-blue-600 border-blue-200';
+  const iconBg = isDanger ? 'bg-rose-100 text-rose-600 border-rose-200' : isWarning ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-amber-100 text-amber-600 border-amber-200';
   const buttonBg = isDanger ? 'bg-rose-600 hover:bg-rose-700 text-white' : isWarning ? 'bg-amber-600 hover:bg-amber-700 text-white' : 'bg-[#0F172A] hover:bg-[#1E293B] text-white';
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 animate-fade-in">
       <div className={`rounded-2xl shadow-2xl border w-full max-w-md p-6 space-y-5 transform transition-all scale-100 ${
-        darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+        darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
       }`}>
         
         {/* Header with Icon */}
@@ -39,12 +39,12 @@ export const ConfirmModal = ({
         </div>
 
         {/* Action Buttons */}
-        <div className={`pt-3 border-t flex items-center justify-end gap-2.5 ${darkMode ? 'border-[#262F3D]' : 'border-slate-100'}`}>
+        <div className={`pt-3 border-t flex items-center justify-end gap-2.5 ${darkMode ? 'border-[#574719]' : 'border-slate-100'}`}>
           <button
             type="button"
             onClick={onClose}
             className={`px-4 py-2 rounded-xl text-xs font-semibold transition-colors ${
-              darkMode ? 'bg-[#12161F] hover:bg-[#1E2633] text-slate-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+              darkMode ? 'bg-[#1A1608] hover:bg-[#3D3212] text-slate-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
             }`}
           >
             {cancelText}
@@ -54,7 +54,6 @@ export const ConfirmModal = ({
             type="button"
             onClick={() => {
               onConfirm();
-              onClose();
             }}
             className={`px-5 py-2 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95 flex items-center gap-1.5 ${buttonBg}`}
           >

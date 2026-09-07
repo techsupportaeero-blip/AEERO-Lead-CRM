@@ -1,3 +1,4 @@
+import Skeleton, { TableSkeleton, CardSkeleton } from '../components/Skeleton.jsx';
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import { ConfirmModal } from '../components/ConfirmModal';
@@ -203,7 +204,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
 
       {/* Page Title & Add Button Bar */}
       <div className={`flex justify-between items-center p-3.5 rounded-xl border shadow-xs transition-colors ${
-        darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+        darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
       }`}>
         <h2 className={`font-bold text-base flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
           <span className="material-symbols-outlined text-slate-400 text-xl">inventory_2</span>
@@ -223,9 +224,9 @@ export const CoursesView = ({ onNotify, darkMode }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
         <div className={`p-4 rounded-xl border shadow-xs flex items-center gap-3 transition-colors ${
-          darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+          darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
         }`}>
-          <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 border border-blue-200">
+          <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0 border border-amber-200">
             <span className="material-symbols-outlined text-[24px]">category</span>
           </div>
           <div>
@@ -235,7 +236,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
         </div>
 
         <div className={`p-4 rounded-xl border shadow-xs flex items-center gap-3 transition-colors ${
-          darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+          darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
         }`}>
           <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 border border-emerald-200">
             <span className="material-symbols-outlined text-[24px]">payments</span>
@@ -247,7 +248,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
         </div>
 
         <div className={`p-4 rounded-xl border shadow-xs flex items-center gap-3 transition-colors ${
-          darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+          darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
         }`}>
           <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center flex-shrink-0 border border-amber-200">
             <span className="material-symbols-outlined text-[24px]">school</span>
@@ -259,7 +260,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
         </div>
 
         <div className={`p-4 rounded-xl border shadow-xs flex items-center gap-3 transition-colors ${
-          darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+          darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
         }`}>
           <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center flex-shrink-0 border border-purple-200">
             <span className="material-symbols-outlined text-[24px]">account_balance_wallet</span>
@@ -274,9 +275,9 @@ export const CoursesView = ({ onNotify, darkMode }) => {
 
       {/* Filters Collapsible Card */}
       <div className={`rounded-xl border p-4 shadow-xs space-y-3 transition-colors ${
-        darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+        darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
       }`}>
-        <div className={`flex justify-between items-center border-b pb-2.5 ${darkMode ? 'border-[#262F3D]' : 'border-slate-100'}`}>
+        <div className={`flex justify-between items-center border-b pb-2.5 ${darkMode ? 'border-[#574719]' : 'border-slate-100'}`}>
           <span className={`font-bold text-xs flex items-center gap-1.5 ${darkMode ? 'text-white' : 'text-slate-800'}`}>
             <span className="material-symbols-outlined text-xs">filter_alt</span>
             <span>Filters</span>
@@ -299,7 +300,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
               className={`w-full border rounded-lg p-2 font-medium outline-none transition-colors ${
-                darkMode ? 'bg-[#12161F] border-[#262F3D] text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'
+                darkMode ? 'bg-[#1A1608] border-[#574719] text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'
               }`}
             >
               <option>All Status</option>
@@ -314,7 +315,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
               className={`w-full border rounded-lg p-2 font-medium outline-none transition-colors ${
-                darkMode ? 'bg-[#12161F] border-[#262F3D] text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'
+                darkMode ? 'bg-[#1A1608] border-[#574719] text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'
               }`}
             >
               <option>All Categories</option>
@@ -332,7 +333,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
               value={filterDuration}
               onChange={(e) => setFilterDuration(e.target.value)}
               className={`w-full border rounded-lg p-2 font-medium outline-none transition-colors ${
-                darkMode ? 'bg-[#12161F] border-[#262F3D] text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'
+                darkMode ? 'bg-[#1A1608] border-[#574719] text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'
               }`}
             >
               <option>All Durations</option>
@@ -346,12 +347,12 @@ export const CoursesView = ({ onNotify, darkMode }) => {
 
       {/* Main Content Area: Table / Grid */}
       <div className={`rounded-xl border shadow-xs overflow-hidden transition-colors ${
-        darkMode ? 'bg-[#181D26] border-[#262F3D]' : 'bg-white border-slate-200'
+        darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
       }`}>
         
         {/* Table Action Bar & View Switcher */}
         <div className={`p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b text-xs ${
-          darkMode ? 'border-[#262F3D]' : 'border-slate-100'
+          darkMode ? 'border-[#574719]' : 'border-slate-100'
         }`}>
           
           {/* Export & Show entries controls */}
@@ -387,7 +388,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
                   setCurrentPage(1);
                 }}
                 className={`border rounded px-2 py-1 text-xs outline-none ${
-                  darkMode ? 'bg-[#12161F] border-[#262F3D] text-slate-200' : 'bg-slate-50 border-slate-300 text-slate-800'
+                  darkMode ? 'bg-[#1A1608] border-[#574719] text-slate-200' : 'bg-slate-50 border-slate-300 text-slate-800'
                 }`}
               >
                 <option value={10}>10</option>
@@ -399,7 +400,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
 
             {/* View Mode Toggle: Table vs Cards Grid */}
             <div className={`flex p-0.5 rounded border ml-3 ${
-              darkMode ? 'bg-[#12161F] border-[#262F3D]' : 'bg-slate-100 border-slate-200'
+              darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-100 border-slate-200'
             }`}>
               <button
                 onClick={() => setViewMode('table')}
@@ -432,7 +433,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className={`border rounded px-2.5 py-1 text-xs outline-none w-full sm:w-48 ${
-                darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-white border-slate-300 text-slate-900'
+                darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-white border-slate-300 text-slate-900'
               }`}
             />
           </div>
@@ -460,7 +461,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
                   <tr>
                     <td colSpan="9" className="py-12 text-center text-slate-400">
                       <span className="material-symbols-outlined text-3xl animate-spin text-slate-600">sync</span>
-                      <p className="mt-1">Loading products & services...</p>
+                      <TableSkeleton columns={6} rows={8} />
                     </td>
                   </tr>
                 ) : currentEntries.length === 0 ? (
@@ -472,7 +473,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
                 ) : (
                   currentEntries.map(c => (
                     <tr key={c.id} className={`transition-colors ${
-                      darkMode ? 'hover:bg-[#1E2633]' : 'hover:bg-slate-50/80'
+                      darkMode ? 'hover:bg-[#3D3212]' : 'hover:bg-slate-50/80'
                     }`}>
                       <td className={`py-3 px-4 font-mono font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{c.id}</td>
                       <td className={`py-3 px-4 font-bold ${darkMode ? 'text-sky-400 hover:text-sky-300' : 'text-[#0284C7] hover:underline'} cursor-pointer`}>
@@ -481,7 +482,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
                       </td>
                       <td className={`py-3 px-4 max-w-xs truncate ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>{c.description || '-'}</td>
                       <td className="py-3 px-4">
-                        <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-semibold text-[10px] border border-blue-200">
+                        <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-700 font-semibold text-[10px] border border-amber-200">
                           {c.category || 'Pilot Training'}
                         </span>
                       </td>
@@ -526,12 +527,12 @@ export const CoursesView = ({ onNotify, darkMode }) => {
           <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {currentEntries.map(c => (
               <div key={c.id} className={`rounded-xl border p-4 shadow-xs transition-all space-y-3 flex flex-col justify-between ${
-                darkMode ? 'bg-[#181D26] border-[#262F3D] hover:bg-[#1E2633]' : 'bg-white border-slate-200 hover:shadow-md'
+                darkMode ? 'bg-[#2A220C] border-[#574719] hover:bg-[#3D3212]' : 'bg-white border-slate-200 hover:shadow-md'
               }`}>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className={`font-mono text-[10px] font-bold px-2 py-0.5 rounded border ${
-                      darkMode ? 'bg-[#12161F] text-slate-300 border-[#262F3D]' : 'bg-slate-100 text-slate-500 border-slate-200'
+                      darkMode ? 'bg-[#1A1608] text-slate-300 border-[#574719]' : 'bg-slate-100 text-slate-500 border-slate-200'
                     }`}>
                       {c.id} • {c.code}
                     </span>
@@ -546,7 +547,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
                   <p className={`text-xs line-clamp-2 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{c.description || 'No description provided'}</p>
 
                   <div className="flex items-center gap-2 pt-1">
-                    <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-semibold text-[10px] border border-blue-200">
+                    <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-700 font-semibold text-[10px] border border-amber-200">
                       {c.category || 'Pilot Training'}
                     </span>
                     <span className={`text-[11px] ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>⏱️ {c.duration || '1 Year'}</span>
@@ -554,7 +555,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
                 </div>
 
                 <div className={`pt-3 border-t flex justify-between items-center text-xs ${
-                  darkMode ? 'border-[#262F3D]' : 'border-slate-100'
+                  darkMode ? 'border-[#574719]' : 'border-slate-100'
                 }`}>
                   <div>
                     <span className="text-[10px] text-slate-400 uppercase font-bold block">Tuition Fee</span>
@@ -583,7 +584,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
 
         {/* Table Footer / Pagination */}
         <div className={`p-3.5 border-t flex flex-col sm:flex-row justify-between items-center gap-3 text-xs font-medium transition-colors ${
-          darkMode ? 'bg-[#12161F] border-[#262F3D] text-slate-400' : 'bg-slate-50 border-slate-100 text-slate-600'
+          darkMode ? 'bg-[#1A1608] border-[#574719] text-slate-400' : 'bg-slate-50 border-slate-100 text-slate-600'
         }`}>
           <div>
             Showing {filteredCourses.length > 0 ? indexOfFirst + 1 : 0} to {Math.min(indexOfLast, filteredCourses.length)} of {filteredCourses.length} entries
@@ -594,7 +595,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
               disabled={currentPage === 1}
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               className={`px-3 py-1 rounded border disabled:opacity-50 text-xs font-semibold transition-colors ${
-                darkMode ? 'bg-[#181D26] border-[#262F3D] text-slate-300 hover:bg-[#1E2633]' : 'border-slate-300 bg-white hover:bg-slate-100 text-slate-700'
+                darkMode ? 'bg-[#2A220C] border-[#574719] text-slate-300 hover:bg-[#3D3212]' : 'border-slate-300 bg-white hover:bg-slate-100 text-slate-700'
               }`}
             >
               Previous
@@ -606,7 +607,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
               disabled={currentPage >= totalPages}
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               className={`px-3 py-1 rounded border disabled:opacity-50 text-xs font-semibold transition-colors ${
-                darkMode ? 'bg-[#181D26] border-[#262F3D] text-slate-300 hover:bg-[#1E2633]' : 'border-slate-300 bg-white hover:bg-slate-100 text-slate-700'
+                darkMode ? 'bg-[#2A220C] border-[#574719] text-slate-300 hover:bg-[#3D3212]' : 'border-slate-300 bg-white hover:bg-slate-100 text-slate-700'
               }`}
             >
               Next
@@ -620,9 +621,9 @@ export const CoursesView = ({ onNotify, darkMode }) => {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
           <div className={`rounded-xl shadow-2xl border w-full max-w-lg p-6 space-y-4 ${
-            darkMode ? 'bg-[#181D26] border-[#262F3D] text-white' : 'bg-white border-slate-200 text-slate-900'
+            darkMode ? 'bg-[#2A220C] border-[#574719] text-white' : 'bg-white border-slate-200 text-slate-900'
           }`}>
-            <div className={`flex justify-between items-center border-b pb-3 ${darkMode ? 'border-[#262F3D]' : 'border-slate-100'}`}>
+            <div className={`flex justify-between items-center border-b pb-3 ${darkMode ? 'border-[#574719]' : 'border-slate-100'}`}>
               <h3 className={`font-bold text-base ${darkMode ? 'text-white' : 'text-slate-900'}`}>
                 {editingCourse ? 'Edit Product/Course' : 'Add New Product/Course'}
               </h3>
@@ -642,7 +643,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className={`w-full border rounded-lg p-2 outline-none ${
-                      darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                      darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                     }`}
                   />
                 </div>
@@ -655,7 +656,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
                     className={`w-full border rounded-lg p-2 font-mono outline-none ${
-                      darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                      darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                     }`}
                   />
                 </div>
@@ -669,7 +670,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className={`w-full border rounded-lg p-2 outline-none ${
-                    darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -681,7 +682,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                     className={`w-full border rounded-lg p-2 outline-none ${
-                      darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                      darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                     }`}
                   >
                     <option>Pilot Training</option>
@@ -698,7 +699,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
                     value={duration}
                     onChange={(e) => setDuration(e.target.value)}
                     className={`w-full border rounded-lg p-2 outline-none ${
-                      darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                      darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                     }`}
                   >
                     <option>3 Months</option>
@@ -717,18 +718,18 @@ export const CoursesView = ({ onNotify, darkMode }) => {
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
                     className={`w-full border rounded-lg p-2 font-mono outline-none ${
-                      darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                      darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                     }`}
                   />
                 </div>
               </div>
 
-              <div className={`pt-3 flex justify-end gap-2 border-t ${darkMode ? 'border-[#262F3D]' : 'border-slate-100'}`}>
+              <div className={`pt-3 flex justify-end gap-2 border-t ${darkMode ? 'border-[#574719]' : 'border-slate-100'}`}>
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
                   className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-                    darkMode ? 'bg-[#12161F] hover:bg-[#1E2633] text-slate-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                    darkMode ? 'bg-[#1A1608] hover:bg-[#3D3212] text-slate-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                   }`}
                 >
                   Cancel
