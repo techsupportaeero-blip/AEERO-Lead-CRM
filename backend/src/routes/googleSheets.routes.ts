@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 // @ts-ignore
-import { discoverFolderSpreadsheets, syncAllFolderSpreadsheets, syncSingleSpreadsheet, ingestLeadRecord, getAllSources, updateCourseMapping } from '../../integrations/googleSheets/index.js';
+import { discoverFolderSpreadsheets, syncAllFolderSpreadsheets, syncSingleSpreadsheet, ingestLeadRecord, getAllSources, updateCourseMapping } from '../integrations/googleSheets/index.js';
 
 export const googleSheetsRouter = Router();
 
@@ -101,7 +101,7 @@ googleSheetsRouter.post('/integrations/google-sheets/sync/:spreadsheetId', verif
     const { spreadsheetId } = req.params;
     const { isBackfill, useMock } = req.body || {};
     const result = await syncSingleSpreadsheet(spreadsheetId, { isBackfill: Boolean(isBackfill), useMock });
-    res.json({ success: result.success, ...result });
+    res.json({ success: (result as any).success !== false, ...result });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }

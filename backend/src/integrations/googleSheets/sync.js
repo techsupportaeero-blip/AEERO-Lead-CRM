@@ -6,7 +6,7 @@
 import { getAllSources, getSourceBySpreadsheetId, updateSourceSyncState } from './registry.js';
 import { readSpreadsheetRows } from './reader.js';
 import { buildHeaderMapping, mapRowToLead, normalizeMobile, normalizeEmail } from './mapper.js';
-import { generateNextLeadId } from '../../src/utils/generateLeadId.js';
+import { generateNextLeadId } from '../../utils/generateLeadId.js';
 import { discoverFolderSpreadsheets } from './discovery.js';
 
 let prismaClient = null;
