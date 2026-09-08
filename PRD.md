@@ -68,11 +68,16 @@ AEERO CRM is an enterprise-grade Lead Management and Student Enrollment CRM buil
   - Port: `http://localhost:5173` (or `3000`).
 - **Backend**:
   - Node.js + Express with TypeScript.
+  - WebSocket (Socket.io) for real-time lead updates.
   - Hot reload runner: `tsx watch src/server.ts`.
   - Port: `http://localhost:3001`.
 - **Database**:
   - Primary: Neon Serverless PostgreSQL with Prisma ORM 5.x.
   - Dual-mode fallback: In-memory store with persistence to `backend/aeero_crm_data.json` (standalone engine).
+- **Deployment**:
+  - Hosted on Render.com.
+  - Build Command: `npm install && npm run build` (Requires types in `dependencies` instead of `devDependencies`).
+  - Start Command: `node dist/server.js`.
 
 ---
 
@@ -98,7 +103,8 @@ AEERO CRM is an enterprise-grade Lead Management and Student Enrollment CRM buil
   - Operational Row: Today's Follow-ups, Overdue Follow-ups, Recent Counselor Activities (fixed 350px height scrollable cards).
   - **Employee Performance Table**: Shows lead volume, conversion counts, and conversion % per counselor.
 - [`frontend/src/pages/AllLeads.jsx`](file:///frontend/src/pages/AllLeads.jsx):
-  - Central Leads Data Table.
+  - Central Leads Data Table with aesthetic Black toolbars.
+  - Real-time updates via Socket.io listening for `newLead` events.
   - Multi-filtering: Counselor, Status, Priority, Source, Course, Date Range, Global Search.
   - Features: Column picker integration, bulk status updates, Excel/CSV export, pagination, lead row selection.
   - Clicking a row navigates to `lead-details` (`LeadWorkspace`).
@@ -162,7 +168,7 @@ AEERO CRM is an enterprise-grade Lead Management and Student Enrollment CRM buil
 ## 4. Backend Codebase Context Map (`backend/src/`)
 
 ### 4.1 Server & Configuration
-- [`backend/src/server.ts`](file:///backend/src/server.ts): Express HTTP server entrypoint. Sets up Helmet, CORS, Cookie-parser, Rate-limiter, mounts `/api`, and tests database connectivity on startup.
+- [`backend/src/server.ts`](file:///backend/src/server.ts): Express HTTP server wrapped in native HTTP server for Socket.io. Sets up Helmet, CORS (`*`), Cookie-parser, Rate-limiter, mounts `/api`, and handles real-time WebSocket connections.
 - [`backend/src/config/env.ts`](file:///backend/src/config/env.ts): Zod-validated environment config (`PORT`, `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN`).
 - [`backend/src/config/database.ts`](file:///backend/src/config/database.ts): PrismaClient singleton instance with explicit `datasources.db.url` configuration and database ping test (`checkDatabaseConnection`).
 
@@ -217,14 +223,15 @@ Contains all business logic and Prisma database operations:
   - `response.ts`: Standard response formatter `{ success: true, data, message }`.
   - `logger.ts`: Structured console logging.
 
-### 4.7 Google Sheets Bridge (`backend/integrations/googleSheets/`)
+### 4.7 Google Sheets Bridge (`backend/src/integrations/googleSheets/`)
+- *Note: Compiled with `allowJs: true` in tsconfig to seamlessly output to `dist/integrations/googleSheets/`.*
 - `discovery.js`: Discovers all spreadsheets in the configured Google Drive folder.
 - `courseMatcher.js`: Fuzzy-matches spreadsheet and campaign names against course catalog.
 - `mapper.js`: Normalizes diverse column names (Phone, Mobile, Contact, Email, Name) to standard fields.
 - `reader.js`: Batch reads rows starting from `lastProcessedRow + 1`.
-- `sync.js`: Executes sync, checks duplicates, assigns counselors, and records sync status.
+- `sync.js`: Executes sync, checks duplicates, assigns counselors, records sync status, and emits `newLead` via Socket.io.
 - `mockAdapter.js`: In-memory simulator providing 10+ course lead spreadsheets for offline verification.
-- `google-apps-script.js`: Production Apps Script to deploy in Google Drive for continuous sync.
+- `google-apps-script.js`: Production Apps Script to deploy in Google Drive for continuous sync. (Features exponential backoff and 100-row batching).
 
 ---
 
