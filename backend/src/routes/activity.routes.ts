@@ -6,6 +6,7 @@ import { createActivitySchema } from '../validators/activity.validator.js';
 
 export const activityRouter = Router();
 
+activityRouter.get('/activities', optionalAuthMiddleware, ActivityController.getAllActivities);
 activityRouter.get('/leads/:id/activities', optionalAuthMiddleware, ActivityController.getActivities);
 activityRouter.post(
   '/leads/:id/activities',

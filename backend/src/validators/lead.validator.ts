@@ -1,6 +1,21 @@
 import { z } from 'zod';
 
-export const leadStatusEnum = z.enum([
+// The rest of the codebase treats status/priority case-insensitively
+// (LeadService.normalizeStatus/normalizePriority already accept "Medium",
+// "medium", "MEDIUM", etc.) but forms in the UI send whatever casing their
+// <option> values happen to use (e.g. AddLeadModal's Priority dropdown sends
+// "Medium", not "MEDIUM"). Without this preprocess, a strict-cased z.enum()
+// here rejects those requests before they ever reach the normalizer, so
+// "Add Lead" fails validation for any priority other than an exact-cased
+// match. Uppercase (and, for status, normalize separators) before checking
+// the enum so the validator accepts the same casing the rest of the app does.
+const caseInsensitiveEnum = <T extends [string, ...string[]]>(values: T) =>
+  z.preprocess(
+    (val) => (typeof val === 'string' ? val.toUpperCase().replace(/[-\s\/]/g, '_') : val),
+    z.enum(values)
+  );
+
+export const leadStatusEnum = caseInsensitiveEnum([
   'NEW',
   'NO_ANSWER',
   'GIVEN_DETAILS',
@@ -12,7 +27,7 @@ export const leadStatusEnum = z.enum([
   'INVALID'
 ]);
 
-export const priorityEnum = z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']);
+export const priorityEnum = caseInsensitiveEnum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']);
 
 export const createLeadSchema = z.object({
   name: z.string().min(1, 'Name is required').trim(),

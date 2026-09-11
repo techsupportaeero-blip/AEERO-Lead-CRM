@@ -21,13 +21,20 @@ export class DashboardService {
       }
     }
 
-    // Fetch leads for metric calculation
-    const leads = await prisma.lead.findMany({
-      where,
-      include: {
-        payments: true
-      }
-    });
+    // Fetch every dataset the dashboard needs in parallel instead of one
+    // round-trip at a time - these queries don't depend on each other, so
+    // sequential awaits were just adding up idle network latency for nothing.
+    const [leads, activities, followups, payments, tasks, counselors] = await Promise.all([
+      prisma.lead.findMany({ where, include: { payments: true } }),
+      prisma.activity.findMany({ orderBy: { createdAt: 'desc' }, take: 200 }),
+      prisma.followUp.findMany({
+        where: { status: 'PENDING' },
+        include: { lead: { select: { name: true, interestedCourse: true, status: true } } }
+      }),
+      prisma.payment.findMany(),
+      prisma.task.findMany({ where: { status: { not: 'COMPLETED' } } }),
+      prisma.user.findMany({ where: { isActive: true }, select: { name: true } })
+    ]);
 
     const totalLeads = leads.length;
 
@@ -135,16 +142,19 @@ export class DashboardService {
       'Other': '#64748B'
     };
 
-    const sourceMap: Record<string, { source: string; count: number; converted: number; total: number }> = {};
+    const sourceMap: Record<string, { source: string; count: number; converted: number; interested: number; total: number }> = {};
     leads.forEach((l: any) => {
       const src = l.source || 'Other';
       if (!sourceMap[src]) {
-        sourceMap[src] = { source: src, count: 0, converted: 0, total: 0 };
+        sourceMap[src] = { source: src, count: 0, converted: 0, interested: 0, total: 0 };
       }
       sourceMap[src].count += 1;
       sourceMap[src].total += 1;
       if (l.status === LeadStatus.CONVERTED) {
         sourceMap[src].converted += 1;
+      }
+      if (l.status === LeadStatus.INTERESTED) {
+        sourceMap[src].interested += 1;
       }
     });
 
@@ -158,11 +168,6 @@ export class DashboardService {
       .sort((a: any, b: any) => b.count - a.count);
 
     // Activity distribution
-    const activities = await prisma.activity.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 200
-    });
-
     const actTypeMap: Record<string, number> = { Calls: 0, WhatsApp: 0, Emails: 0, Meetings: 0, Notes: 0, Other: 0 };
     activities.forEach((a: any) => {
       const type = (a.activityType || a.subject || a.type || '').toLowerCase();
@@ -195,15 +200,6 @@ export class DashboardService {
       }));
 
     // Follow-ups & Tasks
-    const followups = await prisma.followUp.findMany({
-      where: { status: 'PENDING' },
-      include: {
-        lead: {
-          select: { name: true, interestedCourse: true, status: true }
-        }
-      }
-    });
-
     const todaysFollowupsList = followups
       .filter((f: any) => f.date === todayStr)
       .map((f: any) => ({
@@ -251,7 +247,6 @@ export class DashboardService {
     });
 
     // Revenue
-    const payments = await prisma.payment.findMany();
     let totalCollectedRevenueNum = 0;
     payments.forEach((p: any) => {
       totalCollectedRevenueNum += Number(p.amount) || 0;
@@ -259,18 +254,10 @@ export class DashboardService {
     const totalCollectedRevenue = totalCollectedRevenueNum.toLocaleString('en-IN');
 
     // Tasks metrics
-    const tasks = await prisma.task.findMany({
-      where: { status: { not: 'COMPLETED' } }
-    });
     const activeTasksCount = tasks.length;
     const overdueTasksCount = tasks.filter((t: any) => t.dueDate && t.dueDate < todayStr).length;
 
     // Counselor Performance
-    const counselors = await prisma.user.findMany({
-      where: { isActive: true },
-      select: { name: true }
-    });
-
     const counselorNames = counselors.map((c: any) => c.name);
     if (!counselorNames.includes('MS. INDU')) counselorNames.push('MS. INDU');
     if (!counselorNames.includes('MS. AYESHA')) counselorNames.push('MS. AYESHA');

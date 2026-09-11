@@ -33,6 +33,24 @@ export class ActivityService {
     });
   }
 
+  /**
+   * Global activity feed (not scoped to one lead) - backs the Dashboard's
+   * "Activity Distribution" drill-down, so it mirrors the same
+   * prisma.activity query dashboard.service.ts uses to build that chart.
+   */
+  static async getAllActivities(filters: { type?: string; limit?: number } = {}) {
+    const where: any = {};
+    if (filters.type) {
+      where.type = this.normalizeActivityType(filters.type);
+    }
+
+    return prisma.activity.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: filters.limit ? Number(filters.limit) : 200
+    });
+  }
+
   static async recordActivity(leadIdentifier: string | number, data: any, createdBy = 'Counselor', userId?: number) {
     const lead = await LeadService.getLeadById(leadIdentifier);
     if (!lead) throw new Error(`Lead ${leadIdentifier} not found.`);

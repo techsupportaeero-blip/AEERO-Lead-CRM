@@ -7,7 +7,7 @@
  * 1. Open https://script.google.com and create a new standalone project.
  * 2. Paste this entire code into `Code.gs`.
  * 3. In Project Settings > Script Properties, add:
- *      CRM_BACKEND_URL   -> https://70da79cabf4bef.lhr.life/api/integrations/google-sheets
+ *      CRM_BACKEND_URL   -> https://aeero-lead-crm.onrender.com/api/integrations/google-sheets
  *      CRM_INGEST_SECRET -> aeero_sheets_secret_2026
  *      CRM_INGEST_SECRET -> aeero_sheets_secret_2026
  *      DRIVE_FOLDER_ID   -> <The ID of your Google Drive Folder containing leads sheets>
@@ -16,15 +16,26 @@
  *     e.g., https://drive.google.com/drive/folders/1aBcDeFgHiJkLmNoPqRsTuVwXyZ)
  * 
  * 4. Run `syncAllFolderLeads()` ONCE to import all existing rows from ALL sheets.
- * 5. Run `setupAutomatedTrigger()` to enable continuous time-based sync every 5 minutes.
- * 6. If you want to start completely fresh, run `resetAllCursors()` first.
+ * 5. Run `setupAutomatedTrigger()` to enable a 1-minute polling safety net.
+ * 6. Run `installInstantTriggers()` to also get INSTANT (few-second) updates -
+ *    this attaches an onChange trigger to every sheet in the folder, so a new
+ *    row fires straight to the CRM instead of waiting for the next 1-minute
+ *    poll. Re-run this any time you add a new spreadsheet to the folder
+ *    (syncAllFolderLeads() also self-heals this for you on its next run).
+ * 7. If you want to start completely fresh, run `resetAllCursors()` first.
+ *
+ * NOTE on "instant": Apps Script time-based triggers can't fire faster than
+ * once a minute - that's a hard Google platform limit, not something this
+ * script can tune. installInstantTriggers() sidesteps that by using an
+ * event-driven onChange trigger instead of polling, which is what actually
+ * gets new rows into the CRM within a few seconds of being added.
  * ============================================================================
  */
 
 function getConfig() {
   var props = PropertiesService.getScriptProperties();
   return {
-    crmUrl: 'https://idmlj-2401-4900-1cd6-2017-f452-14f2-e557-133e.free.pinggy.net/api/integrations/google-sheets',
+    crmUrl: props.getProperty('CRM_BACKEND_URL') || 'https://aeero-lead-crm.onrender.com/api/integrations/google-sheets',
     secret: props.getProperty('CRM_INGEST_SECRET') || 'aeero_sheets_secret_2026',
     folderId: props.getProperty('DRIVE_FOLDER_ID') || '10-h5rCot7VfRzVoEwojMOkbq2j4tUVOU'
   };
@@ -68,11 +79,14 @@ function sendRowToCRM(config, ss, sheet, headers, rowData, rowNumber) {
     }
   }
   
-  // Cleanups
-  var fbErrorMsg = "You don't have enough permissions. Please refer to this help page: https://www.facebook.com/business/help/766393076839635";
+  // Cleanups: Facebook sometimes fills a custom question's answer with its own
+  // permission error instead of the actual value. Match on a short, stable
+  // fragment (case-insensitive) rather than the full message, since Meta's
+  // wording/punctuation for this error has changed before.
+  var fbErrorNeedle = 'enough permissions';
   for (var key in payload) {
-    if (typeof payload[key] === 'string' && payload[key].indexOf(fbErrorMsg) !== -1) {
-      payload[key] = "Unknown (FB Permission Error)";
+    if (typeof payload[key] === 'string' && payload[key].toLowerCase().indexOf(fbErrorNeedle) !== -1) {
+      payload[key] = 'No Permission';
     }
   }
   
@@ -162,15 +176,74 @@ function sendRowToCRM(config, ss, sheet, headers, rowData, rowNumber) {
 // 2. IMPORT / SYNC: Process all sheets in Folder
 // ─────────────────────────────────────────────
 
+// Scans ONE already-open spreadsheet from its saved cursor onward and pushes
+// any unsynced rows to the CRM. Shared by the 1-minute folder poll AND the
+// instant onChange trigger, so both paths stay in sync (same de-dupe cursor,
+// same field mapping, same retry logic).
+// `deadline` (optional, ms epoch) lets a multi-file caller cut a single
+// file's scan short if the overall run is close to Apps Script's execution
+// limit; the instant single-row trigger doesn't need it.
+function syncOneSpreadsheet(config, props, ss, deadline) {
+  var ssId = ss.getId();
+  var sheet = ss.getSheets()[0]; // Process the first sheet tab
+  var data = sheet.getDataRange().getValues();
+
+  var result = { imported: 0, updated: 0, failed: 0, timeLimited: false };
+  if (data.length < 2) return result;
+
+  var headers = data[0];
+  var startRow = parseInt(props.getProperty('CURSOR_' + ssId) || '1', 10);
+  if (startRow >= data.length) return result; // already fully synced
+
+  Logger.log('📄 Processing File: ' + ss.getName() + ' (Starting from row ' + (startRow + 1) + ')');
+
+  for (var i = startRow; i < data.length; i++) {
+    if (deadline && Date.now() > deadline) {
+      Logger.log('⏳ Time limit approaching. Pausing gracefully...');
+      result.timeLimited = true;
+      break;
+    }
+
+    var rowData = data[i];
+    var hasData = false;
+    for (var j = 0; j < rowData.length; j++) {
+      if (rowData[j] !== null && rowData[j] !== undefined && String(rowData[j]).trim() !== '') {
+        hasData = true;
+        break;
+      }
+    }
+
+    if (!hasData) {
+      props.setProperty('CURSOR_' + ssId, String(i + 1));
+      continue;
+    }
+
+    var sendResult = sendRowToCRM(config, ss, sheet, headers, rowData, i + 1);
+
+    if (sendResult && sendResult.success) {
+      if (sendResult.data.action === 'created') result.imported++;
+      else result.updated++;
+    } else {
+      result.failed++;
+      if (sendResult && sendResult.status === 429) Utilities.sleep(5000);
+    }
+
+    props.setProperty('CURSOR_' + ssId, String(i + 1));
+    Utilities.sleep(250);
+  }
+
+  return result;
+}
+
 function syncAllFolderLeads() {
   var config = getConfig();
-  
+
   if (!config.folderId) {
     Logger.log('❌ ERROR: DRIVE_FOLDER_ID is missing in Script Properties.');
     Logger.log('Please add it: Project Settings -> Script Properties');
     return;
   }
-  
+
   var folder;
   try {
     folder = DriveApp.getFolderById(config.folderId);
@@ -178,80 +251,39 @@ function syncAllFolderLeads() {
     Logger.log('❌ ERROR: Could not find folder. Please check your DRIVE_FOLDER_ID.');
     return;
   }
-  
+
   var files = folder.getFilesByType(MimeType.GOOGLE_SHEETS);
   var props = PropertiesService.getScriptProperties();
-  
-  var startTime = Date.now();
-  var MAX_EXECUTION_TIME = 4.5 * 60 * 1000; // 4.5 mins
+
+  var deadline = Date.now() + 4.5 * 60 * 1000; // 4.5 mins
   var limitReached = false;
-  
+
   var totalImported = 0;
   var totalUpdated = 0;
   var totalFailed = 0;
-  
+  var triggersInstalled = 0;
+
   Logger.log('📁 Scanning Folder: ' + folder.getName());
-  
+
   while (files.hasNext()) {
     if (limitReached) break;
-    
+
     var file = files.next();
-    var ssId = file.getId();
-    var ss = SpreadsheetApp.openById(ssId);
-    var sheet = ss.getSheets()[0]; // Process the first sheet tab
-    
-    var data = sheet.getDataRange().getValues();
-    if (data.length < 2) continue;
-    
-    var headers = data[0];
-    
-    // Get cursor for THIS specific file
-    var startRow = parseInt(props.getProperty('CURSOR_' + ssId) || '1', 10);
-    
-    if (startRow >= data.length) {
-      // File is fully synced up to current row
-      continue;
-    }
-    
-    Logger.log('📄 Processing File: ' + file.getName() + ' (Starting from row ' + (startRow + 1) + ')');
-    
-    for (var i = startRow; i < data.length; i++) {
-      if (Date.now() - startTime > MAX_EXECUTION_TIME) {
-        Logger.log('⏳ Time limit approaching. Pausing gracefully...');
-        limitReached = true;
-        break;
-      }
-      
-      var rowData = data[i];
-      var hasData = false;
-      for (var j = 0; j < rowData.length; j++) {
-        if (rowData[j] !== null && rowData[j] !== undefined && String(rowData[j]).trim() !== '') {
-          hasData = true;
-          break;
-        }
-      }
-      
-      if (!hasData) {
-        props.setProperty('CURSOR_' + ssId, String(i + 1));
-        continue;
-      }
-      
-      var result = sendRowToCRM(config, ss, sheet, headers, rowData, i + 1);
-      
-      if (result && result.success) {
-        if (result.data.action === 'created') totalImported++;
-        else totalUpdated++;
-      } else {
-        totalFailed++;
-        if (result && result.status === 429) Utilities.sleep(5000);
-      }
-      
-      // Update cursor for this file
-      props.setProperty('CURSOR_' + ssId, String(i + 1));
-      Utilities.sleep(250);
-    }
+    var ss = SpreadsheetApp.openById(file.getId());
+
+    // Self-healing: any spreadsheet that lands in the folder without an
+    // instant (onChange) trigger yet gets one attached here automatically,
+    // so you don't have to remember to re-run installInstantTriggers()
+    // every time a new sheet shows up.
+    if (ensureInstantTrigger(ss)) triggersInstalled++;
+
+    var fileResult = syncOneSpreadsheet(config, props, ss, deadline);
+    totalImported += fileResult.imported;
+    totalUpdated += fileResult.updated;
+    totalFailed += fileResult.failed;
+    if (fileResult.timeLimited) limitReached = true;
   }
-  
+
   Logger.log('═══════════════════════════════════');
   if (limitReached) {
     Logger.log('⏸️ PAUSED DUE TO TIME LIMIT');
@@ -260,6 +292,87 @@ function syncAllFolderLeads() {
     Logger.log('✅ FOLDER SYNC COMPLETE (All files are up to date)');
   }
   Logger.log('Imported: ' + totalImported + ' | Updated: ' + totalUpdated + ' | Failed: ' + totalFailed);
+  if (triggersInstalled > 0) {
+    Logger.log('⚡ Instant (onChange) trigger auto-installed for ' + triggersInstalled + ' new sheet(s).');
+  }
+  Logger.log('═══════════════════════════════════');
+}
+
+// ─────────────────────────────────────────────
+// 2b. INSTANT SYNC: fire on every sheet edit instead of waiting for
+//     the 1-minute poll (attached via installInstantTriggers() below)
+// ─────────────────────────────────────────────
+
+// Installable onChange trigger handler. Fires within seconds of a row being
+// added/edited in a watched spreadsheet (Meta Lead Ads / Zapier / manual
+// entry all write through the Sheets API, which onChange sees). Only scans
+// the ONE spreadsheet that changed, not the whole folder, so it's fast.
+function onSheetChange(e) {
+  try {
+    if (!e || !e.source) return;
+    var config = getConfig();
+    var props = PropertiesService.getScriptProperties();
+    var ss = e.source;
+    var result = syncOneSpreadsheet(config, props, ss);
+    if (result.imported > 0 || result.updated > 0) {
+      Logger.log('⚡ Instant sync [' + ss.getName() + ']: +' + result.imported + ' new, ' + result.updated + ' updated');
+    }
+  } catch (err) {
+    Logger.log('❌ onSheetChange error: ' + err.message);
+  }
+}
+
+// Attaches an onChange trigger to `ss` if it doesn't already have one.
+// Returns true if a new trigger was installed, false if one already existed.
+function ensureInstantTrigger(ss) {
+  var ssId = ss.getId();
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === 'onSheetChange' && triggers[i].getTriggerSourceId() === ssId) {
+      return false;
+    }
+  }
+  ScriptApp.newTrigger('onSheetChange').forSpreadsheet(ss).onChange().create();
+  return true;
+}
+
+// Run this ONCE after pasting/updating this script to switch every sheet in
+// the folder from "wait up to 1 minute" to "updates within a few seconds".
+// The 1-minute poll (setupAutomatedTrigger) stays on as a safety net in case
+// an onChange event is ever missed.
+function installInstantTriggers() {
+  var config = getConfig();
+  if (!config.folderId) {
+    Logger.log('❌ ERROR: DRIVE_FOLDER_ID is missing in Script Properties.');
+    return;
+  }
+
+  var folder;
+  try {
+    folder = DriveApp.getFolderById(config.folderId);
+  } catch (e) {
+    Logger.log('❌ ERROR: Could not find folder. Please check your DRIVE_FOLDER_ID.');
+    return;
+  }
+
+  var files = folder.getFilesByType(MimeType.GOOGLE_SHEETS);
+  var installed = 0;
+  var alreadySet = 0;
+
+  while (files.hasNext()) {
+    var file = files.next();
+    var ss = SpreadsheetApp.openById(file.getId());
+    if (ensureInstantTrigger(ss)) {
+      installed++;
+      Logger.log('⚡ Instant trigger installed: ' + file.getName());
+    } else {
+      alreadySet++;
+    }
+  }
+
+  Logger.log('═══════════════════════════════════');
+  Logger.log('✅ Instant triggers ready. Installed: ' + installed + ' | Already set: ' + alreadySet);
+  Logger.log('New rows in any of these sheets now reach the CRM within a few seconds.');
   Logger.log('═══════════════════════════════════');
 }
 
@@ -283,6 +396,48 @@ function resetAllCursors() {
 }
 
 // ─────────────────────────────────────────────
+// 3b. UTILITY: Reset cursor for ONE file only, by name
+//     (targeted backfill without rescanning every sheet)
+// ─────────────────────────────────────────────
+
+function resetCursorForFile(fileNamePart) {
+  var config = getConfig();
+  if (!fileNamePart) {
+    Logger.log('❌ ERROR: Pass a (partial) file name, e.g. resetCursorForFile("Solar leedssss").');
+    return;
+  }
+
+  var folder;
+  try {
+    folder = DriveApp.getFolderById(config.folderId);
+  } catch (e) {
+    Logger.log('❌ ERROR: Could not find folder. Please check your DRIVE_FOLDER_ID.');
+    return;
+  }
+
+  var files = folder.getFilesByType(MimeType.GOOGLE_SHEETS);
+  var props = PropertiesService.getScriptProperties();
+  var matchLower = fileNamePart.toLowerCase();
+  var matched = 0;
+
+  while (files.hasNext()) {
+    var file = files.next();
+    if (file.getName().toLowerCase().indexOf(matchLower) !== -1) {
+      props.deleteProperty('CURSOR_' + file.getId());
+      matched++;
+      Logger.log('✅ Cursor reset for: ' + file.getName() + ' (' + file.getId() + ')');
+    }
+  }
+
+  if (matched === 0) {
+    Logger.log('⚠️ No spreadsheet in the folder matched "' + fileNamePart + '".');
+  } else {
+    Logger.log('Now run syncAllFolderLeads() to re-scan just this file from row 1.');
+    Logger.log('Existing leads (matched by their Meta Lead ID) will be UPDATED in place, not duplicated.');
+  }
+}
+
+// ─────────────────────────────────────────────
 // 4. SETUP: Create automated time-based trigger
 // ─────────────────────────────────────────────
 
@@ -296,10 +451,10 @@ function setupAutomatedTrigger() {
   
   ScriptApp.newTrigger('syncAllFolderLeads')
     .timeBased()
-    .everyMinutes(5)
+    .everyMinutes(1)
     .create();
-  
-  Logger.log('✅ Automated trigger set: Folder will be scanned for new rows every 5 minutes.');
+
+  Logger.log('✅ Automated trigger set: Folder will be scanned for new rows every 1 minute.');
 }
 
 // ─────────────────────────────────────────────

@@ -40,7 +40,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
     try {
       setLoading(true);
       const data = await api.getCourses();
-      setCourses(data);
+      setCourses(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Failed to load courses:", err);
     } finally {

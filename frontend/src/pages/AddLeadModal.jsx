@@ -245,7 +245,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                     darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 >
-                  {LEAD_STATUSES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                  {LEAD_STATUSES.map(s => <option key={s.code} value={s.code}>{s.label}</option>)}
                 </select>
               </div>
 

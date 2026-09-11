@@ -69,21 +69,24 @@ export const StatusBadge = ({ status, darkMode }) => {
 };
 
 export const PriorityBadge = ({ priority, darkMode }) => {
+  // DB/Prisma stores priority uppercase (LOW/MEDIUM/HIGH/URGENT), but some
+  // callers may still pass Capitalized display text - normalize before
+  // matching so the badge color isn't silently lost either way.
   const getStyle = (p) => {
-    switch (p) {
-      case 'Urgent':
+    switch (String(p || '').toUpperCase()) {
+      case 'URGENT':
         return darkMode
           ? 'bg-red-900/40 text-red-300 border-red-700/50 font-bold'
           : 'bg-red-100 text-red-700 border-red-200 font-bold';
-      case 'High':
+      case 'HIGH':
         return darkMode
           ? 'bg-rose-900/40 text-rose-300 border-rose-700/50 font-semibold'
           : 'bg-rose-50 text-rose-700 border-rose-200 font-semibold';
-      case 'Medium':
+      case 'MEDIUM':
         return darkMode
           ? 'bg-amber-900/30 text-amber-300 border-amber-700/40 font-medium'
           : 'bg-amber-50 text-amber-800 border-amber-200 font-medium';
-      case 'Low':
+      case 'LOW':
         return darkMode
           ? 'bg-emerald-900/30 text-emerald-300 border-emerald-700/40 font-medium'
           : 'bg-emerald-50 text-emerald-700 border-emerald-200 font-medium';

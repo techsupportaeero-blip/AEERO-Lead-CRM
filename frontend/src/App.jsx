@@ -1,17 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
+import { io } from 'socket.io-client';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { NotificationToast } from './components/NotificationToast';
 import { DuplicateModal } from './components/DuplicateModal';
 import { ColumnModal, ALL_COLUMNS } from './components/ColumnModal';
+import Loader from './components/Loader';
 
 import { Login } from './pages/Login';
-import { Dashboard } from './pages/Dashboard';
-import { AllLeads } from './pages/AllLeads';
-import { AddLeadModal } from './pages/AddLeadModal';
-import { EditLeadModal } from './pages/EditLeadModal';
-import { LeadWorkspace } from './pages/LeadWorkspace';
-import { ModuleView } from './pages/ModuleView';
+
+const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
+const AllLeads = lazy(() => import('./pages/AllLeads').then(m => ({ default: m.AllLeads })));
+const AddLeadModal = lazy(() => import('./pages/AddLeadModal').then(m => ({ default: m.AddLeadModal })));
+const EditLeadModal = lazy(() => import('./pages/EditLeadModal').then(m => ({ default: m.EditLeadModal })));
+const LeadWorkspace = lazy(() => import('./pages/LeadWorkspace').then(m => ({ default: m.LeadWorkspace })));
+const ModuleView = lazy(() => import('./pages/ModuleView').then(m => ({ default: m.ModuleView })));
 
 import { api } from './api/client';
 
@@ -70,6 +73,11 @@ export default function App() {
   // Total Leads Counter for Sidebar Badge
   const [totalLeadsCount, setTotalLeadsCount] = useState(0);
 
+  const currentRouteRef = useRef(currentRoute);
+  useEffect(() => {
+    currentRouteRef.current = currentRoute;
+  }, [currentRoute]);
+
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
@@ -101,10 +109,35 @@ export default function App() {
 
   const loadLeadCount = async () => {
     try {
-      const stats = await api.getStats();
-      setTotalLeadsCount(stats.totalLeads || 0);
+      const data = await api.getLeadsCount();
+      setTotalLeadsCount(data.totalLeads || 0);
     } catch (e) { }
   };
+
+  // Live updates: keep the sidebar badge and Dashboard in sync when leads
+  // arrive from Google Sheets / Meta webhooks, without touching pages
+  // (like AllLeads or LeadWorkspace) that already handle 'newLead' themselves.
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const socket = io();
+    let debounceTimer = null;
+
+    socket.on('newLead', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        loadLeadCount();
+        if (currentRouteRef.current === 'dashboard') {
+          setRefreshKey(prev => prev + 1);
+        }
+      }, 800);
+    });
+
+    return () => {
+      clearTimeout(debounceTimer);
+      socket.disconnect();
+    };
+  }, [currentUser]);
 
   const handleRefreshData = async () => {
     try {
@@ -231,6 +264,7 @@ export default function App() {
       {/* Main Content Area */}
       <main className={`flex-1 ml-0 md:ml-[220px] mt-[60px] p-4 md:p-6 custom-scrollbar overflow-y-auto transition-colors ${darkMode ? 'bg-[#0A0D14]' : 'bg-[#F1F8FC]'
         }`}>
+        <Suspense fallback={<div className="h-[60vh] flex items-center justify-center"><Loader text="Loading..." /></div>}>
         <div className="max-w-7xl mx-auto">
           {currentRoute === 'dashboard' && (
             <Dashboard
@@ -287,10 +321,12 @@ export default function App() {
             />
           )}
         </div>
+        </Suspense>
       </main>
 
 
       {/* MODALS */}
+      <Suspense fallback={null}>
       {showAddLeadModal && (
         <AddLeadModal
           onClose={() => setShowAddLeadModal(false)}
@@ -309,6 +345,7 @@ export default function App() {
           darkMode={darkMode}
         />
       )}
+      </Suspense>
 
       {duplicateData && (
         <DuplicateModal

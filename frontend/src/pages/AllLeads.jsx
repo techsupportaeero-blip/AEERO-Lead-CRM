@@ -31,6 +31,12 @@ export const AllLeads = ({
   const [priorityFilter, setPriorityFilter] = useState(initialFilters.priority || 'All');
   const [sourceFilter, setSourceFilter] = useState(initialFilters.source || 'All');
   const [ownerFilter, setOwnerFilter] = useState(initialFilters.owner || 'All');
+  const [campaignFilter, setCampaignFilter] = useState(initialFilters.campaign || 'All');
+
+  // Campaign names aren't a fixed enum (they come from Meta Ads / Google
+  // Sheets), so the dropdown is built from whatever campaigns actually exist
+  // rather than a hardcoded list, and grows live as new campaigns show up.
+  const [campaignOptions, setCampaignOptions] = useState([]);
 
   // Search & Pagination State matching screenshot
   const [search, setSearch] = useState(initialFilters.search || '');
@@ -39,7 +45,11 @@ export const AllLeads = ({
 
   useEffect(() => {
     fetchLeads();
-  }, [search, statusFilter, sourceFilter, ownerFilter, priorityFilter, viewArchived]);
+  }, [search, statusFilter, sourceFilter, ownerFilter, priorityFilter, campaignFilter, viewArchived]);
+
+  useEffect(() => {
+    loadCampaignOptions();
+  }, []);
 
   useEffect(() => {
     const socket = io(); // Connects to same host, Vite proxy will route /socket.io
@@ -57,6 +67,9 @@ export const AllLeads = ({
         if (prevLeads.some(l => l.leadId === newLead.leadId)) return prevLeads;
         return [newLead, ...prevLeads];
       });
+      if (newLead.campaign) {
+        setCampaignOptions(prev => prev.includes(newLead.campaign) ? prev : [...prev, newLead.campaign].sort());
+      }
     });
 
     return () => {
@@ -74,6 +87,7 @@ export const AllLeads = ({
         source: sourceFilter,
         owner: ownerFilter,
         priority: priorityFilter,
+        campaign: campaignFilter,
         onlyArchived: viewArchived
       });
       let resultList = Array.isArray(data) ? data : [];
@@ -89,6 +103,20 @@ export const AllLeads = ({
       setError(err.message || 'Failed to load leads from persistent database');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Builds the Campaign filter's option list from ALL leads (unfiltered),
+  // independent of the currently applied filters - otherwise selecting a
+  // campaign would collapse the dropdown down to just that one option.
+  const loadCampaignOptions = async () => {
+    try {
+      const data = await api.getLeads({ includeArchived: true });
+      const list = Array.isArray(data) ? data : [];
+      const distinctCampaigns = [...new Set(list.map(l => l.campaign).filter(Boolean))].sort();
+      setCampaignOptions(distinctCampaigns);
+    } catch (err) {
+      // Non-critical: dropdown just stays empty/minimal if this fails
     }
   };
 
@@ -115,6 +143,7 @@ export const AllLeads = ({
       setPriorityFilter('All');
       setSourceFilter('All');
       setOwnerFilter('All');
+      setCampaignFilter('All');
       setSearch('');
       setCurrentPage(1);
       return !prev;
@@ -128,6 +157,7 @@ export const AllLeads = ({
     setPriorityFilter('All');
     setSourceFilter('All');
     setOwnerFilter('All');
+    setCampaignFilter('All');
     setSearch('');
     setCurrentPage(1);
   };
@@ -143,6 +173,66 @@ export const AllLeads = ({
         setConfirmConfig(null);
       }
     });
+  };
+
+  // Admin-only "Clear All" bulk action: archives every active lead when
+  // viewing Active Leads, or permanently wipes every archived lead when
+  // viewing the Archived directory. Two-step confirm (ConfirmModal + a
+  // typed "DELETE" phrase for the irreversible wipe) since this touches
+  // the whole database, not a single record.
+  const promptBulkClearAll = () => {
+    if (!isAdmin) {
+      alert("Access Denied: Only administrators can use Clear All.");
+      return;
+    }
+
+    if (viewArchived) {
+      setConfirmConfig({
+        title: "Permanently Delete ALL Archived Leads?",
+        message: "This will PERMANENTLY delete every lead currently in the Archived directory from the database. This action CANNOT be undone. You will be asked to type a confirmation phrase next.",
+        confirmText: "Continue",
+        type: "danger",
+        onConfirm: () => {
+          setConfirmConfig(null);
+          const typed = window.prompt('Type "DELETE ALL" (without quotes) to permanently delete every archived lead:');
+          if (typed !== 'DELETE ALL') {
+            alert('Cancelled: confirmation phrase did not match. No leads were deleted.');
+            return;
+          }
+          (async () => {
+            try {
+              setLoading(true);
+              const res = await api.bulkDeleteArchivedLeads(currentUser ? currentUser.name : 'Admin', currentUser ? currentUser.role : 'ADMIN');
+              await fetchLeads();
+              alert(res.message || 'Archived leads permanently deleted.');
+            } catch (err) {
+              setLoading(false);
+              alert("Failed to permanently delete archived leads: " + err.message);
+            }
+          })();
+        }
+      });
+    } else {
+      setConfirmConfig({
+        title: "Archive ALL Active Leads?",
+        message: "This will move every lead currently in the Active directory to Archived (soft-delete). They can be restored later from the Archived Leads view. Are you sure?",
+        confirmText: "Yes, Archive All",
+        type: "danger",
+        onConfirm: async () => {
+          try {
+            setLoading(true);
+            const res = await api.bulkArchiveActiveLeads(currentUser ? currentUser.name : 'Admin', currentUser ? currentUser.role : 'ADMIN');
+            setConfirmConfig(null);
+            await fetchLeads();
+            alert(res.message || 'All active leads archived.');
+          } catch (err) {
+            setConfirmConfig(null);
+            setLoading(false);
+            alert("Failed to bulk-archive leads: " + err.message);
+          }
+        }
+      });
+    }
   };
 
   const promptArchiveLead = (lead, e) => {
@@ -167,20 +257,38 @@ export const AllLeads = ({
     });
   };
 
+  // Facebook's lead-form permission error sometimes lands in a field's raw
+  // value when Meta can't read a custom question. Replace it wherever it
+  // shows up so the table never displays the raw error text.
+  const FB_PERMISSION_ERROR_NEEDLE = "enough permissions";
+  const cleanFbPermissionError = (val) => {
+    if (typeof val === 'string' && val.toLowerCase().includes(FB_PERMISSION_ERROR_NEEDLE)) {
+      return 'No Permission';
+    }
+    return val;
+  };
+
   // Normalize lead fields for display (NO FAKE DATA)
   const enrichLead = (lead, index) => {
     if (!lead) return {};
     const formattedId = lead.leadId || '-';
 
+    const sanitizedLead = {};
+    for (const key of Object.keys(lead)) {
+      sanitizedLead[key] = cleanFbPermissionError(lead[key]);
+    }
+
     return {
-      ...lead,
+      ...sanitizedLead,
       displayId: formattedId,
-      value: lead.value || '-',
-      followUp: lead.followUp || '-',
+      value: sanitizedLead.value || '-',
+      followUp: sanitizedLead.followUp || '-',
       createdDate: lead.createdAt ? new Date(lead.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : '-',
-      assignedTo: lead.ownerId || '-',
-      email: lead.email || '-',
-      phone: lead.mobile || lead.phone || '-'
+      assignedTo: sanitizedLead.ownerId || '-',
+      email: sanitizedLead.email || '-',
+      campaign: sanitizedLead.campaign || '-',
+      qualification: sanitizedLead.qualification || '-',
+      phone: sanitizedLead.mobile || sanitizedLead.phone || '-'
     };
   };
 
@@ -209,7 +317,7 @@ export const AllLeads = ({
   // CSV Export Helper with UTF-8 BOM for perfect Excel column separation
   const handleExportCSV = () => {
     if (processedLeads.length === 0) return alert("No leads to export");
-    const headers = ["S.No.", "Lead ID", "Student Name", "Email Address", "Phone Number", "Status", "Source", "Priority", "Assigned Counselor", "Course Value (INR)", "Follow-up Date", "Created Date"];
+    const headers = ["S.No.", "Lead ID", "Student Name", "Email Address", "Phone Number", "Status", "Source", "Campaign", "Highest Qualification", "Priority", "Assigned Counselor", "Course Value (INR)", "Follow-up Date", "Created Date"];
     const rows = processedLeads.map((l, index) => [
       index + 1,
       l.displayId || '',
@@ -218,6 +326,8 @@ export const AllLeads = ({
       l.phone || l.mobile || '',
       l.status || '',
       l.source || '',
+      l.campaign || '',
+      l.qualification || '',
       l.priority || '',
       l.assignedTo || l.ownerId || '',
       l.value || '',
@@ -257,6 +367,8 @@ export const AllLeads = ({
         <td style="padding:6px;border:1px solid #CBD5E1;">${l.phone || l.mobile || ''}</td>
         <td style="padding:6px;border:1px solid #CBD5E1;text-align:center;">${l.status || ''}</td>
         <td style="padding:6px;border:1px solid #CBD5E1;">${l.source || ''}</td>
+        <td style="padding:6px;border:1px solid #CBD5E1;">${l.campaign || ''}</td>
+        <td style="padding:6px;border:1px solid #CBD5E1;">${l.qualification || ''}</td>
         <td style="padding:6px;border:1px solid #CBD5E1;text-align:center;">${l.priority || ''}</td>
         <td style="padding:6px;border:1px solid #CBD5E1;">${l.assignedTo || l.ownerId || ''}</td>
         <td style="padding:6px;border:1px solid #CBD5E1;">${l.value || ''}</td>
@@ -294,6 +406,8 @@ export const AllLeads = ({
                 <th>Phone</th>
                 <th>Status</th>
                 <th>Source</th>
+                <th>Campaign</th>
+                <th>Qualification</th>
                 <th>Priority</th>
                 <th>Assigned To</th>
                 <th>Value (INR)</th>
@@ -434,27 +548,42 @@ export const AllLeads = ({
 
       {/* Filters Panel matching Screenshot */}
       <div className={`rounded-lg border shadow-xs p-3.5 space-y-3 transition-colors ${
-        darkMode ? 'bg-black border-slate-800' : 'bg-black border-slate-800'
+        darkMode ? 'bg-[#161412ff] border-[#080706]' : 'bg-white border-slate-200'
       }`}>
 
         {/* Filters Header */}
-        <div className={`flex justify-between items-center border-b pb-2 ${darkMode ? 'border-slate-800' : 'border-slate-800'}`}>
+        <div className={`flex justify-between items-center border-b pb-2 ${darkMode ? 'border-[#080706]' : 'border-slate-200'}`}>
           <div className="flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-[18px] text-slate-300">tune</span>
-            <span className="font-bold text-xs text-white">Filters</span>
+            <span className={`material-symbols-outlined text-[18px] ${darkMode ? 'text-slate-300' : 'text-slate-500'}`}>tune</span>
+            <span className={`font-bold text-xs ${darkMode ? 'text-white' : 'text-slate-900'}`}>Filters</span>
           </div>
 
-          <button
-            onClick={promptClearFilters}
-            className="px-2.5 py-1 bg-[#b58d16] hover:bg-[#6B540A] text-white rounded text-xs font-semibold flex items-center gap-1 transition-colors"
-          >
-            <span className="material-symbols-outlined text-[14px]">cancel</span>
-            <span>Clear All</span>
-          </button>
+          <div className="flex items-center gap-1.5">
+            {/* Reset Filters - available to everyone, only clears the filter inputs */}
+            <button
+              onClick={promptClearFilters}
+              title="Reset Filters"
+              className={`p-1.5 rounded transition-colors ${darkMode ? 'bg-[#080706] hover:bg-[#1f1c19] text-slate-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}
+            >
+              <span className="material-symbols-outlined text-[16px]">filter_alt_off</span>
+            </button>
+
+            {/* Clear All - Admin Only bulk action (archive-all / permanently-delete-all-archived) */}
+            {isAdmin && (
+              <button
+                onClick={promptBulkClearAll}
+                title={viewArchived ? "Permanently delete ALL archived leads (Admin Only)" : "Archive ALL active leads (Admin Only)"}
+                className="px-2.5 py-1 bg-rose-700 hover:bg-rose-800 text-white rounded text-xs font-semibold flex items-center gap-1 transition-colors"
+              >
+                <span className="material-symbols-outlined text-[14px]">{viewArchived ? 'delete_forever' : 'inventory_2'}</span>
+                <span>Clear All</span>
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* 6 Filter Inputs Grid matching Screenshot */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 pt-1">
+        {/* Filter Inputs Grid matching Screenshot */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 pt-1">
 
           {/* Date From */}
           <div className="space-y-1">
@@ -559,6 +688,29 @@ export const AllLeads = ({
             </select>
           </div>
 
+          {/* Campaign Filter - options are whatever campaigns actually exist
+              in the data, not a fixed list, since they come from Meta Ads */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold uppercase flex items-center gap-1 text-slate-400">
+              <span className="material-symbols-outlined text-[13px]">campaign</span>
+              <span>CAMPAIGN</span>
+            </label>
+            <select
+              value={campaignFilter}
+              onChange={(e) => setCampaignFilter(e.target.value)}
+              className={`w-full px-2.5 py-1.5 rounded text-xs outline-none font-medium transition-colors border ${
+                darkMode
+                  ? 'bg-[#161412ff] border-[#080706] text-slate-200 focus:ring-2 focus:ring-[#E5A812]'
+                  : 'bg-white border-slate-300 text-slate-800 focus:ring-2 focus:ring-[#9A7310]'
+              }`}
+            >
+              <option value="All">All Campaigns</option>
+              {campaignOptions.map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+
           {/* Assigned To Filter */}
           <div className="space-y-1">
             <label className="text-[10px] font-bold uppercase flex items-center gap-1 text-slate-400">
@@ -587,7 +739,7 @@ export const AllLeads = ({
 
       {/* Export Controls & Table Options Toolbar matching Screenshot */}
       <div className={`flex flex-col md:flex-row justify-between items-start md:items-center gap-3 p-3 rounded-lg border shadow-xs transition-colors ${
-        darkMode ? 'bg-black border-slate-800' : 'bg-black border-slate-800'
+        darkMode ? 'bg-[#161412ff] border-[#080706]' : 'bg-white border-slate-200'
       }`}>
 
         {/* Left Export Buttons & Show Entries */}
@@ -627,7 +779,7 @@ export const AllLeads = ({
               className={`px-2 py-1 rounded border outline-none text-xs transition-colors ${
                 darkMode
                   ? 'bg-[#1a1714] border-[#080706] text-slate-200'
-                  : 'bg-slate-800 border-slate-700 text-white'
+                  : 'bg-white border-slate-300 text-slate-800'
               }`}
             >
               <option value={10}>10</option>
@@ -653,7 +805,7 @@ export const AllLeads = ({
             className={`px-2.5 py-1 border rounded text-xs outline-none w-full md:w-48 ${
               darkMode
                 ? 'bg-[#1a1714] border-[#080706] text-slate-200 focus:ring-2 focus:ring-[#E5A812]'
-                : 'bg-slate-800 border-slate-700 text-white placeholder-slate-400 focus:ring-2 focus:ring-[#9A7310]'
+                : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#9A7310]'
             }`}
           />
         </div>
@@ -677,6 +829,8 @@ export const AllLeads = ({
                 <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Phone</th>
                 <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-center">Status</th>
                 <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Source</th>
+                <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Campaign</th>
+                <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Qualification</th>
                 <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-center">Priority</th>
                 <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Assigned To</th>
                 <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Value</th>
@@ -689,16 +843,16 @@ export const AllLeads = ({
             {/* Table Rows matching Screenshot */}
             <tbody className={`divide-y text-[12px] ${darkMode ? 'divide-[#222936] text-slate-300' : 'divide-slate-100 text-slate-700'}`}>
               {loading ? (
-                <TableRowSkeleton columns={13} rows={10} />
+                <TableRowSkeleton columns={15} rows={10} />
               ) : error ? (
                 <tr>
-                  <td colSpan={13} className="py-8 text-center text-red-600 font-medium">
+                  <td colSpan={15} className="py-8 text-center text-red-600 font-medium">
                     {error}
                   </td>
                 </tr>
               ) : visibleLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={13} className="py-12 text-center text-slate-500">
+                  <td colSpan={15} className="py-12 text-center text-slate-500">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <span className="material-symbols-outlined text-[36px] text-slate-300">folder_off</span>
                       <p className={`text-sm font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>No matching {viewArchived ? 'archived' : 'active'} leads found</p>
@@ -762,6 +916,18 @@ export const AllLeads = ({
                       {lead.source}
                     </td>
 
+                    <td className={`py-2.5 px-3 whitespace-nowrap ${
+                      darkMode ? 'text-slate-400' : 'text-slate-600'
+                    }`}>
+                      {lead.campaign}
+                    </td>
+
+                    <td className={`py-2.5 px-3 whitespace-nowrap ${
+                      darkMode ? 'text-slate-400' : 'text-slate-600'
+                    }`}>
+                      {lead.qualification}
+                    </td>
+
                     <td className="py-2.5 px-3 text-center whitespace-nowrap">
                       <PriorityBadge priority={lead.priority} darkMode={darkMode} />
                     </td>
@@ -785,7 +951,7 @@ export const AllLeads = ({
                     </td>
 
                     <td className={`py-2.5 px-3 text-[11px] whitespace-nowrap ${
-                      darkMode ? 'text-slate-500' : 'text-slate-500'
+                      darkMode ? 'text-slate-400' : 'text-slate-500'
                     }`}>
                       {lead.createdDate}
                     </td>

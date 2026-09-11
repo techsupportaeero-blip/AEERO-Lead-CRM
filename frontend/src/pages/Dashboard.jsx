@@ -353,10 +353,12 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
         const leads = await api.getLeads({ status: 'Converted' });
         setDetailData(Array.isArray(leads) ? leads : []);
       } else if (type === 'followups') {
-        const tasks = await api.getTasks();
+        // Matches the "Follow-ups Today" KPI card, which counts FollowUp
+        // records (not Tasks) due today - fetch the same data source so the
+        // drill-down shows the same records the card's count is based on.
         const today = new Date().toISOString().split('T')[0];
-        const todayTasks = (Array.isArray(tasks) ? tasks : []).filter(t => t.dueDate === today);
-        setDetailData(todayTasks);
+        const followups = await api.getAllFollowups({ date: today });
+        setDetailData(Array.isArray(followups) ? followups : []);
       } else if (type === 'payments') {
         const leads = await api.getLeads({ includeArchived: true });
         const allLeads = Array.isArray(leads) ? leads : [];
@@ -373,8 +375,13 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
         }
         setDetailData(paymentRows);
       } else if (type === 'activityDistribution') {
-        const auditLogs = await api.getAuditLogs();
-        setDetailData(Array.isArray(auditLogs) ? auditLogs : []);
+        // Matches the Activity Distribution chart, which is built from
+        // Activity records (calls/WhatsApp/etc.), not the AuditLog table.
+        const activities = await api.getAllActivities();
+        setDetailData(Array.isArray(activities) ? activities : []);
+      } else if (type === 'employeePerformance') {
+        // Already computed as part of /api/stats - no extra fetch needed.
+        setDetailData(Array.isArray(stats.employeePerformance) ? stats.employeePerformance : []);
       }
     } catch (err) {
       console.error('Failed to load detail data:', err);
@@ -394,12 +401,18 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
     leadPipeline: 'Lead Pipeline — Stage Breakdown',
     leadsTrend: 'Leads Trend — Acquisition History',
     sourcePerformance: 'Lead Source Channels — Channel Breakdown',
-    activityDistribution: 'Activity Distribution — Communication Logs'
+    activityDistribution: 'Activity Distribution — Communication Logs',
+    employeePerformance: 'Employee Performance — Full Counselor Leaderboard'
   };
 
   // 1. Real Pipeline Funnel Data
   const pipelineData = (stats.leadPipeline && stats.leadPipeline.length > 0)
-    ? stats.leadPipeline
+    ? stats.leadPipeline.map(p => ({
+      name: p.stage || p.name || 'Stage',
+      count: Number(p.count ?? 0),
+      fill: p.color || p.fill || '#94A3B8',
+      label: String(p.count ?? 0)
+    }))
     : [
       { name: 'New', count: stats.newLeads || 0, fill: '#D4AF37', label: String(stats.newLeads || 0) },
       { name: 'No Answer', count: stats.noAnswerLeads || 0, fill: '#F59E0B', label: String(stats.noAnswerLeads || 0) },
@@ -415,8 +428,8 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
   // 2. Real Leads Trend Data
   const trendLineData = (stats.leadTrend && stats.leadTrend.length > 0)
     ? stats.leadTrend.map(t => ({
-      label: t.label || t.day || t.month || 'Date',
-      value: Number(t.value ?? t.count ?? t.total ?? 0)
+      label: t.date || t.label || t.day || t.month || 'Date',
+      value: Number(t.leads ?? t.value ?? t.count ?? t.total ?? 0)
     }))
     : [{ label: 'Today', value: stats.totalLeads || 0 }];
 
@@ -1278,7 +1291,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
                 <span className="material-symbols-outlined text-lg">info</span>
               </button>
               <button
-                onClick={() => onNavigate('users')}
+                onClick={() => openDetail('employeePerformance')}
                 className="text-[11px] font-bold text-[#E5A812] hover:underline"
               >
                 View All
@@ -1286,6 +1299,13 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
             </div>
           </div>
 
+          {employeePerfData.length === 0 ? (
+            <div className="py-8 text-center text-slate-400 text-xs">
+              <span className="material-symbols-outlined text-2xl text-slate-500 mb-1">badge</span>
+              <p className={`font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>No counselor performance data yet</p>
+              <p className="text-[11px] text-slate-400 mt-0.5">Assign leads to counselors to see productivity stats here.</p>
+            </div>
+          ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
@@ -1325,6 +1345,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
               </tbody>
             </table>
           </div>
+          )}
         </div>
 
         {/* Table 2: Top Lead Sources */}
@@ -1538,51 +1559,85 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
                   </tfoot>
                 </table>
               ) : detailModal === 'followups' ? (
-                /* Follow-ups / Tasks Table */
+                /* Today's Follow-ups Table */
                 <table className="w-full text-xs border-collapse">
                   <thead>
                     <tr className={`font-bold uppercase text-[10px] ${darkMode ? 'bg-[#574719] text-slate-300' : 'bg-[#574719] text-white'}`}>
-                      <th className="py-2.5 px-3 text-left">Task</th>
-                      <th className="py-2.5 px-3 text-left">Assigned To</th>
+                      <th className="py-2.5 px-3 text-left">Student</th>
+                      <th className="py-2.5 px-3 text-left">Course</th>
                       <th className="py-2.5 px-3 text-left">Linked Lead</th>
+                      <th className="py-2.5 px-3 text-left">Type</th>
                       <th className="py-2.5 px-3 text-left">Due Time</th>
-                      <th className="py-2.5 px-3 text-left">Priority</th>
+                      <th className="py-2.5 px-3 text-left">Assigned To</th>
                       <th className="py-2.5 px-3 text-left">Status</th>
                     </tr>
                   </thead>
                   <tbody className={`divide-y ${darkMode ? 'divide-[#222936]' : 'divide-slate-100'}`}>
-                    {detailData.map((t, i) => (
+                    {detailData.map((f, i) => (
                       <tr key={i} className={`${darkMode ? 'hover:bg-[#1C222D]' : 'hover:bg-slate-50'} transition-colors`}>
-                        <td className={`py-2.5 px-3 font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t.title}</td>
-                        <td className="py-2.5 px-3">{t.assignedUser || '-'}</td>
-                        <td className="py-2.5 px-3 font-mono font-bold text-[#7D610F]">{t.leadId || 'N/A'}</td>
-                        <td className="py-2.5 px-3">{t.dueTime || '-'}</td>
-                        <td className="py-2.5 px-3"><span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${t.priority === 'High' ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-700'}`}>{t.priority}</span></td>
-                        <td className="py-2.5 px-3"><span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${t.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>{t.status}</span></td>
+                        <td className={`py-2.5 px-3 font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{f.lead?.name || '-'}</td>
+                        <td className="py-2.5 px-3">{f.lead?.interestedCourse || '-'}</td>
+                        <td className="py-2.5 px-3 font-mono font-bold text-[#7D610F]">{f.leadId || 'N/A'}</td>
+                        <td className="py-2.5 px-3">{f.type || '-'}</td>
+                        <td className="py-2.5 px-3">{f.time || '-'}</td>
+                        <td className="py-2.5 px-3">{f.assignedTo || f.createdBy || '-'}</td>
+                        <td className="py-2.5 px-3"><span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${String(f.status).toUpperCase() === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800' : String(f.status).toUpperCase() === 'MISSED' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-800'}`}>{f.status}</span></td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               ) : detailModal === 'activityDistribution' ? (
-                /* Activity Logs Table */
+                /* Activity Logs Table (Calls, WhatsApp, Emails, Notes, etc.) */
                 <table className="w-full text-xs border-collapse">
                   <thead>
                     <tr className={`font-bold uppercase text-[10px] ${darkMode ? 'bg-[#574719] text-slate-300' : 'bg-[#574719] text-white'}`}>
-                      <th className="py-2.5 px-3 text-left">Action</th>
-                      <th className="py-2.5 px-3 text-left">User</th>
-                      <th className="py-2.5 px-3 text-left">Entity</th>
-                      <th className="py-2.5 px-3 text-left">Target ID</th>
+                      <th className="py-2.5 px-3 text-left">Type</th>
+                      <th className="py-2.5 px-3 text-left">Subject</th>
+                      <th className="py-2.5 px-3 text-left">Linked Lead</th>
+                      <th className="py-2.5 px-3 text-left">Outcome</th>
+                      <th className="py-2.5 px-3 text-left">Logged By</th>
                       <th className="py-2.5 px-3 text-left">Timestamp</th>
                     </tr>
                   </thead>
                   <tbody className={`divide-y ${darkMode ? 'divide-[#222936]' : 'divide-slate-100'}`}>
-                    {detailData.map((log, i) => (
+                    {detailData.map((act, i) => (
                       <tr key={i} className={`${darkMode ? 'hover:bg-[#1C222D]' : 'hover:bg-slate-50'} transition-colors`}>
-                        <td className="py-2.5 px-3 font-semibold">{log.action || '-'}</td>
-                        <td className="py-2.5 px-3 font-medium">{log.user || '-'}</td>
-                        <td className="py-2.5 px-3"><span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-[#1A1608] text-slate-700 dark:text-slate-300">{log.entity || '-'}</span></td>
-                        <td className="py-2.5 px-3 font-mono font-bold text-[#E5A812]">{log.entityId || '-'}</td>
-                        <td className="py-2.5 px-3 text-slate-400">{log.timestamp ? new Date(log.timestamp).toLocaleString() : '-'}</td>
+                        <td className="py-2.5 px-3"><span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-[#1A1608] text-slate-700 dark:text-slate-300">{act.activityType || act.type || '-'}</span></td>
+                        <td className="py-2.5 px-3 font-semibold">{act.subject || '-'}</td>
+                        <td className="py-2.5 px-3 font-mono font-bold text-[#7D610F]">{act.leadId || '-'}</td>
+                        <td className="py-2.5 px-3">{act.outcome || '-'}</td>
+                        <td className="py-2.5 px-3 font-medium">{act.createdBy || '-'}</td>
+                        <td className="py-2.5 px-3 text-slate-400">{act.createdAt ? new Date(act.createdAt).toLocaleString() : '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : detailModal === 'employeePerformance' ? (
+                /* Full Employee Performance Leaderboard */
+                <table className="w-full text-xs border-collapse">
+                  <thead>
+                    <tr className={`font-bold uppercase text-[10px] ${darkMode ? 'bg-[#574719] text-slate-300' : 'bg-[#574719] text-white'}`}>
+                      <th className="py-2.5 px-3 text-left">Employee</th>
+                      <th className="py-2.5 px-3 text-center">Assigned</th>
+                      <th className="py-2.5 px-3 text-center">Contacted</th>
+                      <th className="py-2.5 px-3 text-center">Interested</th>
+                      <th className="py-2.5 px-3 text-center">Follow-ups</th>
+                      <th className="py-2.5 px-3 text-center">Converted</th>
+                      <th className="py-2.5 px-3 text-center">Lost</th>
+                      <th className="py-2.5 px-3 text-right">Conversion Rate</th>
+                    </tr>
+                  </thead>
+                  <tbody className={`divide-y ${darkMode ? 'divide-[#222936]' : 'divide-slate-100'}`}>
+                    {detailData.map((emp, i) => (
+                      <tr key={i} className={`${darkMode ? 'hover:bg-[#1C222D]' : 'hover:bg-slate-50'} transition-colors`}>
+                        <td className={`py-2.5 px-3 font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{emp.name || '-'}</td>
+                        <td className="py-2.5 px-3 text-center">{emp.assigned || 0}</td>
+                        <td className="py-2.5 px-3 text-center">{emp.contacted || 0}</td>
+                        <td className="py-2.5 px-3 text-center">{emp.interested || 0}</td>
+                        <td className="py-2.5 px-3 text-center">{emp.followups || 0}</td>
+                        <td className="py-2.5 px-3 text-center font-bold">{emp.converted || 0}</td>
+                        <td className="py-2.5 px-3 text-center">{emp.lost || 0}</td>
+                        <td className="py-2.5 px-3 text-right font-bold text-[#7D610F]">{emp.conversionRate || '0.0'}%</td>
                       </tr>
                     ))}
                   </tbody>

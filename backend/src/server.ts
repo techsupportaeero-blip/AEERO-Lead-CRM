@@ -91,6 +91,15 @@ const server = httpServer.listen(PORT, async () => {
   } else {
     logger.warn(`⚠️ PostgreSQL Database is not yet accessible at: ${env.DATABASE_URL}.`);
   }
+
+  // Neon's serverless compute auto-suspends after a few minutes of inactivity,
+  // and the first query after that has to wait for it to wake back up (the
+  // multi-second-to-tens-of-seconds "first load after refresh" delay). A
+  // periodic no-op ping keeps the compute warm while the server is running,
+  // so real user requests don't pay that wake-up cost.
+  setInterval(() => {
+    checkDatabaseConnection().catch(() => {});
+  }, 4 * 60 * 1000);
 });
 
 server.on('error', (err: any) => {

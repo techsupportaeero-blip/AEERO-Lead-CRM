@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { api } from '../api/client';
 
 export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecorded, darkMode }) => {
-  if (!lead) return null;
-
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('UPI');
   const [referenceNo, setReferenceNo] = useState(`TXN-${Math.floor(100000 + Math.random() * 900000)}`);
@@ -11,6 +9,8 @@ export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecord
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  if (!lead) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();

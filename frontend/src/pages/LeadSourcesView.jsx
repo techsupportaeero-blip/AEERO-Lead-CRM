@@ -36,7 +36,7 @@ export const LeadSourcesView = ({ onNotify, darkMode }) => {
     try {
       setLoading(true);
       const data = await api.getLeadSources();
-      setSources(data);
+      setSources(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Failed to load lead sources:", err);
     } finally {

@@ -7,6 +7,7 @@ import { getAllSources, getSourceBySpreadsheetId, updateSourceSyncState } from '
 import { readSpreadsheetRows } from './reader.js';
 import { buildHeaderMapping, mapRowToLead, normalizeMobile, normalizeEmail } from './mapper.js';
 import { generateNextLeadId } from '../../utils/generateLeadId.js';
+import { getCounselorForCampaign } from '../../utils/campaignAssignment.js';
 import { discoverFolderSpreadsheets } from './discovery.js';
 
 let prismaClient = null;
@@ -120,15 +121,18 @@ export async function checkLeadDuplicate(leadData, dbData = null) {
 }
 
 /**
- * Dynamically assign lead to an eligible active counselor based on course or Round-robin
+ * Dynamically assign lead to an eligible active counselor. A campaign is
+ * routed to one consistent counselor (getCounselorForCampaign, so every
+ * lead from that campaign lands with the same person); leads with no
+ * campaign fall back to course-based routing, then round-robin.
  * NO HARDCODED NAMES
  */
-export async function getNextCounselor(dbData = null, course = null) {
+export async function getNextCounselor(dbData = null, course = null, campaign = null) {
   if (course) {
     const c = course.toLowerCase();
-    if (c.includes('industrial safety') || c.includes('sub fire')) return 'Ms.Indu';
-    if (c.includes('fireman') || c.includes('diploma in sanitary')) return 'Ms.Ayesha';
-    if (c.includes('health sanitary') || c.includes('msme')) return 'Ms.Priya';
+    if (c.includes('industrial safety') || c.includes('sub fire')) return 'MS. INDU';
+    if (c.includes('fireman') || c.includes('diploma in sanitary')) return 'MS. AYESHA';
+    if (c.includes('health sanitary') || c.includes('msme')) return 'MS. PRITI';
   }
 
   let eligibleCounselors = [];
@@ -140,10 +144,13 @@ export async function getNextCounselor(dbData = null, course = null) {
       .map(u => u.name);
 
     if (eligibleCounselors.length === 0) {
-      eligibleCounselors = ['Ms.Indu', 'Ms.Ayesha', 'Ms.Priya'];
+      eligibleCounselors = ['MS. INDU', 'MS. AYESHA', 'MS. PRITI'];
     }
 
     if (eligibleCounselors.length > 0) {
+      const campaignCounselor = getCounselorForCampaign(campaign, eligibleCounselors);
+      if (campaignCounselor) return campaignCounselor;
+
       const idx = (dbData.lastAssignedCounselorIndex || 0) % eligibleCounselors.length;
       dbData.lastAssignedCounselorIndex = (idx + 1) % eligibleCounselors.length;
       return eligibleCounselors[idx];
@@ -160,6 +167,10 @@ export async function getNextCounselor(dbData = null, course = null) {
         orderBy: { id: 'asc' }
       });
       if (activeUsers.length > 0) {
+        const names = activeUsers.map(u => u.name);
+        const campaignCounselor = getCounselorForCampaign(campaign, names);
+        if (campaignCounselor) return campaignCounselor;
+
         const leadCount = await prisma.lead.count();
         const assigned = activeUsers[leadCount % activeUsers.length];
         return assigned.name;
@@ -169,7 +180,7 @@ export async function getNextCounselor(dbData = null, course = null) {
     }
   }
 
-  return 'Ms.Indu';
+  return getCounselorForCampaign(campaign, ['MS. INDU', 'MS. AYESHA', 'MS. PRITI']) || 'MS. INDU';
 }
 
 /**
@@ -190,12 +201,39 @@ export async function generateLeadId(dbData = null) {
 export async function ingestLeadRecord(leadPayload, options = {}, dbData = null) {
   const { isBackfill = false } = options;
 
-  // Case-insensitive key lookup for robust fallback
-  const getFuzzyVal = (aliases) => {
-    for (const key of Object.keys(leadPayload)) {
-      const cleanKey = key.toLowerCase().replace(/[-_.,\/\\()\[\]#?]/g, ' ').replace(/\s+/g, ' ').trim();
-      if (aliases.includes(cleanKey)) return leadPayload[key];
+  // Facebook sometimes fills a custom question's answer with its own
+  // permission error instead of the real value. The Apps Script bridge
+  // already strips this, but the /sync pipeline (via mapper.js) does not,
+  // so clean it here too regardless of which path fed in this payload.
+  for (const key of Object.keys(leadPayload)) {
+    const val = leadPayload[key];
+    if (typeof val === 'string' && val.toLowerCase().includes('enough permissions')) {
+      leadPayload[key] = 'No Permission';
     }
+  }
+
+  // Case-insensitive key lookup for robust fallback.
+  // Pass 1: exact match after cleaning punctuation. Pass 2: substring fuzzy
+  // match (only reached if no exact match found), so headers like "Student
+  // Email Id" or "Email Address:" still resolve instead of silently
+  // dropping the value (columns that don't match any alias at all).
+  const getFuzzyVal = (aliases) => {
+    const cleanedKeys = Object.keys(leadPayload).map(key => ({
+      key,
+      cleaned: key.toLowerCase().replace(/[-_.,\/\\()\[\]#?:]/g, ' ').replace(/\s+/g, ' ').trim()
+    }));
+
+    for (const { key, cleaned } of cleanedKeys) {
+      if (cleaned && aliases.includes(cleaned)) return leadPayload[key];
+    }
+
+    for (const { key, cleaned } of cleanedKeys) {
+      if (!cleaned) continue;
+      if (aliases.some(alias => alias.length >= 4 && cleaned.includes(alias))) {
+        return leadPayload[key];
+      }
+    }
+
     return null;
   };
 
@@ -208,6 +246,20 @@ export async function ingestLeadRecord(leadPayload, options = {}, dbData = null)
   }
   if (!leadPayload.name || leadPayload.name === 'Meta Ads Lead') {
     leadPayload.name = getFuzzyVal(['name', 'full name', 'student name', 'customer name', 'candidate name', 'client name']) || 'Meta Ads Lead';
+  }
+
+  // Fallback for interestedCourse: this endpoint (used by the Google Apps
+  // Script bridge) has no course column on most Meta Ads exports, so fall
+  // back to the lead form's name, then to the course this spreadsheet is
+  // registered under, so the field isn't silently left blank.
+  if (!leadPayload.interestedCourse) {
+    leadPayload.interestedCourse = leadPayload.formName || null;
+  }
+  if (!leadPayload.interestedCourse && leadPayload.sourceSpreadsheetId) {
+    const registeredSource = await getSourceBySpreadsheetId(leadPayload.sourceSpreadsheetId, dbData);
+    if (registeredSource && registeredSource.courseName) {
+      leadPayload.interestedCourse = registeredSource.courseName;
+    }
   }
 
   // Normalize formats
@@ -299,8 +351,9 @@ export async function ingestLeadRecord(leadPayload, options = {}, dbData = null)
     };
   }
 
-  // 4. Dynamic Counselor Assignment based on Course
-  const assignedCounselor = leadPayload.ownerId || await getNextCounselor(dbData, leadPayload.interestedCourse || leadPayload.qualification);
+  // 4. Dynamic Counselor Assignment: same campaign always goes to the same
+  // counselor; falls back to course-based routing, then round-robin.
+  const assignedCounselor = leadPayload.ownerId || await getNextCounselor(dbData, leadPayload.interestedCourse || leadPayload.qualification, leadPayload.campaign);
 
   // 5. Generate Internal CRM Lead ID
   const leadId = await generateLeadId(dbData);

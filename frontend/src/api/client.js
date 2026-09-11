@@ -72,6 +72,7 @@ export const api = {
     if (filters.search) params.append('search', filters.search);
     if (filters.status) params.append('status', filters.status);
     if (filters.source) params.append('source', filters.source);
+    if (filters.campaign) params.append('campaign', filters.campaign);
     if (filters.owner) params.append('owner', filters.owner);
     if (filters.course) params.append('course', filters.course);
     if (filters.priority) params.append('priority', filters.priority);
@@ -82,6 +83,14 @@ export const api = {
 
     const res = await fetch(`${API_BASE}/leads?${params.toString()}`);
     if (!res.ok) throw new Error('Failed to fetch leads');
+    return res.json();
+  },
+
+  // Lightweight total-active-leads count for badges/UI chrome - avoids
+  // hitting the full /stats aggregate just to read one number.
+  async getLeadsCount() {
+    const res = await fetch(`${API_BASE}/leads/count`);
+    if (!res.ok) throw new Error('Failed to fetch leads count');
     return res.json();
   },
 
@@ -160,6 +169,30 @@ export const api = {
     return data;
   },
 
+  // Bulk-archive ALL active leads in one shot (Admin Only)
+  async bulkArchiveActiveLeads(currentUser = 'Admin', userRole = 'ADMIN') {
+    const res = await fetch(`${API_BASE}/leads/bulk-archive`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentUser, userRole }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to bulk-archive leads');
+    return data;
+  },
+
+  // Permanently delete ALL archived leads in one shot (Admin Only, irreversible)
+  async bulkDeleteArchivedLeads(currentUser = 'Admin', userRole = 'ADMIN') {
+    const res = await fetch(`${API_BASE}/leads/bulk-delete-archived`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentUser, userRole }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to permanently delete archived leads');
+    return data;
+  },
+
   // Payments
   async getLeadPayments(leadId) {
     const res = await fetch(`${API_BASE}/leads/${leadId}/payments`);
@@ -187,6 +220,15 @@ export const api = {
     return res.json();
   },
 
+  async getAllActivities(filters = {}) {
+    const params = new URLSearchParams();
+    if (filters.type) params.append('type', filters.type);
+    if (filters.limit) params.append('limit', filters.limit);
+    const res = await fetch(`${API_BASE}/activities?${params.toString()}`);
+    if (!res.ok) throw new Error('Failed to fetch activities');
+    return res.json();
+  },
+
   async recordActivity(leadId, activityData) {
     const res = await fetch(`${API_BASE}/leads/${leadId}/activities`, {
       method: 'POST',
@@ -200,6 +242,15 @@ export const api = {
   // Followups
   async getFollowups(leadId) {
     const res = await fetch(`${API_BASE}/leads/${leadId}/followups`);
+    if (!res.ok) throw new Error('Failed to fetch followups');
+    return res.json();
+  },
+
+  async getAllFollowups(filters = {}) {
+    const params = new URLSearchParams();
+    if (filters.date) params.append('date', filters.date);
+    if (filters.status) params.append('status', filters.status);
+    const res = await fetch(`${API_BASE}/followups?${params.toString()}`);
     if (!res.ok) throw new Error('Failed to fetch followups');
     return res.json();
   },

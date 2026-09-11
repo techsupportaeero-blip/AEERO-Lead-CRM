@@ -23,11 +23,13 @@ export const getStatusCode = (codeOrLabel) => {
   return found ? found.code : 'NEW';
 };
 
-// Configurable Lead Owners / Counselors matching screenshot & app
+// Configurable Lead Owners / Counselors - must exactly match User.name in the
+// database (see /api/users), since filters and assignment match by exact string.
 export const COUNSELORS = [
-  'Ms.Indu',
-  'Ms.Priya',
-  'Ms.Ayesha'
+  'MS. INDU',
+  'MS. AYESHA',
+  'MS. PRITI',
+  'Admin User 1'
 ];
 
 // Lead Sources matching screenshot & app

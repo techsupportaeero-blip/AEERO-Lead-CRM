@@ -14,6 +14,15 @@ leadRouter.post(
   LeadController.checkDuplicate
 );
 
+// Bulk actions (Admin Only) - must come before the /:id routes below
+leadRouter.post('/leads/bulk-archive', optionalAuthMiddleware, LeadController.bulkArchiveActive);
+leadRouter.post('/leads/bulk-delete-archived', optionalAuthMiddleware, LeadController.bulkDeleteArchived);
+
+// Lightweight count (sidebar badge, etc.) - a single COUNT query instead of
+// the full /api/stats aggregate, which fetches every lead/activity/payment
+// just to read one number.
+leadRouter.get('/leads/count', optionalAuthMiddleware, LeadController.getLeadsCount);
+
 // Lead CRUD
 leadRouter.get('/leads', optionalAuthMiddleware, LeadController.getLeads);
 leadRouter.get('/leads/:id', optionalAuthMiddleware, LeadController.getLeadById);

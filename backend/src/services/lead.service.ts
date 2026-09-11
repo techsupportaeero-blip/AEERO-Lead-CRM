@@ -1,5 +1,6 @@
 import { prisma } from '../config/database.js';
 import { generateNextLeadId } from '../utils/generateLeadId.js';
+import { getCounselorForCampaign } from '../utils/campaignAssignment.js';
 import { AuditLogService } from './auditLog.service.js';
 import { LeadStatus, Priority } from '../types/index.js';
 
@@ -9,6 +10,7 @@ export interface LeadFilterParams {
   source?: string;
   owner?: string;
   course?: string;
+  campaign?: string;
   priority?: string;
   city?: string;
   tag?: string;
@@ -112,25 +114,38 @@ export class LeadService {
   }
 
   /**
-   * Auto-assign counselor in round-robin fashion
+   * Auto-assign counselor. A campaign is routed to one consistent counselor
+   * (getCounselorForCampaign); leads with no campaign fall back to
+   * course-based routing, then round-robin across active counselors.
    */
-  static async getNextAutoAssignedCounselor(course?: string): Promise<string> {
+  static async getNextAutoAssignedCounselor(course?: string, campaign?: string): Promise<string> {
     if (course) {
       const c = course.toLowerCase();
       // Mapping logic based on frontend COURSE_TO_COUNSELOR_MAP
       if (c.includes('industrial safety') || c.includes('sub fire')) {
-        return 'Ms.Indu';
+        return 'MS. INDU';
       }
       if (c.includes('fireman') || c.includes('diploma in sanitary')) {
-        return 'Ms.Ayesha';
+        return 'MS. AYESHA';
       }
       if (c.includes('health sanitary') || c.includes('msme')) {
-        return 'Ms.Priya';
+        return 'MS. PRITI';
       }
     }
 
-    // Default Fallback Round Robin for unknown courses
-    const counselors = ['Ms.Indu', 'Ms.Ayesha', 'Ms.Priya'];
+    const activeUsers = await prisma.user.findMany({
+      where: { isActive: true, role: { in: ['LEAD_FINDER', 'MANAGER'] } },
+      select: { name: true },
+      orderBy: { id: 'asc' }
+    });
+    const counselors = activeUsers.length > 0
+      ? activeUsers.map(u => u.name)
+      : ['MS. INDU', 'MS. AYESHA', 'MS. PRITI'];
+
+    const campaignCounselor = getCounselorForCampaign(campaign, counselors);
+    if (campaignCounselor) return campaignCounselor;
+
+    // Fallback Round Robin when there's no campaign to key off of
     const leadCount = await prisma.lead.count();
     return counselors[leadCount % counselors.length];
   }
@@ -170,7 +185,7 @@ export class LeadService {
     // 4. Determine owner
     let ownerId = data.ownerId;
     if (!ownerId || ownerId.trim() === '') {
-      ownerId = await this.getNextAutoAssignedCounselor(data.interestedCourse || data.qualification);
+      ownerId = await this.getNextAutoAssignedCounselor(data.interestedCourse || data.qualification, data.campaign);
     }
 
     // 5. Serialize tags
@@ -286,12 +301,20 @@ export class LeadService {
 
     // 4. Source filter
     if (params.source && params.source !== 'All' && params.source !== 'all') {
-      where.source = { equals: params.source };
+      where.source = { equals: params.source, mode: 'insensitive' };
     }
 
-    // 5. Owner / Counselor filter
+    // 4b. Campaign filter (campaign names come from Meta Ads / Google Sheets,
+    // not a fixed enum, so this matches whatever campaign strings exist)
+    if (params.campaign && params.campaign !== 'All' && params.campaign !== 'all') {
+      where.campaign = { equals: params.campaign, mode: 'insensitive' };
+    }
+
+    // 5. Owner / Counselor filter (case-insensitive: counselor names come from
+    // multiple places - Users table, sheet ingestion, manual entry - and must
+    // still match even if casing/spacing drifts between them)
     if (params.owner && params.owner !== 'All' && params.owner !== 'all') {
-      where.ownerId = { equals: params.owner };
+      where.ownerId = { equals: params.owner, mode: 'insensitive' };
     }
 
     // 6. Course filter
@@ -576,5 +599,52 @@ export class LeadService {
     });
 
     return true;
+  }
+
+  /**
+   * Cheap total-active-leads count (single COUNT query) for badges/UI chrome
+   * that only needs the number, not the full stats aggregate.
+   */
+  static async getLeadsCount() {
+    return prisma.lead.count({ where: { isArchived: false } });
+  }
+
+  /**
+   * Bulk archive every active (non-archived) lead in one go (Admin Only).
+   * Powers the "Clear All" action on the Active Leads view.
+   */
+  static async bulkArchiveActive(currentUser = 'Admin') {
+    const result = await prisma.lead.updateMany({
+      where: { isArchived: false },
+      data: { isArchived: true }
+    });
+
+    await AuditLogService.log({
+      userName: currentUser,
+      leadId: 'BULK',
+      action: 'LEAD_BULK_ARCHIVED',
+      details: `${result.count} active lead(s) bulk-archived by ${currentUser}`
+    });
+
+    return result.count;
+  }
+
+  /**
+   * Permanently delete every archived lead in one go (Admin Only, irreversible).
+   * Powers the "Clear All" action on the Archived Leads view.
+   */
+  static async bulkDeleteArchived(currentUser = 'Admin') {
+    const count = await prisma.lead.count({ where: { isArchived: true } });
+
+    await prisma.lead.deleteMany({ where: { isArchived: true } });
+
+    await AuditLogService.log({
+      userName: currentUser,
+      leadId: 'BULK',
+      action: 'LEAD_BULK_DELETED',
+      details: `${count} archived lead(s) permanently deleted by ${currentUser}`
+    });
+
+    return count;
   }
 }
