@@ -193,6 +193,23 @@ export const api = {
     return data;
   },
 
+  async getWhatsAppTemplates() {
+    const res = await fetch(`${API_BASE}/whatsapp/templates`);
+    if (!res.ok) throw new Error('Failed to fetch WhatsApp templates');
+    return res.json();
+  },
+
+  async bulkSendWhatsApp(leadIds, templateId, currentUser = 'Counselor') {
+    const res = await fetch(`${API_BASE}/whatsapp/bulk-send`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leadIds, templateId, currentUser }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to send bulk WhatsApp messages');
+    return data;
+  },
+
   // Payments
   async getLeadPayments(leadId) {
     const res = await fetch(`${API_BASE}/leads/${leadId}/payments`);

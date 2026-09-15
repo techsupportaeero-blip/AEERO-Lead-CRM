@@ -6,6 +6,7 @@ import { StatusBadge, PriorityBadge } from '../components/StatusBadge';
 import { LEAD_STATUSES, COUNSELORS, LEAD_SOURCES } from '../config/constants';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { RecordPaymentModal } from '../components/RecordPaymentModal';
+import { BulkWhatsAppModal } from '../components/BulkWhatsAppModal';
 
 export const AllLeads = ({
   onSelectLead,
@@ -23,6 +24,8 @@ export const AllLeads = ({
   const [confirmConfig, setConfirmConfig] = useState(null);
   const [viewArchived, setViewArchived] = useState(false);
   const [paymentModalLead, setPaymentModalLead] = useState(null);
+  const [selectedLeadIds, setSelectedLeadIds] = useState([]);
+  const [showBulkWhatsApp, setShowBulkWhatsApp] = useState(false);
 
   // Filters State matching screenshot
   const [dateFromFilter, setDateFromFilter] = useState('');
@@ -45,6 +48,7 @@ export const AllLeads = ({
 
   useEffect(() => {
     fetchLeads();
+    setSelectedLeadIds([]);
   }, [search, statusFilter, sourceFilter, ownerFilter, priorityFilter, campaignFilter, viewArchived]);
 
   useEffect(() => {
@@ -568,6 +572,44 @@ export const AllLeads = ({
               <span className="material-symbols-outlined text-[16px]">filter_alt_off</span>
             </button>
 
+            {/* Select All Matching Filter - the header checkbox only grabs the
+                current page (entriesPerPage); this grabs every lead matching
+                the active Status/Priority/Source/etc. filters across all
+                pages, so "filter by Converted -> select all -> WhatsApp" works
+                in one go without paging through results. */}
+            {processedLeads.length > 0 && (
+              <button
+                onClick={() => setSelectedLeadIds(processedLeads.map(l => l.leadId))}
+                title="Select every lead matching the current filters (all pages)"
+                className={`px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1 transition-colors ${darkMode ? 'bg-[#080706] hover:bg-[#1f1c19] text-slate-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}
+              >
+                <span className="material-symbols-outlined text-[14px]">playlist_add_check</span>
+                <span>Select All Matching ({processedLeads.length})</span>
+              </button>
+            )}
+
+            {/* Bulk WhatsApp - sends one WhatsApp template to every checked lead */}
+            {selectedLeadIds.length > 0 && (
+              <>
+                <button
+                  onClick={() => setSelectedLeadIds([])}
+                  title="Clear selection"
+                  className={`px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1 transition-colors ${darkMode ? 'bg-[#080706] hover:bg-[#1f1c19] text-slate-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}
+                >
+                  <span className="material-symbols-outlined text-[14px]">close</span>
+                  <span>Clear ({selectedLeadIds.length})</span>
+                </button>
+                <button
+                  onClick={() => setShowBulkWhatsApp(true)}
+                  title="Send WhatsApp template to selected leads"
+                  className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold flex items-center gap-1 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[14px]">forum</span>
+                  <span>WhatsApp ({selectedLeadIds.length})</span>
+                </button>
+              </>
+            )}
+
             {/* Clear All - Admin Only bulk action (archive-all / permanently-delete-all-archived) */}
             {isAdmin && (
               <button
@@ -822,6 +864,20 @@ export const AllLeads = ({
             {/* Dark Styled Header Bar matching Screenshot */}
             <thead>
               <tr className={`font-semibold text-[11px] border-b ${darkMode ? 'bg-[#6B540A] text-[#F5D061] border-[#85620D]' : 'bg-[#3E3100] text-[#F5D061] border-[#574500]'}`}>
+                <th className="py-2.5 px-3 w-8">
+                  <input
+                    type="checkbox"
+                    checked={visibleLeads.length > 0 && visibleLeads.every(l => selectedLeadIds.includes(l.leadId))}
+                    onChange={(e) => {
+                      const visibleIds = visibleLeads.map(l => l.leadId);
+                      setSelectedLeadIds(prev => e.target.checked
+                        ? [...new Set([...prev, ...visibleIds])]
+                        : prev.filter(id => !visibleIds.includes(id))
+                      );
+                    }}
+                    className="w-3.5 h-3.5 rounded cursor-pointer accent-emerald-600"
+                  />
+                </th>
                 <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-left">S.No.</th>
                 <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-left">Lead ID</th>
                 <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-left">Student Name</th>
@@ -843,16 +899,16 @@ export const AllLeads = ({
             {/* Table Rows matching Screenshot */}
             <tbody className={`divide-y text-[12px] ${darkMode ? 'divide-[#222936] text-slate-300' : 'divide-slate-100 text-slate-700'}`}>
               {loading ? (
-                <TableRowSkeleton columns={15} rows={10} />
+                <TableRowSkeleton columns={16} rows={10} />
               ) : error ? (
                 <tr>
-                  <td colSpan={15} className="py-8 text-center text-red-600 font-medium">
+                  <td colSpan={16} className="py-8 text-center text-red-600 font-medium">
                     {error}
                   </td>
                 </tr>
               ) : visibleLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={15} className="py-12 text-center text-slate-500">
+                  <td colSpan={16} className="py-12 text-center text-slate-500">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <span className="material-symbols-outlined text-[36px] text-slate-300">folder_off</span>
                       <p className={`text-sm font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>No matching {viewArchived ? 'archived' : 'active'} leads found</p>
@@ -873,6 +929,20 @@ export const AllLeads = ({
                       darkMode ? 'hover:bg-[#413000]' : 'hover:bg-slate-50'
                     }`}
                   >
+                    <td className="py-2.5 px-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedLeadIds.includes(lead.leadId)}
+                        onChange={(e) => {
+                          setSelectedLeadIds(prev => e.target.checked
+                            ? [...prev, lead.leadId]
+                            : prev.filter(id => id !== lead.leadId)
+                          );
+                        }}
+                        className="w-3.5 h-3.5 rounded cursor-pointer accent-emerald-600"
+                      />
+                    </td>
+
                     <td className="py-2.5 px-3 font-medium text-slate-500">
                       {startIndex + index + 1}
                     </td>
@@ -1142,6 +1212,18 @@ export const AllLeads = ({
           }}
         />
       )}
+
+      {/* Bulk WhatsApp Modal */}
+      <BulkWhatsAppModal
+        isOpen={showBulkWhatsApp}
+        selectedLeads={leads.filter(l => selectedLeadIds.includes(l.leadId))}
+        currentUser={currentUser}
+        darkMode={darkMode}
+        onClose={() => {
+          setShowBulkWhatsApp(false);
+          setSelectedLeadIds([]);
+        }}
+      />
 
     </div>
   );

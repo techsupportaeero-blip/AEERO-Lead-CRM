@@ -16,6 +16,7 @@ import { notificationRouter } from './notification.routes.js';
 import { dashboardRouter } from './dashboard.routes.js';
 import { webhookRouter } from './webhook.routes.js';
 import { googleSheetsRouter } from './googleSheets.routes.js';
+import { whatsappRouter } from './whatsapp.routes.js';
 
 export const apiRouter = Router();
 
@@ -24,6 +25,7 @@ apiRouter.use(authRouter);
 apiRouter.use(publicLeadRouter);
 apiRouter.use(webhookRouter);
 apiRouter.use(googleSheetsRouter);
+apiRouter.use(whatsappRouter);
 apiRouter.use(leadRouter);
 apiRouter.use(activityRouter);
 apiRouter.use(followupRouter);

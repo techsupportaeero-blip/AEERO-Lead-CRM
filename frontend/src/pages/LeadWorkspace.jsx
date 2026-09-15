@@ -312,6 +312,15 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
                   <p className={`font-medium ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{lead.requirement}</p>
                 </div>
               )}
+              {lead.remarks && (
+                <div className={`p-3 rounded-lg border sm:col-span-2 ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-100'}`}>
+                  <span className="text-slate-400 flex items-center gap-1 uppercase font-semibold text-[10px]">
+                    Additional Sheet Data
+                    <span className="material-symbols-outlined text-[13px]" title="Extra / unmapped columns from the source Google Sheet (any language) - Hindi, new custom questions, etc. all land here.">info</span>
+                  </span>
+                  <p className={`font-medium whitespace-pre-wrap ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{lead.remarks}</p>
+                </div>
+              )}
             </div>
           </div>
 

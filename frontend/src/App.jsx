@@ -194,6 +194,13 @@ export default function App() {
     setEditingLead(null);
     showToast(`Lead updated successfully!`);
     loadLeadCount();
+    // Editing the lead currently open in the workspace re-sets selectedLeadId
+    // to the SAME value it already had, which React treats as a no-op and
+    // never remounts LeadWorkspace - so the screen kept showing stale
+    // pre-edit data even though the save succeeded. Bumping refreshKey forces
+    // LeadWorkspace's key to change regardless, so it always remounts and
+    // re-fetches fresh data after a save.
+    setRefreshKey(prev => prev + 1);
     if (currentRoute === 'lead-details' && selectedLeadId) {
       setSelectedLeadId(updatedLead.leadId);
     }
