@@ -1,35 +1,26 @@
 import React from 'react';
 
+// This list mirrors the actual data columns rendered in the All Leads
+// table (AllLeads.jsx) - the checkbox-select and S.No columns aren't here
+// since they're table furniture, not lead data, and always show. Every
+// entry defaults to visible so turning this feature on doesn't silently
+// hide anything a user was already relying on.
 export const ALL_COLUMNS = [
   { id: 'leadId', label: 'Lead ID', default: true },
-  { id: 'name', label: 'Lead Name', default: true },
-  { id: 'mobile', label: 'Mobile Number', default: true },
-  { id: 'source', label: 'Lead Source', default: true },
-  { id: 'interestedCourse', label: 'Interested Course', default: true },
-  { id: 'ownerId', label: 'Counselor / Owner', default: true },
+  { id: 'name', label: 'Student Name', default: true },
+  { id: 'email', label: 'Email', default: true },
+  { id: 'phone', label: 'Phone', default: true },
+  { id: 'status', label: 'Status', default: true },
+  { id: 'source', label: 'Source', default: true },
+  { id: 'platform', label: 'Platform (FB/IG)', default: true },
+  { id: 'campaign', label: 'Campaign', default: true },
+  { id: 'qualification', label: 'Qualification', default: true },
   { id: 'priority', label: 'Priority', default: true },
-  { id: 'status', label: 'Lead Status', default: true },
-  { id: 'createdAt', label: 'Created Date', default: true },
+  { id: 'assignedTo', label: 'Assigned To', default: true },
+  { id: 'value', label: 'Value', default: true },
+  { id: 'followUp', label: 'Follow-up', default: true },
+  { id: 'created', label: 'Created', default: true },
   { id: 'actions', label: 'Actions', default: true },
-  // Extended fields
-  { id: 'whatsappNumber', label: 'WhatsApp Number', default: false },
-  { id: 'email', label: 'Email Address', default: false },
-  { id: 'city', label: 'City', default: false },
-  { id: 'state', label: 'State', default: false },
-  { id: 'age', label: 'Age', default: false },
-  { id: 'qualification', label: 'Qualification', default: false },
-  { id: 'preferredStudyMode', label: 'Study Mode', default: false },
-  { id: 'campaign', label: 'Campaign', default: false },
-  { id: 'campaignId', label: 'Campaign ID', default: false },
-  { id: 'adSet', label: 'Ad Set', default: false },
-  { id: 'adSetId', label: 'Ad Set ID', default: false },
-  { id: 'ad', label: 'Ad Name', default: false },
-  { id: 'adId', label: 'Ad ID', default: false },
-  { id: 'utmSource', label: 'UTM Source', default: false },
-  { id: 'utmMedium', label: 'UTM Medium', default: false },
-  { id: 'utmCampaign', label: 'UTM Campaign', default: false },
-  { id: 'utmContent', label: 'UTM Content', default: false },
-  { id: 'utmTerm', label: 'UTM Term', default: false },
 ];
 
 export const ColumnModal = ({ visibleColumns, setVisibleColumns, onClose, darkMode }) => {
@@ -63,7 +54,7 @@ export const ColumnModal = ({ visibleColumns, setVisibleColumns, onClose, darkMo
         }`}>
           <div>
             <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-slate-800'}`}>Column Settings</h3>
-            <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Show or hide columns in the All Leads table view</p>
+            <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Show or hide columns in the All Leads table. Unchecked fields still show in each lead's full Workspace view.</p>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-200">
             <span className="material-symbols-outlined">close</span>

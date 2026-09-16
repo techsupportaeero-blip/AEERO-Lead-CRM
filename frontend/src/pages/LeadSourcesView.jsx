@@ -78,7 +78,7 @@ export const LeadSourcesView = ({ onNotify, darkMode }) => {
     setSourceType(s.type || 'Online');
     setCategory(s.category || 'Other');
     setCostPerLead(s.costPerLead || '-');
-    setStatus(s.status || 'Active');
+    setStatus(s.isActive === false ? 'Inactive' : 'Active');
     setShowModal(true);
   };
 
@@ -143,8 +143,8 @@ export const LeadSourcesView = ({ onNotify, darkMode }) => {
       s.type || '',
       s.category || '',
       s.costPerLead || '-',
-      s.status || 'Active',
-      s.created || ''
+      s.isActive === false ? 'Inactive' : 'Active',
+      s.createdAt ? new Date(s.createdAt).toLocaleDateString() : ''
     ]);
     const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
     const encodedUri = encodeURI(csvContent);
@@ -161,7 +161,8 @@ export const LeadSourcesView = ({ onNotify, darkMode }) => {
   };
 
   const filteredSources = (sources || []).filter(s => {
-    if (filterStatus !== 'All Status' && s.status !== filterStatus) return false;
+    const statusLabel = s.isActive === false ? 'Inactive' : 'Active';
+    if (filterStatus !== 'All Status' && statusLabel !== filterStatus) return false;
     if (filterType !== 'All Types' && s.type !== filterType) return false;
     if (filterCategory !== 'All Categories' && s.category !== filterCategory) return false;
     if (searchTerm) {
@@ -387,12 +388,12 @@ export const LeadSourcesView = ({ onNotify, darkMode }) => {
                     <td className={`py-3 px-4 text-center font-mono font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{s.costPerLead || '-'}</td>
                     <td className="py-3 px-4 text-center">
                       <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                        s.status === 'Active' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300'
+                        s.isActive !== false ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300'
                       }`}>
-                        {s.status || 'Active'}
+                        {s.isActive === false ? 'Inactive' : 'Active'}
                       </span>
                     </td>
-                    <td className={`py-3 px-4 text-[11px] ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{s.created || 'Jan 27, 2026'}</td>
+                    <td className={`py-3 px-4 text-[11px] ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{s.createdAt ? new Date(s.createdAt).toLocaleDateString() : '-'}</td>
                     <td className="py-3 px-4 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <button

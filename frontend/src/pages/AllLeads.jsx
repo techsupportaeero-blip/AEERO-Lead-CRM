@@ -15,9 +15,14 @@ export const AllLeads = ({
   onOpenColumnModal,
   onNavigateToCustomers,
   currentUser,
+  visibleColumns,
   initialFilters = {},
   darkMode
 }) => {
+  // No visibleColumns prop provided (or feature not wired up by a parent) ->
+  // treat every data column as visible, same as before this toggle existed.
+  const isColVisible = (id) => !visibleColumns || visibleColumns.includes(id);
+
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -828,6 +833,17 @@ export const AllLeads = ({
             <span>Print</span>
           </button>
 
+          {onOpenColumnModal && (
+            <button
+              onClick={onOpenColumnModal}
+              title="Choose which columns show in this table"
+              className="px-2.5 py-1 bg-[#b58d16] hover:bg-[#6B540A] text-white rounded text-xs font-semibold flex items-center gap-1 transition-colors"
+            >
+              <span className="material-symbols-outlined text-[14px]">view_column</span>
+              <span>Columns</span>
+            </button>
+          )}
+
           <div className="flex items-center gap-1 text-xs pl-2 text-slate-400">
             <span>Show</span>
             <select
@@ -897,19 +913,20 @@ export const AllLeads = ({
                   />
                 </th>
                 <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-left">S.No.</th>
-                <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-left">Lead ID</th>
-                <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-left">Student Name</th>
-                <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Email</th>
-                <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Phone</th>
-                <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-center">Status</th>
-                <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Source</th>
-                <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Campaign</th>
-                <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Qualification</th>
-                <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-center">Priority</th>
-                <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Assigned To</th>
-                <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Value</th>
-                <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Follow-up</th>
-                <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Created</th>
+                {isColVisible('leadId') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-left">Lead ID</th>}
+                {isColVisible('name') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-left">Student Name</th>}
+                {isColVisible('email') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Email</th>}
+                {isColVisible('phone') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Phone</th>}
+                {isColVisible('status') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-center">Status</th>}
+                {isColVisible('source') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Source</th>}
+                {isColVisible('platform') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Platform</th>}
+                {isColVisible('campaign') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Campaign</th>}
+                {isColVisible('qualification') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Qualification</th>}
+                {isColVisible('priority') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-center">Priority</th>}
+                {isColVisible('assignedTo') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Assigned To</th>}
+                {isColVisible('value') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Value</th>}
+                {isColVisible('followUp') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Follow-up</th>}
+                {isColVisible('created') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Created</th>}
                 <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-center">Actions</th>
               </tr>
             </thead>
@@ -917,16 +934,16 @@ export const AllLeads = ({
             {/* Table Rows matching Screenshot */}
             <tbody className={`divide-y text-[12px] ${darkMode ? 'divide-[#222936] text-slate-300' : 'divide-slate-100 text-slate-700'}`}>
               {loading ? (
-                <TableRowSkeleton columns={16} rows={10} />
+                <TableRowSkeleton columns={17} rows={10} />
               ) : error ? (
                 <tr>
-                  <td colSpan={16} className="py-8 text-center text-red-600 font-medium">
+                  <td colSpan={17} className="py-8 text-center text-red-600 font-medium">
                     {error}
                   </td>
                 </tr>
               ) : visibleLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={16} className="py-12 text-center text-slate-500">
+                  <td colSpan={17} className="py-12 text-center text-slate-500">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <span className="material-symbols-outlined text-[36px] text-slate-300">folder_off</span>
                       <p className={`text-sm font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>No matching {viewArchived ? 'archived' : 'active'} leads found</p>
@@ -965,84 +982,128 @@ export const AllLeads = ({
                       {startIndex + index + 1}
                     </td>
 
-                    <td className={`py-2.5 px-3 font-mono font-medium whitespace-nowrap ${
-                      darkMode ? 'text-slate-400' : 'text-[#9A7310]'
-                    }`}>
-                      {lead.displayId}
-                    </td>
+                    {isColVisible('leadId') && (
+                      <td className={`py-2.5 px-3 font-mono font-medium whitespace-nowrap ${
+                        darkMode ? 'text-slate-400' : 'text-[#9A7310]'
+                      }`}>
+                        {lead.displayId}
+                      </td>
+                    )}
 
-                    <td className="py-2.5 px-3 font-medium whitespace-nowrap">
-                      <button
-                        onClick={() => onSelectLead(lead.leadId)}
-                        className={`hover:underline text-left font-semibold ${
-                          darkMode ? 'text-slate-100 hover:text-[#E5A812]' : 'text-slate-900 hover:text-[#9A7310]'
-                        }`}
-                      >
-                        {lead.name}
-                      </button>
-                    </td>
+                    {isColVisible('name') && (
+                      <td className="py-2.5 px-3 font-medium whitespace-nowrap">
+                        <button
+                          onClick={() => onSelectLead(lead.leadId)}
+                          className={`hover:underline text-left font-semibold ${
+                            darkMode ? 'text-slate-100 hover:text-[#E5A812]' : 'text-slate-900 hover:text-[#9A7310]'
+                          }`}
+                        >
+                          {lead.name}
+                        </button>
+                      </td>
+                    )}
 
-                    <td className={`py-2.5 px-3 whitespace-nowrap ${
-                      darkMode ? 'text-slate-400' : 'text-slate-600'
-                    }`}>
-                      {lead.email}
-                    </td>
+                    {isColVisible('email') && (
+                      <td className={`py-2.5 px-3 whitespace-nowrap ${
+                        darkMode ? 'text-slate-400' : 'text-slate-600'
+                      }`}>
+                        {lead.email}
+                      </td>
+                    )}
 
-                    <td className={`py-2.5 px-3 font-mono text-[11px] whitespace-nowrap ${
-                      darkMode ? 'text-slate-300' : 'text-slate-700'
-                    }`}>
-                      {lead.phone || lead.mobile || ''}
-                    </td>
+                    {isColVisible('phone') && (
+                      <td className={`py-2.5 px-3 font-mono text-[11px] whitespace-nowrap ${
+                        darkMode ? 'text-slate-300' : 'text-slate-700'
+                      }`}>
+                        {lead.phone || lead.mobile || ''}
+                      </td>
+                    )}
 
-                    <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                      <StatusBadge status={lead.status} darkMode={darkMode} />
-                    </td>
+                    {isColVisible('status') && (
+                      <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                        <StatusBadge status={lead.status} darkMode={darkMode} />
+                      </td>
+                    )}
 
-                    <td className={`py-2.5 px-3 whitespace-nowrap ${
-                      darkMode ? 'text-slate-300' : 'text-slate-700'
-                    }`}>
-                      {lead.source}
-                    </td>
+                    {isColVisible('source') && (
+                      <td className={`py-2.5 px-3 whitespace-nowrap ${
+                        darkMode ? 'text-slate-300' : 'text-slate-700'
+                      }`}>
+                        {lead.source}
+                      </td>
+                    )}
 
-                    <td className={`py-2.5 px-3 whitespace-nowrap ${
-                      darkMode ? 'text-slate-400' : 'text-slate-600'
-                    }`}>
-                      {lead.campaign}
-                    </td>
+                    {isColVisible('platform') && (
+                      <td className="py-2.5 px-3 whitespace-nowrap">
+                        {lead.platform ? (
+                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide ${
+                            lead.platform.toLowerCase() === 'ig'
+                              ? 'bg-fuchsia-100 text-fuchsia-700 border border-fuchsia-200'
+                              : lead.platform.toLowerCase() === 'fb'
+                                ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                                : darkMode ? 'bg-[#1A1608] text-slate-400 border border-[#574719]' : 'bg-slate-100 text-slate-600 border border-slate-200'
+                          }`}>
+                            {lead.platform.toLowerCase() === 'ig' ? 'Instagram' : lead.platform.toLowerCase() === 'fb' ? 'Facebook' : lead.platform}
+                          </span>
+                        ) : (
+                          <span className={darkMode ? 'text-slate-600' : 'text-slate-300'}>-</span>
+                        )}
+                      </td>
+                    )}
 
-                    <td className={`py-2.5 px-3 whitespace-nowrap ${
-                      darkMode ? 'text-slate-400' : 'text-slate-600'
-                    }`}>
-                      {lead.qualification}
-                    </td>
+                    {isColVisible('campaign') && (
+                      <td className={`py-2.5 px-3 whitespace-nowrap ${
+                        darkMode ? 'text-slate-400' : 'text-slate-600'
+                      }`}>
+                        {lead.campaign}
+                      </td>
+                    )}
 
-                    <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                      <PriorityBadge priority={lead.priority} darkMode={darkMode} />
-                    </td>
+                    {isColVisible('qualification') && (
+                      <td className={`py-2.5 px-3 whitespace-nowrap ${
+                        darkMode ? 'text-slate-400' : 'text-slate-600'
+                      }`}>
+                        {lead.qualification}
+                      </td>
+                    )}
 
-                    <td className={`py-2.5 px-3 font-medium whitespace-nowrap ${
-                      darkMode ? 'text-slate-300' : 'text-slate-700'
-                    }`}>
-                      {lead.assignedTo}
-                    </td>
+                    {isColVisible('priority') && (
+                      <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                        <PriorityBadge priority={lead.priority} darkMode={darkMode} />
+                      </td>
+                    )}
 
-                    <td className={`py-2.5 px-3 font-medium whitespace-nowrap ${
-                      darkMode ? 'text-slate-200' : 'text-slate-800'
-                    }`}>
-                      {lead.value}
-                    </td>
+                    {isColVisible('assignedTo') && (
+                      <td className={`py-2.5 px-3 font-medium whitespace-nowrap ${
+                        darkMode ? 'text-slate-300' : 'text-slate-700'
+                      }`}>
+                        {lead.assignedTo}
+                      </td>
+                    )}
 
-                    <td className={`py-2.5 px-3 whitespace-nowrap ${
-                      darkMode ? 'text-slate-400' : 'text-slate-600'
-                    }`}>
-                      {lead.followUp}
-                    </td>
+                    {isColVisible('value') && (
+                      <td className={`py-2.5 px-3 font-medium whitespace-nowrap ${
+                        darkMode ? 'text-slate-200' : 'text-slate-800'
+                      }`}>
+                        {lead.value}
+                      </td>
+                    )}
 
-                    <td className={`py-2.5 px-3 text-[11px] whitespace-nowrap ${
-                      darkMode ? 'text-slate-400' : 'text-slate-500'
-                    }`}>
-                      {lead.createdDate}
-                    </td>
+                    {isColVisible('followUp') && (
+                      <td className={`py-2.5 px-3 whitespace-nowrap ${
+                        darkMode ? 'text-slate-400' : 'text-slate-600'
+                      }`}>
+                        {lead.followUp}
+                      </td>
+                    )}
+
+                    {isColVisible('created') && (
+                      <td className={`py-2.5 px-3 text-[11px] whitespace-nowrap ${
+                        darkMode ? 'text-slate-400' : 'text-slate-500'
+                      }`}>
+                        {lead.createdDate}
+                      </td>
+                    )}
 
                     {/* Actions Column with Exact Icons matching Screenshot */}
                     <td className="py-2.5 px-3 text-center whitespace-nowrap">

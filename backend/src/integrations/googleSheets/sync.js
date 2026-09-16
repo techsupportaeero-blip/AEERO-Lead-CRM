@@ -491,6 +491,19 @@ export async function ingestLeadRecord(leadPayload, options = {}, dbData = null)
         lead: created
       };
     } catch (e) {
+      // Two sync triggers (or a retry racing the original request) can both
+      // pass the application-level duplicate check for the same row before
+      // either INSERT lands - the DB's unique constraint on externalLeadId
+      // is what actually stops the second one. Treat that as a benign
+      // duplicate, not an error, so it doesn't get logged/alerted as a
+      // failure.
+      if (e.code === 'P2002' && e.meta && Array.isArray(e.meta.target) && e.meta.target.includes('externalLeadId')) {
+        return {
+          success: false,
+          status: 'duplicate',
+          reason: 'Lead with this externalLeadId already exists (race with a concurrent sync).'
+        };
+      }
       return {
         success: false,
         status: 'error',

@@ -90,11 +90,11 @@ export const CustomersView = ({ onSelectLead, darkMode }) => {
               </thead>
               <tbody className={`divide-y ${darkMode ? 'divide-[#222936]' : 'divide-slate-100'}`}>
                 {filtered.map(c => (
-                  <tr key={c.customerId} className={`transition-colors ${
+                  <tr key={c.id} className={`transition-colors ${
                     darkMode ? 'hover:bg-[#3D3212]' : 'hover:bg-slate-50'
                   }`}>
                     <td className="py-3 px-4 font-mono font-bold text-[#7D610F]">
-                      CUST-{String(c.customerId).padStart(4, '0')}
+                      CUST-{String(c.id).padStart(4, '0')}
                     </td>
                     <td className={`py-3 px-4 font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
                       {c.name}
@@ -112,21 +112,25 @@ export const CustomersView = ({ onSelectLead, darkMode }) => {
                       {c.notes || '-'}
                     </td>
                     <td className="py-3 px-4 text-slate-500">
-                      {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : 'Jan 15, 2026'}
+                      {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '-'}
                     </td>
                     <td className="py-3 px-4 text-center">
-                      <button
-                        onClick={() => onSelectLead && onSelectLead(`LD-${String(c.customerId).padStart(6, '0')}`)}
-                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 mx-auto ${
-                          darkMode 
-                            ? 'bg-amber-950/50 hover:bg-amber-900/60 text-amber-200 border border-amber-800/40' 
-                            : 'bg-amber-50 hover:bg-amber-100 text-[#7D610F] border border-amber-200'
-                        }`}
-                        title="View Student Lead Workspace"
-                      >
-                        <span className="material-symbols-outlined text-[16px]">history</span>
-                        <span>View Lead</span>
-                      </button>
+                      {c.leadId ? (
+                        <button
+                          onClick={() => onSelectLead && onSelectLead(c.leadId)}
+                          className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 mx-auto ${
+                            darkMode
+                              ? 'bg-amber-950/50 hover:bg-amber-900/60 text-amber-200 border border-amber-800/40'
+                              : 'bg-amber-50 hover:bg-amber-100 text-[#7D610F] border border-amber-200'
+                          }`}
+                          title="View Student Lead Workspace"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">history</span>
+                          <span>View Lead</span>
+                        </button>
+                      ) : (
+                        <span className={`text-[11px] ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>-</span>
+                      )}
                     </td>
                   </tr>
                 ))}

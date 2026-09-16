@@ -102,7 +102,7 @@ model Lead {
   gclid                 String?
   fbclid                String?
   landingPage           String?
-  externalLeadId        String?
+  externalLeadId        String?     @unique
   externalSource        String?
   leadDateTime          DateTime    @default(now())
   createdBy             String?     @default("System")
