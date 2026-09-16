@@ -210,6 +210,34 @@ export const api = {
     return data;
   },
 
+  async getCampaignAssignments() {
+    const res = await fetch(`${API_BASE}/campaign-assignments`);
+    if (!res.ok) throw new Error('Failed to fetch campaign assignments');
+    return res.json();
+  },
+
+  async assignCampaignToCounselor(campaignName, ownerId, reassignExisting, currentUser, userRole) {
+    const res = await fetch(`${API_BASE}/campaign-assignments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ campaignName, ownerId, reassignExisting, currentUser, userRole }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to assign campaign');
+    return data;
+  },
+
+  async removeCampaignAssignment(campaignName, currentUser, userRole) {
+    const res = await fetch(`${API_BASE}/campaign-assignments/${encodeURIComponent(campaignName)}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentUser, userRole }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to remove campaign assignment');
+    return data;
+  },
+
   // Payments
   async getLeadPayments(leadId) {
     const res = await fetch(`${API_BASE}/leads/${leadId}/payments`);

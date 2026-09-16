@@ -7,6 +7,7 @@ import { LEAD_STATUSES, COUNSELORS, LEAD_SOURCES } from '../config/constants';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { RecordPaymentModal } from '../components/RecordPaymentModal';
 import { BulkWhatsAppModal } from '../components/BulkWhatsAppModal';
+import { AssignCampaignModal } from '../components/AssignCampaignModal';
 
 export const AllLeads = ({
   onSelectLead,
@@ -31,6 +32,7 @@ export const AllLeads = ({
   const [paymentModalLead, setPaymentModalLead] = useState(null);
   const [selectedLeadIds, setSelectedLeadIds] = useState([]);
   const [showBulkWhatsApp, setShowBulkWhatsApp] = useState(false);
+  const [showAssignCampaign, setShowAssignCampaign] = useState(false);
 
   // Filters State matching screenshot
   const [dateFromFilter, setDateFromFilter] = useState('');
@@ -633,6 +635,18 @@ export const AllLeads = ({
               </>
             )}
 
+            {/* Assign Campaign - Admin / Sr. Counsellor override for auto-assignment */}
+            {canManageArchive && (
+              <button
+                onClick={() => setShowAssignCampaign(true)}
+                title="Assign a whole campaign to one counselor (Admin / Sr. Counsellor)"
+                className="px-2.5 py-1 bg-sky-700 hover:bg-sky-800 text-white rounded text-xs font-semibold flex items-center gap-1 transition-colors"
+              >
+                <span className="material-symbols-outlined text-[14px]">campaign</span>
+                <span>Assign Campaign</span>
+              </button>
+            )}
+
             {/* Clear All - Admin Only bulk action (archive-all / permanently-delete-all-archived) */}
             {isAdmin && (
               <button
@@ -927,6 +941,7 @@ export const AllLeads = ({
                 {isColVisible('value') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Value</th>}
                 {isColVisible('followUp') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Follow-up</th>}
                 {isColVisible('created') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Created</th>}
+                {isColVisible('remarks') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Remarks</th>}
                 <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-center">Actions</th>
               </tr>
             </thead>
@@ -934,16 +949,16 @@ export const AllLeads = ({
             {/* Table Rows matching Screenshot */}
             <tbody className={`divide-y text-[12px] ${darkMode ? 'divide-[#222936] text-slate-300' : 'divide-slate-100 text-slate-700'}`}>
               {loading ? (
-                <TableRowSkeleton columns={17} rows={10} />
+                <TableRowSkeleton columns={18} rows={10} />
               ) : error ? (
                 <tr>
-                  <td colSpan={17} className="py-8 text-center text-red-600 font-medium">
+                  <td colSpan={18} className="py-8 text-center text-red-600 font-medium">
                     {error}
                   </td>
                 </tr>
               ) : visibleLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={17} className="py-12 text-center text-slate-500">
+                  <td colSpan={18} className="py-12 text-center text-slate-500">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <span className="material-symbols-outlined text-[36px] text-slate-300">folder_off</span>
                       <p className={`text-sm font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>No matching {viewArchived ? 'archived' : 'active'} leads found</p>
@@ -1102,6 +1117,17 @@ export const AllLeads = ({
                         darkMode ? 'text-slate-400' : 'text-slate-500'
                       }`}>
                         {lead.createdDate}
+                      </td>
+                    )}
+
+                    {isColVisible('remarks') && (
+                      <td
+                        className={`py-2.5 px-3 text-[11px] max-w-[220px] truncate ${
+                          darkMode ? 'text-slate-400' : 'text-slate-500'
+                        }`}
+                        title={lead.remarks || ''}
+                      >
+                        {lead.remarks || '-'}
                       </td>
                     )}
 
@@ -1326,6 +1352,16 @@ export const AllLeads = ({
           setShowBulkWhatsApp(false);
           setSelectedLeadIds([]);
         }}
+      />
+
+      {/* Assign Campaign to Counselor Modal */}
+      <AssignCampaignModal
+        isOpen={showAssignCampaign}
+        campaignOptions={campaignOptions}
+        currentUser={currentUser}
+        darkMode={darkMode}
+        onClose={() => setShowAssignCampaign(false)}
+        onAssigned={() => fetchLeads()}
       />
 
     </div>

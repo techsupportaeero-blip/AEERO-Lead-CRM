@@ -10,6 +10,7 @@ import { generateNextLeadId } from '../../utils/generateLeadId.js';
 import { getCounselorForCampaign } from '../../utils/campaignAssignment.js';
 import { discoverFolderSpreadsheets } from './discovery.js';
 import { NotificationService } from '../../services/notification.service.js';
+import { CampaignAssignmentService } from '../../services/campaignAssignment.service.js';
 
 let prismaClient = null;
 async function getPrisma() {
@@ -129,6 +130,18 @@ export async function checkLeadDuplicate(leadData, dbData = null) {
  * NO HARDCODED NAMES
  */
 export async function getNextCounselor(dbData = null, course = null, campaign = null) {
+  // Explicit Admin/Sr. Counsellor override for this campaign wins over
+  // everything else, including course-based routing - matches
+  // LeadService.getNextAutoAssignedCounselor's priority order.
+  if (campaign) {
+    try {
+      const explicitOwner = await CampaignAssignmentService.getAssignment(campaign);
+      if (explicitOwner) return explicitOwner;
+    } catch {
+      // Non-fatal: fall through to the existing auto-assignment logic below.
+    }
+  }
+
   if (course) {
     const c = course.toLowerCase();
     if (c.includes('industrial safety') || c.includes('sub fire')) return 'MS. INDU';

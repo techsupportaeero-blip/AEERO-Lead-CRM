@@ -35,6 +35,20 @@ model LeadCounter {
   @@map("lead_counters")
 }
 
+// Explicit Admin/Sr. Counsellor override: when a campaign name has a row
+// here, LeadService.getNextAutoAssignedCounselor uses it instead of the
+// hash-based getCounselorForCampaign() or course-based fallback routing.
+model CampaignAssignment {
+  id           Int      @id @default(autoincrement())
+  campaignName String   @unique
+  ownerId      String
+  assignedBy   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("campaign_assignments")
+}
+
 model LeadSource {
   id          Int      @id @default(autoincrement())
   name        String   @unique

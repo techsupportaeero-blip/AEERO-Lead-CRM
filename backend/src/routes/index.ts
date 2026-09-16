@@ -17,6 +17,7 @@ import { dashboardRouter } from './dashboard.routes.js';
 import { webhookRouter } from './webhook.routes.js';
 import { googleSheetsRouter } from './googleSheets.routes.js';
 import { whatsappRouter } from './whatsapp.routes.js';
+import { campaignAssignmentRouter } from './campaignAssignment.routes.js';
 
 export const apiRouter = Router();
 
@@ -26,6 +27,7 @@ apiRouter.use(publicLeadRouter);
 apiRouter.use(webhookRouter);
 apiRouter.use(googleSheetsRouter);
 apiRouter.use(whatsappRouter);
+apiRouter.use(campaignAssignmentRouter);
 apiRouter.use(leadRouter);
 apiRouter.use(activityRouter);
 apiRouter.use(followupRouter);

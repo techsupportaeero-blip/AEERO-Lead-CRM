@@ -4,6 +4,7 @@ import { getCounselorForCampaign } from '../utils/campaignAssignment.js';
 import { AuditLogService } from './auditLog.service.js';
 import { NotificationService } from './notification.service.js';
 import { CustomerService } from './customer.service.js';
+import { CampaignAssignmentService } from './campaignAssignment.service.js';
 import { LeadStatus, Priority } from '../types/index.js';
 
 export interface LeadFilterParams {
@@ -116,11 +117,17 @@ export class LeadService {
   }
 
   /**
-   * Auto-assign counselor. A campaign is routed to one consistent counselor
-   * (getCounselorForCampaign); leads with no campaign fall back to
-   * course-based routing, then round-robin across active counselors.
+   * Auto-assign counselor. Priority: (1) an explicit Admin/Sr. Counsellor
+   * override for this campaign (CampaignAssignmentService), (2) course-based
+   * routing, (3) the hash-based per-campaign counselor (getCounselorForCampaign),
+   * (4) round-robin across active counselors.
    */
   static async getNextAutoAssignedCounselor(course?: string, campaign?: string): Promise<string> {
+    if (campaign) {
+      const explicitOwner = await CampaignAssignmentService.getAssignment(campaign);
+      if (explicitOwner) return explicitOwner;
+    }
+
     if (course) {
       const c = course.toLowerCase();
       // Mapping logic based on frontend COURSE_TO_COUNSELOR_MAP
