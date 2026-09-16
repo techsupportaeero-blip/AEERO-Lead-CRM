@@ -78,11 +78,16 @@ function sendTestRowToCRM(config, ss, sheet, headers, rowData, rowNumber) {
     }
   }
 
-  // Cleanups
-  var fbErrorMsg = "You don't have enough permissions. Please refer to this help page: https://www.facebook.com/business/help/766393076839635";
+  // Cleanups: Facebook sometimes fills a custom question's answer with its own
+  // permission error instead of the actual value. Match on a short, stable
+  // fragment (case-insensitive) rather than the full message, since Meta's
+  // wording/punctuation for this error has changed before. Kept identical to
+  // the main folder-wide script so the CRM shows the same "No Permission"
+  // text everywhere, regardless of which script ingested the row.
+  var fbErrorNeedle = 'enough permissions';
   for (var key in payload) {
-    if (typeof payload[key] === 'string' && payload[key].indexOf(fbErrorMsg) !== -1) {
-      payload[key] = "Unknown (FB Permission Error)";
+    if (typeof payload[key] === 'string' && payload[key].toLowerCase().indexOf(fbErrorNeedle) !== -1) {
+      payload[key] = 'No Permission';
     }
   }
 

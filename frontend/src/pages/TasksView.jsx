@@ -3,11 +3,15 @@ import { api } from '../api/client';
 import { ConfirmModal } from '../components/ConfirmModal';
 
 export const TasksView = ({ currentUser, onNotify, darkMode }) => {
+  // "Create Task" was Admin-only; Sr. Counsellor (Indu) now gets it too, same
+  // elevated-but-not-full-admin level as archived-lead restore.
+  const canCreateTask = currentUser?.role?.toUpperCase() === 'ADMIN' || currentUser?.name?.toUpperCase()?.includes('INDU');
   const [tasks, setTasks] = useState([]);
   const [filterStatus, setFilterStatus] = useState('All');
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [confirmTask, setConfirmTask] = useState(null);
+  const [submittingTask, setSubmittingTask] = useState(false);
 
   // New Task Form
   const [taskTitle, setTaskTitle] = useState('');
@@ -37,9 +41,13 @@ export const TasksView = ({ currentUser, onNotify, darkMode }) => {
 
   const handleCreateTask = async (e) => {
     e.preventDefault();
-    if (!taskTitle.trim()) return;
+    // Guards against the "double click before the modal closes" case, which
+    // was firing this handler (and the create-task API call) twice and
+    // leaving two identical tasks in the list.
+    if (!taskTitle.trim() || submittingTask) return;
 
     try {
+      setSubmittingTask(true);
       await api.addTask({
         title: taskTitle.trim(),
         description: taskDesc.trim(),
@@ -59,6 +67,8 @@ export const TasksView = ({ currentUser, onNotify, darkMode }) => {
       loadTasks();
     } catch (err) {
       alert("Failed to create task: " + err.message);
+    } finally {
+      setSubmittingTask(false);
     }
   };
 
@@ -74,6 +84,10 @@ export const TasksView = ({ currentUser, onNotify, darkMode }) => {
       loadTasks();
     } catch (err) {
       alert("Failed to complete task");
+    } finally {
+      // onConfirm never closed the modal - only Cancel's onClose did, so
+      // clicking "Yes, I'm Done" left it stuck open until you hit Cancel.
+      setConfirmTask(null);
     }
   };
 
@@ -106,7 +120,7 @@ export const TasksView = ({ currentUser, onNotify, darkMode }) => {
             <option value="Cancelled">Cancelled</option>
           </select>
 
-          {currentUser?.role?.toUpperCase() === 'ADMIN' && (
+          {canCreateTask && (
             <button
               onClick={() => setShowModal(true)}
               className="px-4 py-2 bg-[#7D610F] hover:bg-[#68500C] text-white rounded-lg text-xs font-bold shadow-md transition-all flex items-center gap-1.5"
@@ -321,9 +335,10 @@ export const TasksView = ({ currentUser, onNotify, darkMode }) => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#7D610F] text-white rounded font-bold shadow"
+                  disabled={submittingTask}
+                  className="px-5 py-2 bg-[#7D610F] text-white rounded font-bold shadow disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Save Task
+                  {submittingTask ? 'Saving…' : 'Save Task'}
                 </button>
               </div>
             </form>

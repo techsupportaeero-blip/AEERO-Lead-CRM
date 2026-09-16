@@ -1,9 +1,85 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { io } from 'socket.io-client';
+import { api } from '../api/client';
 import aeeroLogo from '../assets/logo/aeero-logo.png';
 
-export const Header = ({ onOpenAddLead, onToggleMobileSidebar, globalSearch, setGlobalSearch, currentUser, currentRoute, darkMode, onToggleDarkMode, onRefreshData }) => {
+export const Header = ({ onOpenAddLead, onToggleMobileSidebar, globalSearch, setGlobalSearch, currentUser, currentRoute, darkMode, onToggleDarkMode, onRefreshData, onNavigateRoute, onSelectLead }) => {
   const [showPageInfoModal, setShowPageInfoModal] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Notification Bell - self-contained: fetches this user's notifications on
+  // login, then listens on the same socket.io channel the rest of the app
+  // already uses for live lead updates so new-lead/new-task notifications
+  // for THIS user show up instantly instead of on next refresh.
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifDropdown, setShowNotifDropdown] = useState(false);
+  const notifDropdownRef = useRef(null);
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    api.getNotifications(currentUser.id)
+      .then(list => setNotifications(Array.isArray(list) ? list : []))
+      .catch(() => {});
+  }, [currentUser?.id]);
+
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    const socket = io();
+    socket.on('notification', (notif) => {
+      if (notif.userId === currentUser.id) {
+        setNotifications(prev => [notif, ...prev]);
+      }
+    });
+    return () => socket.disconnect();
+  }, [currentUser?.id]);
+
+  // Close the dropdown on an outside click
+  useEffect(() => {
+    if (!showNotifDropdown) return;
+    const handleClickOutside = (e) => {
+      if (notifDropdownRef.current && !notifDropdownRef.current.contains(e.target)) {
+        setShowNotifDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showNotifDropdown]);
+
+  const handleNotifClick = async (notif) => {
+    if (!notif.isRead) {
+      setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n));
+      try { await api.markNotificationRead(notif.id); } catch {}
+    }
+
+    // Deep-link based on notification type: task assignments go to the
+    // Tasks list, lead assignments go straight to that lead's workspace
+    // (leadId is embedded in the message text, e.g. "... (LD-001564) ...",
+    // since the Notification table doesn't carry a structured reference).
+    if (notif.type === 'task' && onNavigateRoute) {
+      onNavigateRoute('tasks');
+      setShowNotifDropdown(false);
+    } else if (notif.type === 'lead') {
+      const match = notif.message?.match(/\(([A-Za-z]{1,4}-\d+)\)/);
+      if (match && onSelectLead) {
+        onSelectLead(match[1]);
+        setShowNotifDropdown(false);
+      } else if (onNavigateRoute) {
+        onNavigateRoute('leads');
+        setShowNotifDropdown(false);
+      }
+    }
+  };
+
+  const timeAgo = (dateStr) => {
+    const diffMs = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'Just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
+  };
 
   const handleRefreshClick = () => {
     setIsRefreshing(true);
@@ -271,6 +347,57 @@ export const Header = ({ onOpenAddLead, onToggleMobileSidebar, globalSearch, set
 
         {/* Right User Info & Actions matching Screenshot */}
         <div className="flex items-center gap-2.5">
+          {/* Notification Bell */}
+          <div className="relative" ref={notifDropdownRef}>
+            <button
+              onClick={() => setShowNotifDropdown(prev => !prev)}
+              title="Notifications"
+              className={`relative p-2 rounded-lg border transition-all active:scale-95 shadow-xs ${darkMode
+                  ? 'bg-[#2A220C] hover:bg-[#222936] text-[#E5A812] border-[#574719]'
+                  : 'bg-amber-50 hover:bg-amber-100 text-[#7D610F] border-amber-200'
+                }`}
+            >
+              <span className="material-symbols-outlined text-[18px]">notifications</span>
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-rose-600 text-white text-[9px] font-bold flex items-center justify-center shadow-xs">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+
+            {showNotifDropdown && (
+              <div className={`absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto rounded-xl border shadow-2xl z-50 ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-white border-slate-200'}`}>
+                <div className={`px-4 py-2.5 border-b font-bold text-xs flex items-center justify-between ${darkMode ? 'border-[#574719] text-white' : 'border-slate-100 text-slate-900'}`}>
+                  <span>Notifications</span>
+                  {unreadCount > 0 && <span className="text-[10px] font-semibold text-rose-500">{unreadCount} unread</span>}
+                </div>
+                {notifications.length === 0 ? (
+                  <div className={`py-8 text-center text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                    <span className="material-symbols-outlined text-2xl mb-1 block">notifications_off</span>
+                    No notifications yet
+                  </div>
+                ) : (
+                  notifications.map(notif => (
+                    <button
+                      key={notif.id}
+                      onClick={() => handleNotifClick(notif)}
+                      className={`w-full text-left px-4 py-2.5 border-b last:border-b-0 transition-colors ${darkMode ? 'border-[#3D3212] hover:bg-[#2A220C]' : 'border-slate-50 hover:bg-slate-50'} ${!notif.isRead ? (darkMode ? 'bg-[#2A220C]/60' : 'bg-amber-50/60') : ''}`}
+                    >
+                      <div className="flex items-start gap-2">
+                        {!notif.isRead && <span className="w-1.5 h-1.5 rounded-full bg-[#E5A812] mt-1.5 flex-shrink-0" />}
+                        <div className="min-w-0 flex-1">
+                          <p className={`text-xs font-bold truncate ${darkMode ? 'text-white' : 'text-slate-900'}`}>{notif.title}</p>
+                          <p className={`text-[11px] mt-0.5 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>{notif.message}</p>
+                          <p className={`text-[10px] mt-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{timeAgo(notif.createdAt)}</p>
+                        </div>
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Refresh Page Data Button (Without full website reload) */}
           <button
             onClick={handleRefreshClick}

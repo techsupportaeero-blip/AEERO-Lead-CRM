@@ -1,6 +1,7 @@
 import { prisma } from '../config/database.js';
 import { TaskStatus, Priority } from '../types/index.js';
 import { LeadService } from './lead.service.js';
+import { NotificationService } from './notification.service.js';
 
 export class TaskService {
   static normalizeStatus(statusStr?: string | null): TaskStatus {
@@ -96,6 +97,13 @@ export class TaskService {
       }
     });
 
+    await NotificationService.notifyUserByName(
+      created.assignedTo,
+      'New Task Assigned',
+      `"${created.title}" has been assigned to you${created.dueDate ? ` (due ${created.dueDate})` : ''}.`,
+      'task'
+    );
+
     return this.formatTask(created);
   }
 
@@ -113,10 +121,27 @@ export class TaskService {
     if (data.dueTime !== undefined) updateData.dueTime = data.dueTime;
     if (data.status !== undefined) updateData.status = this.normalizeStatus(data.status);
 
+    // Only notify on a genuine re-assignment (new assignee differs from the
+    // old one) - not on every unrelated edit (status change, due date, etc.)
+    let previousAssignee: string | null = null;
+    if (updateData.assignedTo !== undefined) {
+      const existing = await prisma.task.findUnique({ where: { id }, select: { assignedTo: true } });
+      previousAssignee = existing?.assignedTo ?? null;
+    }
+
     const updated = await prisma.task.update({
       where: { id },
       data: updateData
     });
+
+    if (updateData.assignedTo !== undefined && updateData.assignedTo !== previousAssignee) {
+      await NotificationService.notifyUserByName(
+        updated.assignedTo,
+        'Task Assigned To You',
+        `"${updated.title}" has been assigned to you${updated.dueDate ? ` (due ${updated.dueDate})` : ''}.`,
+        'task'
+      );
+    }
 
     return this.formatTask(updated);
   }

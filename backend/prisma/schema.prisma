@@ -36,13 +36,17 @@ model LeadCounter {
 }
 
 model LeadSource {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  code      String?
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  leads     Lead[]
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  code        String?
+  description String?
+  type        String?  @default("Online")
+  category    String?  @default("Other")
+  costPerLead String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  leads       Lead[]
 
   @@map("lead_sources")
 }
@@ -213,6 +217,7 @@ model Payment {
 
 model Customer {
   id        Int      @id @default(autoincrement())
+  leadId    String?  @unique
   name      String
   email     String?
   phone     String?

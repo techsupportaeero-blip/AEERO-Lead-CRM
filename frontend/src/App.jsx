@@ -247,6 +247,8 @@ export default function App() {
         darkMode={darkMode}
         onToggleDarkMode={toggleDarkMode}
         onRefreshData={handleRefreshData}
+        onNavigateRoute={setCurrentRoute}
+        onSelectLead={handleSelectLead}
       />
 
       {/* Left Fixed Sidebar matching exact AEERO screenshot design */}

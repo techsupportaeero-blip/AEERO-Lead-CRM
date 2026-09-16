@@ -1,6 +1,21 @@
 import React from 'react';
 import aeeroLogo from '../assets/logo/aeero-logo.png';
 
+// The DB/system role (ADMIN/MANAGER/LEAD_FINDER/VIEWER) drives real
+// permissions elsewhere and must stay as-is there - this only controls what
+// gets displayed here in the sidebar badge. LEAD_FINDER shows as "Counselor"
+// for everyone, except Indu who gets the "Sr. Counsellor" title she actually
+// holds.
+const getRoleDisplayLabel = (user) => {
+  if (!user) return 'ADMIN ROLE';
+  const role = user.role || 'ADMIN';
+  if (role === 'LEAD_FINDER') {
+    const isIndu = (user.name || '').toUpperCase().includes('INDU');
+    return isIndu ? 'SR. COUNSELLOR' : 'COUNSELOR';
+  }
+  return `${role} ROLE`;
+};
+
 export const Sidebar = ({ currentRoute, setCurrentRoute, mobileOpen, setMobileOpen, onLogout, leadCount, darkMode, onToggleDarkMode, currentUser }) => {
   const sections = [
     {
@@ -74,7 +89,7 @@ export const Sidebar = ({ currentRoute, setCurrentRoute, mobileOpen, setMobileOp
             {currentUser ? currentUser.name : 'Admin User 1'}
           </p>
           <span className="mt-1.5 px-2.5 py-0.5 bg-[#251E00] border border-[#D4AF37]/40 text-[#E2B134] text-[10px] font-extrabold rounded-md shadow-xs uppercase tracking-wider">
-            {currentUser ? `${currentUser.role || 'ADMIN'} ROLE` : 'ADMIN ROLE'}
+            {getRoleDisplayLabel(currentUser)}
           </span>
 
           <button

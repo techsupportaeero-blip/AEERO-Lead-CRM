@@ -125,9 +125,14 @@ export const AllLeads = ({
   };
 
   const isAdmin = currentUser?.role?.toUpperCase() === 'ADMIN' || currentUser?.username === 'admin' || currentUser?.name?.toLowerCase()?.includes('admin');
+  // Sr. Counsellor (Indu) gets every admin-level authority EXCEPT "Clear All"
+  // (the bulk-archive / permanently-delete-all actions), which stays strict
+  // isAdmin-only everywhere below.
+  const isSrCounsellor = currentUser?.name?.toUpperCase()?.includes('INDU');
+  const canManageArchive = isAdmin || isSrCounsellor;
 
   const handleUnarchiveLead = async (leadId) => {
-    if (!isAdmin) {
+    if (!canManageArchive) {
       alert("Access Denied: Only administrators have permission to restore archived leads.");
       return;
     }
@@ -317,6 +322,19 @@ export const AllLeads = ({
   const totalPages = Math.ceil(totalEntries / entriesPerPage) || 1;
   const startIndex = (currentPage - 1) * entriesPerPage;
   const visibleLeads = processedLeads.slice(startIndex, startIndex + entriesPerPage);
+
+  // Sliding window of page-number buttons, centered on currentPage (clamped
+  // to the valid range) - previously this always showed pages 1-5 no matter
+  // which page you were on, so past page 5 the "Next" button kept loading
+  // new data but no page number ever appeared selected/visible.
+  const PAGE_BUTTON_COUNT = 5;
+  let pageWindowStart = Math.max(1, currentPage - Math.floor(PAGE_BUTTON_COUNT / 2));
+  let pageWindowEnd = Math.min(totalPages, pageWindowStart + PAGE_BUTTON_COUNT - 1);
+  pageWindowStart = Math.max(1, pageWindowEnd - PAGE_BUTTON_COUNT + 1);
+  const visiblePageNumbers = Array.from(
+    { length: pageWindowEnd - pageWindowStart + 1 },
+    (_, i) => pageWindowStart + i
+  );
 
   // CSV Export Helper with UTF-8 BOM for perfect Excel column separation
   const handleExportCSV = () => {
@@ -1084,23 +1102,23 @@ export const AllLeads = ({
                           <span className="material-symbols-outlined text-[16px]">edit</span>
                         </button>
 
-                        {/* Restore Lead if Archived (ADMIN ONLY), or Delete/Archive if Active */}
+                        {/* Restore Lead if Archived (Admin or Sr. Counsellor), or Delete/Archive if Active */}
                         {viewArchived ? (
-                          isAdmin ? (
+                          canManageArchive ? (
                             <button
                               onClick={() => handleUnarchiveLead(lead.leadId)}
                               className="px-2 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-bold transition-all flex items-center gap-1 shadow-xs"
-                              title="Restore Lead back to Active Directory (Admin Only)"
+                              title="Restore Lead back to Active Directory"
                             >
                               <span className="material-symbols-outlined text-[14px]">settings_backup_restore</span>
                               <span>Restore</span>
                             </button>
                           ) : (
-                            <span 
+                            <span
                               className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-0.5 border cursor-not-allowed ${
                                 darkMode ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-100 text-slate-500 border-slate-200'
                               }`}
-                              title="Only Admin users can restore archived leads"
+                              title="Only Admin / Sr. Counsellor can restore archived leads"
                             >
                               <span className="material-symbols-outlined text-[12px]">lock</span>
                               <span>Admin Only</span>
@@ -1156,7 +1174,19 @@ export const AllLeads = ({
               Previous
             </button>
 
-            {Array.from({ length: totalPages }, (_, i) => i + 1).slice(0, 5).map(page => (
+            {pageWindowStart > 1 && (
+              <>
+                <button
+                  onClick={() => setCurrentPage(1)}
+                  className={`px-2.5 py-1 text-xs font-semibold rounded transition-all ${darkMode ? 'bg-[#1A1500] hover:bg-[#3E3100] text-slate-300 border border-[#3E3100]' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'}`}
+                >
+                  1
+                </button>
+                <span className={darkMode ? 'text-slate-600' : 'text-slate-400'}>…</span>
+              </>
+            )}
+
+            {visiblePageNumbers.map(page => (
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
@@ -1171,6 +1201,18 @@ export const AllLeads = ({
                 {page}
               </button>
             ))}
+
+            {pageWindowEnd < totalPages && (
+              <>
+                <span className={darkMode ? 'text-slate-600' : 'text-slate-400'}>…</span>
+                <button
+                  onClick={() => setCurrentPage(totalPages)}
+                  className={`px-2.5 py-1 text-xs font-semibold rounded transition-all ${darkMode ? 'bg-[#1A1500] hover:bg-[#3E3100] text-slate-300 border border-[#3E3100]' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'}`}
+                >
+                  {totalPages}
+                </button>
+              </>
+            )}
 
             <button
               onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}

@@ -2,15 +2,27 @@ import { Request, Response, NextFunction } from 'express';
 import { LeadService } from '../services/lead.service.js';
 
 export class LeadController {
-  // Shared admin check for destructive/restricted actions (restore, permanent delete, bulk ops).
-  // Trusts req.user.role when authenticated, and falls back to a name/body-role heuristic
-  // to stay compatible with the app's optional-auth (no-login) mode.
+  // Shared admin check for the most destructive/restricted actions (bulk
+  // archive-all / permanently-delete-all-archived - "Clear All"). Trusts
+  // req.user.role when authenticated, and falls back to a name/body-role
+  // heuristic to stay compatible with the app's optional-auth (no-login)
+  // mode. Deliberately NOT relaxed for Sr. Counsellor - Clear All stays
+  // strict-admin-only.
   static isAdminRequest(req: Request): boolean {
     const currentUser = req.user?.name || req.body?.currentUser || '';
     const userRole = req.user?.role || req.body?.userRole || '';
     const roleUpper = String(userRole).toUpperCase();
     const nameLower = String(currentUser).toLowerCase();
     return roleUpper === 'ADMIN' || nameLower.includes('admin');
+  }
+
+  // Broader "elevated" check for restore/permanent-delete-single-lead - same
+  // as isAdminRequest, but also grants Sr. Counsellor (Indu) access, per her
+  // "all authorities except Clear All" permission level.
+  static isElevatedRequest(req: Request): boolean {
+    if (LeadController.isAdminRequest(req)) return true;
+    const currentUser = req.user?.name || req.body?.currentUser || '';
+    return String(currentUser).toUpperCase().includes('INDU');
   }
 
   static async checkDuplicate(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -172,9 +184,9 @@ export class LeadController {
 
   static async unarchiveLead(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      if (!LeadController.isAdminRequest(req)) {
+      if (!LeadController.isElevatedRequest(req)) {
         res.status(403).json({
-          error: 'Access Denied: Only administrators have permission to restore archived leads.'
+          error: 'Access Denied: Only administrators or Sr. Counsellor have permission to restore archived leads.'
         });
         return;
       }
@@ -193,9 +205,9 @@ export class LeadController {
 
   static async deleteLead(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      if (!LeadController.isAdminRequest(req)) {
+      if (!LeadController.isElevatedRequest(req)) {
         res.status(403).json({
-          error: 'Access Denied: Only administrators have permission to permanently delete leads.'
+          error: 'Access Denied: Only administrators or Sr. Counsellor have permission to permanently delete leads.'
         });
         return;
       }

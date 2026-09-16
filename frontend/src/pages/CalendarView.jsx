@@ -3,6 +3,9 @@ import { api } from '../api/client';
 import { COUNSELORS } from '../config/constants';
 
 export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) => {
+  // Scheduling a task from the calendar was Admin-only; Sr. Counsellor
+  // (Indu) gets every admin authority except Clear All, so she gets this too.
+  const canCreateTask = currentUser?.role?.toUpperCase() === 'ADMIN' || currentUser?.name?.toUpperCase()?.includes('INDU');
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -18,6 +21,7 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
   const [dueTime, setDueTime] = useState('12:00');
   const [priority, setPriority] = useState('Medium');
   const [assignedUser, setAssignedUser] = useState(COUNSELORS[0] || 'Counselor');
+  const [submittingTask, setSubmittingTask] = useState(false);
 
   useEffect(() => {
     loadTasks();
@@ -83,16 +87,19 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
   };
 
   const handleDayClick = (day) => {
-    if (!day || currentUser?.role?.toUpperCase() !== 'ADMIN') return;
+    if (!day || !canCreateTask) return;
     setSelectedDate(getFormattedDate(day));
     setShowModal(true);
   };
 
   const handleCreateTask = async (e) => {
     e.preventDefault();
-    if (!taskTitle.trim() || !selectedDate) return;
+    // Guards against a double-click before the modal closes creating two
+    // identical tasks.
+    if (!taskTitle.trim() || !selectedDate || submittingTask) return;
 
     try {
+      setSubmittingTask(true);
       await api.addTask({
         title: taskTitle.trim(),
         description: taskDesc.trim(),
@@ -112,6 +119,8 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
       loadTasks();
     } catch (err) {
       alert("Failed to create task: " + err.message);
+    } finally {
+      setSubmittingTask(false);
     }
   };
 
@@ -187,8 +196,8 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
                 className={`min-h-[120px] p-2 border-b border-r transition-colors relative ${
                   darkMode ? 'border-[#574719]' : 'border-slate-100'
                 } ${
-                  currentUser?.role?.toUpperCase() === 'ADMIN' 
-                    ? darkMode ? 'cursor-pointer hover:bg-[#3D3212] group' : 'cursor-pointer hover:bg-slate-50 group' 
+                  canCreateTask
+                    ? darkMode ? 'cursor-pointer hover:bg-[#3D3212] group' : 'cursor-pointer hover:bg-slate-50 group'
                     : ''
                 }`}
               >
@@ -200,7 +209,7 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
                   }`}>
                     {day}
                   </span>
-                  {currentUser?.role?.toUpperCase() === 'ADMIN' && (
+                  {canCreateTask && (
                     <span className="material-symbols-outlined text-[16px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">add_circle</span>
                   )}
                 </div>
@@ -346,9 +355,10 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#7D610F] hover:bg-[#68500C] text-white rounded font-bold shadow transition-colors"
+                  disabled={submittingTask}
+                  className="px-5 py-2 bg-[#7D610F] hover:bg-[#68500C] text-white rounded font-bold shadow transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Save Task
+                  {submittingTask ? 'Saving…' : 'Save Task'}
                 </button>
               </div>
             </form>

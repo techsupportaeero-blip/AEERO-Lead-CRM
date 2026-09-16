@@ -2,6 +2,8 @@ import { prisma } from '../config/database.js';
 import { generateNextLeadId } from '../utils/generateLeadId.js';
 import { getCounselorForCampaign } from '../utils/campaignAssignment.js';
 import { AuditLogService } from './auditLog.service.js';
+import { NotificationService } from './notification.service.js';
+import { CustomerService } from './customer.service.js';
 import { LeadStatus, Priority } from '../types/index.js';
 
 export interface LeadFilterParams {
@@ -270,6 +272,14 @@ export class LeadService {
       userAgent: userContext?.userAgent
     });
 
+    // 8. Notify whoever this lead just got assigned to
+    await NotificationService.notifyUserByName(
+      newLead.ownerId,
+      'New Lead Assigned',
+      `${newLead.name || 'A new lead'} (${newLead.leadId}) has been assigned to you.`,
+      'lead'
+    );
+
     return newLead;
   }
 
@@ -475,6 +485,12 @@ export class LeadService {
       });
     }
 
+    // Auto-create a Customer record the moment a lead converts, so the
+    // Customers page reflects real enrollments instead of staying empty.
+    if (data.status === 'CONVERTED' && existing.status !== 'CONVERTED') {
+      await CustomerService.createFromLeadIfMissing(updated);
+    }
+
     // Audit log
     await AuditLogService.log({
       userId: userContext?.userId,
@@ -532,6 +548,12 @@ export class LeadService {
       newValue: newStatus,
       details: `Status changed from ${existing.status} to ${newStatus}`
     });
+
+    // Auto-create a Customer record the moment a lead converts (Kanban
+    // drag-and-drop path), mirroring the same hook in updateLead().
+    if (newStatus === 'CONVERTED' && existing.status !== 'CONVERTED') {
+      await CustomerService.createFromLeadIfMissing(updated);
+    }
 
     return updated;
   }

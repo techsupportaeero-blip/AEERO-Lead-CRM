@@ -1,5 +1,14 @@
 import { prisma } from '../config/database.js';
 
+// Accepts either an explicit boolean (isActive/active) or the UI's
+// 'Active'/'Inactive' status string, so old and new callers both work.
+function resolveIsActive(data: any): boolean | undefined {
+  if (data.isActive !== undefined) return Boolean(data.isActive);
+  if (data.active !== undefined) return Boolean(data.active);
+  if (data.status !== undefined) return data.status === 'Active';
+  return undefined;
+}
+
 export class LeadSourceService {
   static async getLeadSources() {
     return prisma.leadSource.findMany({
@@ -19,7 +28,11 @@ export class LeadSourceService {
       data: {
         name: data.name.trim(),
         code: data.code || null,
-        isActive: data.isActive !== undefined ? Boolean(data.isActive) : data.active !== undefined ? Boolean(data.active) : true
+        description: data.description || null,
+        type: data.type || 'Online',
+        category: data.category || 'Other',
+        costPerLead: data.costPerLead || null,
+        isActive: resolveIsActive(data) ?? true
       }
     });
   }
@@ -28,8 +41,12 @@ export class LeadSourceService {
     const updateData: any = {};
     if (data.name !== undefined) updateData.name = data.name.trim();
     if (data.code !== undefined) updateData.code = data.code;
-    if (data.isActive !== undefined) updateData.isActive = Boolean(data.isActive);
-    if (data.active !== undefined) updateData.isActive = Boolean(data.active);
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.type !== undefined) updateData.type = data.type;
+    if (data.category !== undefined) updateData.category = data.category;
+    if (data.costPerLead !== undefined) updateData.costPerLead = data.costPerLead;
+    const isActive = resolveIsActive(data);
+    if (isActive !== undefined) updateData.isActive = isActive;
 
     return prisma.leadSource.update({
       where: { id },
