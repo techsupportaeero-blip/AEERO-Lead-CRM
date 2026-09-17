@@ -3,7 +3,7 @@
 This project contains two completely separated sub-projects:
 
 - `backend/` — Express REST API server (Port 3001) & persistent database.
-- `frontend/` — Vite + React frontend web application (Port 3000) using approved AEERO CRM Stitch design.
+- `frontend/` — Vite + React frontend web aMSMEication (Port 3000) using approved AEERO CRM Stitch design.
 
 ---
 
@@ -25,6 +25,7 @@ npm run dev
 ### Option 2: Run Separately in Two Terminals
 
 #### Terminal 1 — Backend REST Server
+
 ```bash
 cd backend
 npm install
@@ -32,6 +33,7 @@ npm start
 ```
 
 #### Terminal 2 — Frontend App
+
 ```bash
 cd frontend
 npm install

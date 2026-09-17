@@ -1,6 +1,7 @@
 import { prisma } from '../config/database.js';
 import { ActivityType } from '../types/index.js';
 import { LeadService } from './lead.service.js';
+import { FollowupService } from './followup.service.js';
 
 export class ActivityService {
   static normalizeActivityType(typeStr?: string | null): ActivityType {
@@ -85,7 +86,7 @@ export class ActivityService {
           leadRelId: lead.id,
           date: data.followUpDate,
           time: data.followUpTime || '10:00',
-          type: 'CALL',
+          type: FollowupService.normalizeType(data.followUpType),
           notes: data.remarks || 'Scheduled Callback',
           status: 'PENDING',
           createdBy: createdBy || 'Counselor'

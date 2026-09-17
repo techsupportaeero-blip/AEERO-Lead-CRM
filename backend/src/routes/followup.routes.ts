@@ -6,6 +6,10 @@ import { createFollowupSchema, updateFollowupSchema } from '../validators/follow
 
 export const followupRouter = Router();
 
+// Admin / Sr. Counsellor only - which counselor's leads are stuck at which
+// follow-up stage. Must come before the plain '/followups' list route.
+followupRouter.get('/followups/stage-tracker', optionalAuthMiddleware, FollowupController.getStageTracker);
+
 followupRouter.get('/followups', optionalAuthMiddleware, FollowupController.getFollowups);
 followupRouter.get('/leads/:id/followups', optionalAuthMiddleware, FollowupController.getFollowups);
 followupRouter.post(

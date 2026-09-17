@@ -27,5 +27,6 @@ export const createActivitySchema = z.object({
   // For quick follow-up scheduling from activity modal
   followUpDate: z.string().optional().nullable(),
   followUpTime: z.string().optional().nullable(),
+  followUpType: z.string().optional().nullable(),
   leadStatus: z.string().optional().nullable()
 });

@@ -43,9 +43,9 @@ export const AiAssistantView = ({ onSelectLead, onNotify }) => {
 
   // Pre-configured Quick Prompts
   const quickPrompts = [
-    { label: "📊 Analyze my lead conversion funnel", query: "Analyze my current lead conversion funnel and give 3 actionable steps to increase CPL enrollments." },
+    { label: "📊 Analyze my lead conversion funnel", query: "Analyze my current lead conversion funnel and give 3 actionable steps to increase solar enrollments." },
     { label: "🔥 Show top 5 hottest leads ready to convert", query: "Show me the top hot leads with High priority and INTERESTED status who need callback today." },
-    { label: "✉️ Draft WhatsApp follow-up for CPL prospect", query: "Draft a compelling WhatsApp follow-up message for a student interested in Commercial Pilot License." },
+    { label: "✉️ Draft WhatsApp follow-up for solar prospect", query: "Draft a compelling WhatsApp follow-up message for a student interested in Commercial Pilot License." },
     { label: "🎯 Predict high conversion lead profiles", query: "What are the common attributes of leads with the highest conversion rate in our CRM?" }
   ];
 
@@ -89,10 +89,10 @@ export const AiAssistantView = ({ onSelectLead, onNotify }) => {
             hotLeads.slice(0, 4).map(l => `• **${l.name}** (${l.leadId}) — ${l.interestedCourse} | ${l.mobile} | Status: ${l.status}`).join('\n') +
             `\n\n🎯 *Tip: Click on any lead to open their workspace and log call outcomes directly.*`;
         }
-      } else if (qLower.includes('whatsapp') || qLower.includes('draft') || qLower.includes('cpl')) {
+      } else if (qLower.includes('whatsapp') || qLower.includes('draft') || qLower.includes('solar')) {
         aiResponseText = `✉️ **Recommended WhatsApp Follow-up Script**:\n\n` +
           `"Hi [Student Name]! 👋 Greetings from AEERO .\n\n` +
-          `We noticed your inquiry regarding our **Commercial Pilot License (CPL)** flying program. Our next 2026 Batch includes:\n` +
+          `We noticed your inquiry regarding our **Commercial Pilot License (solar)** flying program. Our next 2026 Batch includes:\n` +
           `✈️ 200 Hours Multi-Engine Flying Experience\n` +
           `🎮 Full Motion DGCA Flight Simulator Training\n` +
           `📚 Complete DGCA Ground Subjects Preparation\n\n` +

@@ -164,7 +164,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
     loadStats({ startDate: s, endDate: e });
   };
 
-  const handleApplyCustomRange = () => {
+  const handleAMSMEyCustomRange = () => {
     if (!dateFrom || !dateTo) {
       alert("Please select both Start Date and End Date.");
       return;
@@ -216,7 +216,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
     interestedLeads: {
       title: 'Interested Leads (Ruci Rakhne Wale Students)',
       category: 'KPI Summary Card',
-      howItWorks: 'Aise high-intent prospective students jinhone counseling call attend kar li hai aur aviation courses (CPL, Cabin Crew, AME, Safety) me admission lene me strong positive interest dikhaya hai.',
+      howItWorks: 'Aise high-intent prospective students jinhone counseling call attend kar li hai aur admission lene me strong positive interest dikhaya hai.',
       whoAndHow: '👤 Kisko Karna Hai: Senior Admission Counselors aur Course Advisors.\n🎯 Kaise Karna Hai: Student aur parents ke sath Flight Simulator Trial session book karein, syllabus & fee structure PDF bhejein aur scholarship options discuss karein.',
       growthStrategy: '🚀 Growth Tips: 48-Hour Follow-up rule! Interested students ko 48 ghante ke andar Campus Visit / Simulator Experience offer karein, jisse 70%+ students immediate registration fee deposit karte hain.',
       formula: 'Count of leads with status = "INTERESTED"'
@@ -1823,12 +1823,12 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
                   Cancel
                 </button>
                 <button
-                  onClick={handleApplyCustomRange}
+                  onClick={handleAMSMEyCustomRange}
                   className={`px-5 py-2 rounded-xl text-xs font-black shadow-sm transition-all active:scale-95 ${
                     darkMode ? 'bg-[#E5A812] hover:bg-[#F5B822] text-slate-950' : 'bg-[#7D610F] hover:bg-[#634C0A] text-white'
                   }`}
                 >
-                  Apply Date Range
+                  AMSMEy Date Range
                 </button>
               </div>
             </div>

@@ -1,4 +1,5 @@
 # ⚠️ MANDATORY AI AGENT INSTRUCTION — READ THIS FIRST!
+
 > **CRITICAL TOKEN-EFFICIENCY PROTOCOL FOR ALL AI AGENTS & CODING ASSISTANTS:**
 > **BEFORE reading or scanning multiple files across `frontend/` or `backend/`, READ THIS SINGLE FILE FIRST.**
 > This document is the **Authoritative System Architecture & Codebase Map** for the AEERO Lead Management CRM.
@@ -10,9 +11,11 @@
 # AEERO CRM — Complete System Architecture & Codebase Blueprint
 
 ## 📌 1. Executive Overview & Core Mission
-**AEERO CRM** is an enterprise-grade Lead Management & Student Admission CRM developed specifically for Aviation & Professional Academies (Commercial Pilot License - CPL, Private Pilot License - PPL, Cabin Crew & Ground Staff, Aircraft Maintenance Engineering - AME, Industrial Safety, Sub Fire Officer, and Health Sanitary Inspector).
+
+**AEERO CRM** is an enterprise-grade Lead Management & Student Admission CRM developed specifically for Aviation & Professional Academies (Commercial Pilot License - solar, Private Pilot License - MSME, YCMOU & Ground Staff, Aircraft Maintenance Engineering - AME, Industrial Safety, Sub Fire Officer, and Health Sanitary Inspector).
 
 ### Core Capabilities & Business Rules:
+
 1. **Multi-Channel Ingestion**:
    - **Meta Ads Webhook**: Real-time webhook (`POST /api/webhook/meta`) for Facebook & Instagram Lead Ads with HMAC-SHA256 signature verification.
    - **Google Sheets Lead Bridge**: Auto-discovery and batch sync (`POST /api/integrations/google-sheets/*`) from a Google Drive folder (`AEERO LEADS`) with course-specific spreadsheets. Zero hardcoded spreadsheet IDs.
@@ -104,6 +107,7 @@
 ## 💻 3. Frontend Architecture (`frontend/src/`)
 
 ### 3.1 Technology Stack & State Management
+
 - **Framework**: React 18 SPA built with Vite.
 - **Styling**: Tailwind CSS + Custom CSS (`index.css`) with unified Dark (`#0A0D14` / `#151C24`) and Light (`#F1F8FC` / `#FFFFFF`) themes.
 - **Icons**: Google Material Symbols & Heroicons.
@@ -112,39 +116,40 @@
 
 ### 3.2 Page & Route Directory (`frontend/src/pages/`)
 
-| Route ID | Component File | Primary Responsibility & Features |
-| :--- | :--- | :--- |
-| `login` | [`frontend/src/pages/Login.jsx`](file:///frontend/src/pages/Login.jsx) | Authentication screen. Quick-fill credentials box for `admin`, `indu`, `ayesha`, `priti`. Authenticates via `/api/auth/login`. |
-| `dashboard` | [`frontend/src/pages/Dashboard.jsx`](file:///frontend/src/pages/Dashboard.jsx) | KPI analytics dashboard. 4 KPI cards (Total Leads, Follow-ups, Won Leads, Conversion Rate), charts, Today's Follow-ups, Overdue Follow-ups, Recent Activities, and Employee Performance table. |
-| `leads` | [`frontend/src/pages/AllLeads.jsx`](file:///frontend/src/pages/AllLeads.jsx) | Central Leads Data Grid. Multi-column filters (Status, Counselor, Source, Date range), full-text search, column picker modal, bulk status changes, and Excel/CSV export. |
-| `lead-details` | [`frontend/src/pages/LeadWorkspace.jsx`](file:///frontend/src/pages/LeadWorkspace.jsx) | 360° Lead Drawer/Profile. Interaction timeline, quick call outcome logging, follow-up scheduler, notepad, and fee payment receipt generator. |
-| `kanban` | [`frontend/src/pages/KanbanBoard.jsx`](file:///frontend/src/pages/KanbanBoard.jsx) | Visual drag & drop stage pipeline. Columns for New, No Answer, Given Details, Interested, Follow-up, Converted, Lost. |
-| `tasks` | [`frontend/src/pages/TasksView.jsx`](file:///frontend/src/pages/TasksView.jsx) | Operational task manager. Grouped by priority & due date with counselor filter. |
-| `calendar` | [`frontend/src/pages/CalendarView.jsx`](file:///frontend/src/pages/CalendarView.jsx) | Interactive monthly & weekly callback calendar for student appointments & follow-ups. |
-| `customers` | [`frontend/src/pages/CustomersView.jsx`](file:///frontend/src/pages/CustomersView.jsx) | Directory of converted leads / enrolled students with course details and fee agreements. |
-| `products` | [`frontend/src/pages/CoursesView.jsx`](file:///frontend/src/pages/CoursesView.jsx) | Academy course catalog, fees, durations, and active status toggle. |
-| `lead-sources` | [`frontend/src/pages/LeadSourcesView.jsx`](file:///frontend/src/pages/LeadSourcesView.jsx) | Multi-channel integration hub for Meta Webhooks, Google Sheets bridge, and UTM builder. |
-| `activities` | [`frontend/src/pages/AuditLogsView.jsx`](file:///frontend/src/pages/AuditLogsView.jsx) | System-wide audit log and counselor activity trail. |
-| `ai-assistant` | [`frontend/src/pages/AiAssistantView.jsx`](file:///frontend/src/pages/AiAssistantView.jsx) | AI counseling assistant (Currently disabled/blocked in UI via `ModuleView.jsx`). |
-| *(fallback)* | [`frontend/src/pages/ModuleView.jsx`](file:///frontend/src/pages/ModuleView.jsx) | Route distributor for secondary pages. Renders SVG loader for in-progress modules. |
+| Route ID       | Component File                                                                             | Primary Responsibility & Features                                                                                                                                                              |
+| :------------- | :----------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `login`        | [`frontend/src/pages/Login.jsx`](file:///frontend/src/pages/Login.jsx)                     | Authentication screen. Quick-fill credentials box for `admin`, `indu`, `ayesha`, `priti`. Authenticates via `/api/auth/login`.                                                                 |
+| `dashboard`    | [`frontend/src/pages/Dashboard.jsx`](file:///frontend/src/pages/Dashboard.jsx)             | KPI analytics dashboard. 4 KPI cards (Total Leads, Follow-ups, Won Leads, Conversion Rate), charts, Today's Follow-ups, Overdue Follow-ups, Recent Activities, and Employee Performance table. |
+| `leads`        | [`frontend/src/pages/AllLeads.jsx`](file:///frontend/src/pages/AllLeads.jsx)               | Central Leads Data Grid. Multi-column filters (Status, Counselor, Source, Date range), full-text search, column picker modal, bulk status changes, and Excel/CSV export.                       |
+| `lead-details` | [`frontend/src/pages/LeadWorkspace.jsx`](file:///frontend/src/pages/LeadWorkspace.jsx)     | 360° Lead Drawer/Profile. Interaction timeline, quick call outcome logging, follow-up scheduler, notepad, and fee payment receipt generator.                                                   |
+| `kanban`       | [`frontend/src/pages/KanbanBoard.jsx`](file:///frontend/src/pages/KanbanBoard.jsx)         | Visual drag & drop stage pipeline. Columns for New, No Answer, Given Details, Interested, Follow-up, Converted, Lost.                                                                          |
+| `tasks`        | [`frontend/src/pages/TasksView.jsx`](file:///frontend/src/pages/TasksView.jsx)             | Operational task manager. Grouped by priority & due date with counselor filter.                                                                                                                |
+| `calendar`     | [`frontend/src/pages/CalendarView.jsx`](file:///frontend/src/pages/CalendarView.jsx)       | Interactive monthly & weekly callback calendar for student appointments & follow-ups.                                                                                                          |
+| `customers`    | [`frontend/src/pages/CustomersView.jsx`](file:///frontend/src/pages/CustomersView.jsx)     | Directory of converted leads / enrolled students with course details and fee agreements.                                                                                                       |
+| `products`     | [`frontend/src/pages/CoursesView.jsx`](file:///frontend/src/pages/CoursesView.jsx)         | Academy course catalog, fees, durations, and active status toggle.                                                                                                                             |
+| `lead-sources` | [`frontend/src/pages/LeadSourcesView.jsx`](file:///frontend/src/pages/LeadSourcesView.jsx) | Multi-channel integration hub for Meta Webhooks, Google Sheets bridge, and UTM builder.                                                                                                        |
+| `activities`   | [`frontend/src/pages/AuditLogsView.jsx`](file:///frontend/src/pages/AuditLogsView.jsx)     | System-wide audit log and counselor activity trail.                                                                                                                                            |
+| `ai-assistant` | [`frontend/src/pages/AiAssistantView.jsx`](file:///frontend/src/pages/AiAssistantView.jsx) | AI counseling assistant (Currently disabled/blocked in UI via `ModuleView.jsx`).                                                                                                               |
+| _(fallback)_   | [`frontend/src/pages/ModuleView.jsx`](file:///frontend/src/pages/ModuleView.jsx)           | Route distributor for secondary pages. Renders SVG loader for in-progress modules.                                                                                                             |
 
 ### 3.3 Reusable Modals & Components (`frontend/src/components/`)
 
-| Component File | Type | Responsibility |
-| :--- | :--- | :--- |
-| [`frontend/src/pages/AddLeadModal.jsx`](file:///frontend/src/pages/AddLeadModal.jsx) | Modal | Manual inquiry entry modal with instant duplicate verification. |
-| [`frontend/src/pages/EditLeadModal.jsx`](file:///frontend/src/pages/EditLeadModal.jsx) | Modal | Modal to edit lead fields (Name, Phone, Email, Course, Counselor, Status, Priority). |
-| [`frontend/src/components/DuplicateModal.jsx`](file:///frontend/src/components/DuplicateModal.jsx) | Modal | Duplicate alert dialog showing existing lead info, assigned counselor, and "View Existing" or "Create Anyway" options. |
-| [`frontend/src/components/ColumnModal.jsx`](file:///frontend/src/components/ColumnModal.jsx) | Modal | Table column selector modal with presets and individual column visibility toggles. |
-| [`frontend/src/components/RecordPaymentModal.jsx`](file:///frontend/src/components/RecordPaymentModal.jsx) | Modal | Token advance and tuition installment payment collection modal. |
-| [`frontend/src/components/ConfirmModal.jsx`](file:///frontend/src/components/ConfirmModal.jsx) | Modal | Reusable dialog for confirming deletions, archives, and bulk actions. |
-| [`frontend/src/components/Header.jsx`](file:///frontend/src/components/Header.jsx) | Component | Top bar with global search, Dark/Light mode toggle, notifications bell, and user menu. |
-| [`frontend/src/components/Sidebar.jsx`](file:///frontend/src/components/Sidebar.jsx) | Component | Left navigation bar with badge counters and role-aware navigation links. |
-| [`frontend/src/components/DashboardCharts.jsx`](file:///frontend/src/components/DashboardCharts.jsx) | Component | Funnel chart, Monthly Trend line chart, Lead Source donut chart, Course bar chart. |
-| [`frontend/src/components/NotificationToast.jsx`](file:///frontend/src/components/NotificationToast.jsx) | Component | Animated toast notification for success, error, and info feedback. |
-| [`frontend/src/components/Skeleton.jsx`](file:///frontend/src/components/Skeleton.jsx) | Component | Modern loading skeleton components for cards and data tables. |
+| Component File                                                                                             | Type      | Responsibility                                                                                                         |
+| :--------------------------------------------------------------------------------------------------------- | :-------- | :--------------------------------------------------------------------------------------------------------------------- |
+| [`frontend/src/pages/AddLeadModal.jsx`](file:///frontend/src/pages/AddLeadModal.jsx)                       | Modal     | Manual inquiry entry modal with instant duplicate verification.                                                        |
+| [`frontend/src/pages/EditLeadModal.jsx`](file:///frontend/src/pages/EditLeadModal.jsx)                     | Modal     | Modal to edit lead fields (Name, Phone, Email, Course, Counselor, Status, Priority).                                   |
+| [`frontend/src/components/DuplicateModal.jsx`](file:///frontend/src/components/DuplicateModal.jsx)         | Modal     | Duplicate alert dialog showing existing lead info, assigned counselor, and "View Existing" or "Create Anyway" options. |
+| [`frontend/src/components/ColumnModal.jsx`](file:///frontend/src/components/ColumnModal.jsx)               | Modal     | Table column selector modal with presets and individual column visibility toggles.                                     |
+| [`frontend/src/components/RecordPaymentModal.jsx`](file:///frontend/src/components/RecordPaymentModal.jsx) | Modal     | Token advance and tuition installment payment collection modal.                                                        |
+| [`frontend/src/components/ConfirmModal.jsx`](file:///frontend/src/components/ConfirmModal.jsx)             | Modal     | Reusable dialog for confirming deletions, archives, and bulk actions.                                                  |
+| [`frontend/src/components/Header.jsx`](file:///frontend/src/components/Header.jsx)                         | Component | Top bar with global search, Dark/Light mode toggle, notifications bell, and user menu.                                 |
+| [`frontend/src/components/Sidebar.jsx`](file:///frontend/src/components/Sidebar.jsx)                       | Component | Left navigation bar with badge counters and role-aware navigation links.                                               |
+| [`frontend/src/components/DashboardCharts.jsx`](file:///frontend/src/components/DashboardCharts.jsx)       | Component | Funnel chart, Monthly Trend line chart, Lead Source donut chart, Course bar chart.                                     |
+| [`frontend/src/components/NotificationToast.jsx`](file:///frontend/src/components/NotificationToast.jsx)   | Component | Animated toast notification for success, error, and info feedback.                                                     |
+| [`frontend/src/components/Skeleton.jsx`](file:///frontend/src/components/Skeleton.jsx)                     | Component | Modern loading skeleton components for cards and data tables.                                                          |
 
 ### 3.4 API Client & Constants
+
 - [`frontend/src/api/client.js`](file:///frontend/src/api/client.js): Single Axios/Fetch abstraction for all API calls to `http://localhost:3001/api`.
 - [`frontend/src/config/constants.js`](file:///frontend/src/config/constants.js): Global enums (`STATUS_MAP`, `PRIORITIES`, `COUNSELORS`, `COURSES`, `LEAD_SOURCES`).
 
@@ -153,37 +158,39 @@
 ## ⚙️ 4. Backend Architecture (`backend/`)
 
 ### 4.1 Server Runtime & Environment
+
 - **Runtime**: Node.js + TypeScript executed with `tsx watch src/server.ts` (listening on `http://localhost:3001`).
 - **Configuration**: [`backend/.env`](file:///backend/.env) parsed and validated via Zod in [`backend/src/config/env.ts`](file:///backend/src/config/env.ts).
 - **ORM / Database**: Prisma Client 5.x connecting to Neon PostgreSQL.
 
 ### 4.2 API Routes Map (`backend/src/routes/`)
 
-| Mount Path | Router File | Key Endpoints & Methods |
-| :--- | :--- | :--- |
-| `/api/health` | `health.routes.ts` | `GET /` — Health check & DB connection status. |
-| `/api/auth` | `auth.routes.ts` | `POST /login`, `GET /me`, `POST /logout`. |
-| `/api/leads` | `lead.routes.ts` | `GET /` (filters & pagination), `POST /`, `GET /:id`, `PATCH /:id`, `DELETE /:id`, `POST /check-duplicate`, `POST /bulk-status`. |
-| `/api/leads/public` | `publicLead.routes.ts` | `POST /` — Unauthenticated public inquiry endpoint for website landing pages. |
-| `/api/activities` | `activity.routes.ts` | `GET /` (leadId filter), `POST /` (log call, note, meeting). |
-| `/api/followups` | `followup.routes.ts` | `GET /`, `POST /`, `PATCH /:id`, `GET /today`, `GET /overdue`. |
-| `/api/tasks` | `task.routes.ts` | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id`. |
-| `/api/notes` | `note.routes.ts` | `GET /`, `POST /`, `DELETE /:id`. |
-| `/api/customers` | `customer.routes.ts` | `GET /`, `POST /`, `GET /:id`. |
-| `/api/courses` | `course.routes.ts` | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id`. |
-| `/api/lead-sources` | `leadSource.routes.ts` | `GET /`, `POST /`, `PATCH /:id`. |
-| `/api/payments` | `payment.routes.ts` | `GET /`, `POST /`, `GET /receipt/:id`. |
-| `/api/stats` | `dashboard.routes.ts` | `GET /` — Aggregated KPI metrics, conversion rates, and employee performance. |
-| `/api/audit-logs` | `auditLog.routes.ts` | `GET /` — System audit logs and event history. |
-| `/api/notifications` | `notification.routes.ts` | `GET /`, `PATCH /:id/read`. |
-| `/api/webhook/meta` | `webhook.routes.ts` | `GET /` (verification challenge), `POST /` (real-time lead ingestion). |
-| `/api/integrations/google-sheets` | `googleSheets.routes.ts` | `POST /discover`, `POST /sync`, `POST /ingest`, `GET /sources`. |
+| Mount Path                        | Router File              | Key Endpoints & Methods                                                                                                          |
+| :-------------------------------- | :----------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| `/api/health`                     | `health.routes.ts`       | `GET /` — Health check & DB connection status.                                                                                   |
+| `/api/auth`                       | `auth.routes.ts`         | `POST /login`, `GET /me`, `POST /logout`.                                                                                        |
+| `/api/leads`                      | `lead.routes.ts`         | `GET /` (filters & pagination), `POST /`, `GET /:id`, `PATCH /:id`, `DELETE /:id`, `POST /check-duplicate`, `POST /bulk-status`. |
+| `/api/leads/public`               | `publicLead.routes.ts`   | `POST /` — Unauthenticated public inquiry endpoint for website landing pages.                                                    |
+| `/api/activities`                 | `activity.routes.ts`     | `GET /` (leadId filter), `POST /` (log call, note, meeting).                                                                     |
+| `/api/followups`                  | `followup.routes.ts`     | `GET /`, `POST /`, `PATCH /:id`, `GET /today`, `GET /overdue`.                                                                   |
+| `/api/tasks`                      | `task.routes.ts`         | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id`.                                                                                  |
+| `/api/notes`                      | `note.routes.ts`         | `GET /`, `POST /`, `DELETE /:id`.                                                                                                |
+| `/api/customers`                  | `customer.routes.ts`     | `GET /`, `POST /`, `GET /:id`.                                                                                                   |
+| `/api/courses`                    | `course.routes.ts`       | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id`.                                                                                  |
+| `/api/lead-sources`               | `leadSource.routes.ts`   | `GET /`, `POST /`, `PATCH /:id`.                                                                                                 |
+| `/api/payments`                   | `payment.routes.ts`      | `GET /`, `POST /`, `GET /receipt/:id`.                                                                                           |
+| `/api/stats`                      | `dashboard.routes.ts`    | `GET /` — Aggregated KPI metrics, conversion rates, and employee performance.                                                    |
+| `/api/audit-logs`                 | `auditLog.routes.ts`     | `GET /` — System audit logs and event history.                                                                                   |
+| `/api/notifications`              | `notification.routes.ts` | `GET /`, `PATCH /:id/read`.                                                                                                      |
+| `/api/webhook/meta`               | `webhook.routes.ts`      | `GET /` (verification challenge), `POST /` (real-time lead ingestion).                                                           |
+| `/api/integrations/google-sheets` | `googleSheets.routes.ts` | `POST /discover`, `POST /sync`, `POST /ingest`, `GET /sources`.                                                                  |
 
 ---
 
 ## 🗄️ 5. Database Schema & Prisma Models (`backend/prisma/schema.prisma`)
 
 ### 5.1 Enums
+
 - `Role`: `ADMIN`, `MANAGER`, `LEAD_FINDER`, `VIEWER`
 - `LeadStatus`: `NEW`, `NO_ANSWER`, `GIVEN_DETAILS`, `INTERESTED`, `FOLLOW_UP`, `CONVERTED`, `LOST`, `NOT_INTERESTED`, `INVALID`
 - `Priority`: `LOW`, `MEDIUM`, `HIGH`, `URGENT`
@@ -191,6 +198,7 @@
 - `FollowUpType`: `CALL`, `WHATSAPP`, `EMAIL`, `MEETING`, `CAMPUS_VISIT`
 
 ### 5.2 Core Models
+
 1. **`User`**: System counselors and administrators (`id`, `email`, `username`, `password`, `name`, `role`, `active`, `createdAt`).
 2. **`Lead`**: Authoritative lead record (`id`, `leadId` [e.g. `LD-000001`], `name`, `email`, `mobile`, `city`, `state`, `courseName`, `source`, `status`, `priority`, `counselorName`, `counselorId`, `feeQuoted`, `tokenAmountPaid`, `externalLeadId`, `metadata`, `createdAt`, `updatedAt`).
 3. **`Activity`**: Interactions logged by counselors (`id`, `leadId`, `userId`, `userName`, `type`, `title`, `notes`, `duration`, `createdAt`).
@@ -210,20 +218,24 @@
 ## 🔐 6. Credentials, Ports & Network Configuration
 
 ### 6.1 Network Ports
+
 - **Frontend Development Server**: `http://localhost:5173` (or `3000`)
 - **Backend API Server**: `http://localhost:3001`
 
 ### 6.2 Default User Accounts
-| Role | Full Name | Username *(Case-Insensitive)* | Password |
-| :--- | :--- | :--- | :--- |
-| 👑 **Administrator** | Admin User 1 | `admin` | `admin123` |
-| 👩‍💼 **Counselor 1** | MS. INDU | `indu` *(or `MS. INDU`)* | `Indu@2026` |
-| 👩‍💼 **Counselor 2** | MS. AYESHA | `ayesha` *(or `MS. AYESHA`)* | `Ayesha@2026` |
-| 👩‍💼 **Counselor 3** | MS. PRITI | `priti` *(or `MS. PRITI`)* | `Priti@2026` |
+
+| Role                 | Full Name    | Username _(Case-Insensitive)_ | Password      |
+| :------------------- | :----------- | :---------------------------- | :------------ |
+| 👑 **Administrator** | Admin User 1 | `admin`                       | `admin123`    |
+| 👩‍💼 **Counselor 1**   | MS. INDU     | `indu` _(or `MS. INDU`)_      | `Indu@2026`   |
+| 👩‍💼 **Counselor 2**   | MS. AYESHA   | `ayesha` _(or `MS. AYESHA`)_  | `Ayesha@2026` |
+| 👩‍💼 **Counselor 3**   | MS. PRITI    | `priti` _(or `MS. PRITI`)_    | `Priti@2026`  |
 
 ### 6.3 Database Routing Notice (Neon PostgreSQL on Windows)
+
 Neon's domain publishes both IPv6 and IPv4 DNS records. If local IPv6 routing to AWS is blocked, Prisma's Rust query engine hangs on IPv6 timeout.
 To guarantee instant connection, `.env` routes via IPv4 with the explicit Neon project option:
+
 ```env
 DATABASE_URL="postgresql://neondb_owner:npg_Fl1vKWxV5XsT@18.226.241.3:5432/neondb?sslmode=require&options=project%3Dep-purple-field-axi6hd7i"
 DIRECT_URL="postgresql://neondb_owner:npg_Fl1vKWxV5XsT@18.226.241.3:5432/neondb?sslmode=require&options=project%3Dep-purple-field-axi6hd7i"
@@ -234,6 +246,7 @@ DIRECT_URL="postgresql://neondb_owner:npg_Fl1vKWxV5XsT@18.226.241.3:5432/neondb?
 ## 🚀 7. Operational Commands
 
 ### Development Server:
+
 ```bash
 # Terminal 1: Backend (Express + TypeScript + Prisma)
 cd backend
@@ -245,6 +258,7 @@ npm run dev
 ```
 
 ### Prisma Commands:
+
 ```bash
 cd backend
 npx prisma generate     # Regenerate Prisma Client
@@ -253,8 +267,10 @@ npx prisma db push       # Push schema changes to database
 ```
 
 ### Automated Integration Test Suite:
+
 ```bash
 cd backend
 node scripts/test-google-sheets-bridge.js
 ```
-*(All 39 automated integration test assertions pass locally).*
+
+_(All 39 automated integration test assertions pass locally)._

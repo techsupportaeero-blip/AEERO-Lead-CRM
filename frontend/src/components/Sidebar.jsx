@@ -17,6 +17,10 @@ const getRoleDisplayLabel = (user) => {
 };
 
 export const Sidebar = ({ currentRoute, setCurrentRoute, mobileOpen, setMobileOpen, onLogout, leadCount, darkMode, onToggleDarkMode, currentUser }) => {
+  // Same elevated tier as archived-lead restore / task-create: Admin, or
+  // Sr. Counsellor (Indu) - gets the team-wide Follow-up Stage Tracker link.
+  const isElevated = currentUser?.role?.toUpperCase() === 'ADMIN' || currentUser?.name?.toUpperCase()?.includes('INDU');
+
   const sections = [
     {
       title: 'MAIN',
@@ -27,6 +31,7 @@ export const Sidebar = ({ currentRoute, setCurrentRoute, mobileOpen, setMobileOp
         { id: 'activities', label: 'Activities', icon: 'pulse' },
         { id: 'tasks', label: 'Tasks', icon: 'check_box' },
         { id: 'calendar', label: 'Calendar', icon: 'calendar_month' },
+        ...(isElevated ? [{ id: 'followup-tracker', label: 'Follow-up Tracker', icon: 'event_repeat' }] : []),
       ]
     },
     {

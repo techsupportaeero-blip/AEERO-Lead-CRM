@@ -1,4 +1,5 @@
 # 📖 AEERO CRM — Complete PRD & Comprehensive Codebase Context Map
+
 > **⚡ MANDATORY AI INSTRUCTION (CLAUDE, GEMINI, CHATGPT, AGENTS):**
 > **READ THIS SINGLE FILE FIRST BEFORE TOUCHING OR SCANNING ANY CODE!**
 > This file contains the complete Product Requirements Document (PRD), business logic, architecture, and a **file-by-file context guide for EVERY file in the repository**.
@@ -7,10 +8,11 @@
 ---
 
 ## 📑 TABLE OF CONTENTS
+
 1. [Product Requirements & Business Logic](#1-product-requirements--business-logic)
 2. [Full Tech Stack & Runtime Architecture](#2-full-tech-stack--runtime-architecture)
 3. [Frontend Codebase Context Map (`frontend/src/`)](#3-frontend-codebase-context-map-frontendsrc)
-   - [Core Application Files](#31-core-application-files)
+   - [Core AMSMEication Files](#31-core-aMSMEication-files)
    - [Pages & Views (`frontend/src/pages/`)](#32-pages--views-frontendsrcpages)
    - [Modals & Reusable Components (`frontend/src/components/`)](#33-modals--reusable-components-frontendsrccomponents)
    - [API Client & Global Config](#34-api-client--global-config)
@@ -31,9 +33,11 @@
 ## 1. Product Requirements & Business Logic
 
 ### 1.1 Overview & Objective
-AEERO CRM is an enterprise-grade Lead Management and Student Enrollment CRM built for Aviation & Vocational Academies (Commercial Pilot License - CPL, Private Pilot License - PPL, Cabin Crew & Ground Staff, Aircraft Maintenance Engineering - AME, Industrial Safety, Sub Fire Officer, and Health Sanitary Inspector).
+
+AEERO CRM is an enterprise-grade Lead Management and Student Enrollment CRM built for Aviation & Vocational Academies (Commercial Pilot License - solar, Private Pilot License - MSME, YCMOU & Ground Staff, Aircraft Maintenance Engineering - AME, Industrial Safety, Sub Fire Officer, and Health Sanitary Inspector).
 
 ### 1.2 Core Business Rules
+
 1. **Lead ID Sequencing**: Every lead gets a permanent unique identifier format `LD-XXXXXX` (e.g., `LD-000001`), generated atomically using the `LeadCounter` model.
 2. **Dynamic Round-Robin Counselor Routing**:
    - Leads ingested from webhooks, Google Sheets, or web forms are auto-assigned to active counselors (`role: LEAD_FINDER` or `ADMIN`, `active: true`).
@@ -83,15 +87,17 @@ AEERO CRM is an enterprise-grade Lead Management and Student Enrollment CRM buil
 
 ## 3. Frontend Codebase Context Map (`frontend/src/`)
 
-### 3.1 Core Application Files
+### 3.1 Core AMSMEication Files
+
 - [`frontend/src/main.jsx`](file:///frontend/src/main.jsx): React DOM bootstrap entrypoint. Renders `<App />` into `index.html`.
-- [`frontend/src/App.jsx`](file:///frontend/src/App.jsx): Master application controller & client-side router.
+- [`frontend/src/App.jsx`](file:///frontend/src/App.jsx): Master aMSMEication controller & client-side router.
   - Holds top-level states: `currentUser` (from `localStorage`), `currentRoute` (from `localStorage`), `darkMode`, `selectedLeadId`, `globalSearch`, `visibleColumns`, `totalLeadsCount`.
   - Manages root modal states: `showAddLeadModal`, `editingLead`, `duplicateData`, `showColumnModal`.
   - Renders `<Sidebar>`, `<Header>`, and conditionally mounts current page component.
 - [`frontend/src/index.css`](file:///frontend/src/index.css): Global styling, custom scrollbars (`.custom-scrollbar`), typography rules, and theme variables.
 
 ### 3.2 Pages & Views (`frontend/src/pages/`)
+
 - [`frontend/src/pages/Login.jsx`](file:///frontend/src/pages/Login.jsx):
   - User authentication view.
   - Includes a quick-fill test credentials card for `admin`, `indu`, `ayesha`, `priti`.
@@ -125,7 +131,7 @@ AEERO CRM is an enterprise-grade Lead Management and Student Enrollment CRM buil
   - Directory of successfully enrolled students/customers.
   - Displays course enrolled, fee agreed, total paid, and admission date.
 - [`frontend/src/pages/CoursesView.jsx`](file:///frontend/src/pages/CoursesView.jsx):
-  - Academy course catalog manager (CPL, PPL, Cabin Crew, AME, etc.).
+  - Academy course catalog manager (solar, MSME, YCMOU, AME, etc.).
   - Add, edit fees, set durations, and toggle active status.
 - [`frontend/src/pages/LeadSourcesView.jsx`](file:///frontend/src/pages/LeadSourcesView.jsx):
   - Lead sources hub: Meta Webhook status, Google Sheets Lead Bridge sync controller, and UTM link generator.
@@ -144,6 +150,7 @@ AEERO CRM is an enterprise-grade Lead Management and Student Enrollment CRM buil
   - Displays clean SVG `<Loader text="In Progress" />` for unfinished routes.
 
 ### 3.3 Modals & Reusable Components (`frontend/src/components/`)
+
 - [`frontend/src/components/Sidebar.jsx`](file:///frontend/src/components/Sidebar.jsx): Collapsible left sidebar navigation with badge counts, theme switcher, and logout button.
 - [`frontend/src/components/Header.jsx`](file:///frontend/src/components/Header.jsx): Top navigation header with global search input, theme toggle, notifications dropdown, and user profile avatar.
 - [`frontend/src/components/DashboardCharts.jsx`](file:///frontend/src/components/DashboardCharts.jsx): Responsive SVG charts (Funnel Pipeline, Trend Line, Lead Source Donut, Course Bar Chart).
@@ -157,6 +164,7 @@ AEERO CRM is an enterprise-grade Lead Management and Student Enrollment CRM buil
 - [`frontend/src/components/Loader.jsx`](file:///frontend/src/components/Loader.jsx): SVG animated chip loader for in-progress pages.
 
 ### 3.4 API Client & Global Config
+
 - [`frontend/src/api/client.js`](file:///frontend/src/api/client.js):
   - Central HTTP abstraction layer (`baseURL: http://localhost:3001/api`).
   - Methods: `login()`, `getLeads()`, `createLead()`, `updateLead()`, `checkDuplicate()`, `getStats()`, `getActivities()`, `addActivity()`, `getFollowups()`, `addFollowup()`, `getTasks()`, `addTask()`, `getPayments()`, `addPayment()`, `getCourses()`, `getLeadSources()`, `getAuditLogs()`.
@@ -168,11 +176,13 @@ AEERO CRM is an enterprise-grade Lead Management and Student Enrollment CRM buil
 ## 4. Backend Codebase Context Map (`backend/src/`)
 
 ### 4.1 Server & Configuration
+
 - [`backend/src/server.ts`](file:///backend/src/server.ts): Express HTTP server wrapped in native HTTP server for Socket.io. Sets up Helmet, CORS (`*`), Cookie-parser, Rate-limiter, mounts `/api`, and handles real-time WebSocket connections.
 - [`backend/src/config/env.ts`](file:///backend/src/config/env.ts): Zod-validated environment config (`PORT`, `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN`).
 - [`backend/src/config/database.ts`](file:///backend/src/config/database.ts): PrismaClient singleton instance with explicit `datasources.db.url` configuration and database ping test (`checkDatabaseConnection`).
 
 ### 4.2 Routes Layer (`backend/src/routes/`)
+
 - `index.ts`: Master router that aggregates all sub-routers under `/api`.
 - `health.routes.ts`: `GET /api/health` — Database health check.
 - `auth.routes.ts`: `POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/logout`.
@@ -193,20 +203,25 @@ AEERO CRM is an enterprise-grade Lead Management and Student Enrollment CRM buil
 - `googleSheets.routes.ts`: `POST /api/integrations/google-sheets/discover`, `POST /api/integrations/google-sheets/sync`, `POST /api/integrations/google-sheets/ingest`.
 
 ### 4.3 Controllers Layer (`backend/src/controllers/`)
+
 Each controller extracts request parameters, calls the service layer, and returns standardized JSON responses:
+
 - `auth.controller.ts`: Handles login authentication, token cookies, and user info.
 - `lead.controller.ts`: CRUD operations, multi-filter query parsing, duplicate checks, and bulk status updates.
 - `dashboard.controller.ts`: Calls dashboard service to return computed metrics and analytics.
 - `activity.controller.ts`, `followup.controller.ts`, `task.controller.ts`, `note.controller.ts`, `payment.controller.ts`, `customer.controller.ts`, `course.controller.ts`, `leadSource.controller.ts`, `auditLog.controller.ts`, `notification.controller.ts`, `publicLead.controller.ts`.
 
 ### 4.4 Services Layer (`backend/src/services/`)
+
 Contains all business logic and Prisma database operations:
+
 - `lead.service.ts`: Atomic `LD-XXXXXX` generation, 3-tier duplicate checks, round-robin counselor assignment, filtering, pagination, and status updates.
 - `dashboard.service.ts`: Calculates total leads, conversion rates, today/overdue follow-ups, and employee performance metrics.
 - `auth.service.ts`: Password verification with bcrypt, JWT token generation, case-insensitive username lookup.
 - `activity.service.ts`, `followup.service.ts`, `task.service.ts`, `note.service.ts`, `payment.service.ts`, `customer.service.ts`, `course.service.ts`, `leadSource.service.ts`, `auditLog.service.ts`, `notification.service.ts`.
 
 ### 4.5 Middlewares (`backend/src/middleware/`)
+
 - `auth.middleware.ts`: Verifies JWT from `Authorization: Bearer <token>` or HTTP-only cookies. Attaches `req.user`.
 - `role.middleware.ts`: Restricts routes to specific roles (`ADMIN`, `MANAGER`, etc.).
 - `validate.middleware.ts`: Validates request body, query, and params against Zod schemas.
@@ -214,6 +229,7 @@ Contains all business logic and Prisma database operations:
 - `error.middleware.ts`: Centralized error handler returning consistent error JSON.
 
 ### 4.6 Validators & Utilities
+
 - **Validators (`backend/src/validators/`)**: Zod validation schemas for `lead`, `auth`, `activity`, `followup`, `task`, `payment`, `course`, `leadSource`, `note`.
 - **Utils (`backend/src/utils/`)**:
   - `generateLeadId.ts`: Atomic counter generation for sequential IDs (`LD-000001`).
@@ -224,7 +240,8 @@ Contains all business logic and Prisma database operations:
   - `logger.ts`: Structured console logging.
 
 ### 4.7 Google Sheets Bridge (`backend/src/integrations/googleSheets/`)
-- *Note: Compiled with `allowJs: true` in tsconfig to seamlessly output to `dist/integrations/googleSheets/`.*
+
+- _Note: Compiled with `allowJs: true` in tsconfig to seamlessly output to `dist/integrations/googleSheets/`._
 - `discovery.js`: Discovers all spreadsheets in the configured Google Drive folder.
 - `courseMatcher.js`: Fuzzy-matches spreadsheet and campaign names against course catalog.
 - `mapper.js`: Normalizes diverse column names (Phone, Mobile, Contact, Email, Name) to standard fields.
@@ -238,6 +255,7 @@ Contains all business logic and Prisma database operations:
 ## 5. Database Schema & Prisma Models (`backend/prisma/schema.prisma`)
 
 ### 5.1 Enums
+
 - `Role`: `ADMIN`, `MANAGER`, `LEAD_FINDER`, `VIEWER`
 - `LeadStatus`: `NEW`, `NO_ANSWER`, `GIVEN_DETAILS`, `INTERESTED`, `FOLLOW_UP`, `CONVERTED`, `LOST`, `NOT_INTERESTED`, `INVALID`
 - `Priority`: `LOW`, `MEDIUM`, `HIGH`, `URGENT`
@@ -245,6 +263,7 @@ Contains all business logic and Prisma database operations:
 - `FollowUpType`: `CALL`, `WHATSAPP`, `EMAIL`, `MEETING`, `CAMPUS_VISIT`
 
 ### 5.2 14 Database Models
+
 1. `User`: `id`, `email`, `username`, `password`, `name`, `role`, `active`, `createdAt`, `updatedAt`
 2. `Lead`: `id`, `leadId` (unique `LD-XXXXXX`), `name`, `email`, `mobile`, `city`, `state`, `courseName`, `courseId`, `source`, `status`, `priority`, `counselorName`, `counselorId`, `feeQuoted`, `tokenAmountPaid`, `externalLeadId`, `metadata`, `createdAt`, `updatedAt`
 3. `Activity`: `id`, `leadId`, `userId`, `userName`, `type`, `title`, `notes`, `duration`, `createdAt`
@@ -265,14 +284,16 @@ Contains all business logic and Prisma database operations:
 ## 6. Credentials, Roles & Environment Variables
 
 ### 6.1 Default User Accounts
-| Role | Full Name | Username *(Case-Insensitive)* | Password |
-| :--- | :--- | :--- | :--- |
-| 👑 **Administrator** | Admin User 1 | `admin` | `admin123` |
-| 👩‍💼 **Counselor 1** | MS. INDU | `indu` *(or `MS. INDU`)* | `Indu@2026` |
-| 👩‍💼 **Counselor 2** | MS. AYESHA | `ayesha` *(or `MS. AYESHA`)* | `Ayesha@2026` |
-| 👩‍💼 **Counselor 3** | MS. PRITI | `priti` *(or `MS. PRITI`)* | `Priti@2026` |
+
+| Role                 | Full Name    | Username _(Case-Insensitive)_ | Password      |
+| :------------------- | :----------- | :---------------------------- | :------------ |
+| 👑 **Administrator** | Admin User 1 | `admin`                       | `admin123`    |
+| 👩‍💼 **Counselor 1**   | MS. INDU     | `indu` _(or `MS. INDU`)_      | `Indu@2026`   |
+| 👩‍💼 **Counselor 2**   | MS. AYESHA   | `ayesha` _(or `MS. AYESHA`)_  | `Ayesha@2026` |
+| 👩‍💼 **Counselor 3**   | MS. PRITI    | `priti` _(or `MS. PRITI`)_    | `Priti@2026`  |
 
 ### 6.2 Environment Configuration (`backend/.env`)
+
 - `PORT`: `3001`
 - `NODE_ENV`: `development`
 - `DATABASE_URL`: Neon PostgreSQL connection string routed via IPv4 + endpoint project option:
@@ -286,6 +307,7 @@ Contains all business logic and Prisma database operations:
 ## 7. Running & Testing the Project
 
 ### Running Servers
+
 ```bash
 # Terminal 1: Backend (Node + TypeScript + Prisma)
 cd backend
@@ -297,6 +319,7 @@ npm run dev
 ```
 
 ### Database Management
+
 ```bash
 cd backend
 npx prisma generate     # Regenerates Prisma Client
@@ -305,8 +328,10 @@ npx prisma db push       # Pushes local schema to Neon
 ```
 
 ### Integration Tests
+
 ```bash
 cd backend
 node scripts/test-google-sheets-bridge.js
 ```
-*(All 39 automated test assertions run and pass with zero dependencies).*
+
+_(All 39 automated test assertions run and pass with zero dependencies)._

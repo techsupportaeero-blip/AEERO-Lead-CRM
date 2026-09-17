@@ -105,4 +105,69 @@ export class FollowupService {
       where: { id }
     });
   }
+
+  /**
+   * Admin-facing view of every lead's follow-up progress: which "stage"
+   * (1st, 2nd, 3rd... follow-up) each lead is currently at, who's handling
+   * it, and what the most recent one looked like. Stage number is just the
+   * chronological position of a follow-up within that lead's own history -
+   * no separate "stage" field needed on the FollowUp model itself.
+   */
+  static async getStageTracker() {
+    const followups = await prisma.followUp.findMany({
+      where: { leadRelId: { not: null } },
+      orderBy: [{ leadRelId: 'asc' }, { date: 'asc' }, { time: 'asc' }, { id: 'asc' }],
+      include: {
+        lead: {
+          select: { id: true, leadId: true, name: true, ownerId: true, status: true }
+        }
+      }
+    });
+
+    const byLead = new Map<number, typeof followups>();
+    for (const f of followups) {
+      if (!f.leadRelId) continue;
+      const list = byLead.get(f.leadRelId) || [];
+      list.push(f);
+      byLead.set(f.leadRelId, list);
+    }
+
+    const tracker = [];
+    for (const [, stages] of byLead) {
+      const lead = stages[0].lead;
+      if (!lead) continue;
+      const latest = stages[stages.length - 1];
+      tracker.push({
+        leadRelId: lead.id,
+        leadId: lead.leadId,
+        leadName: lead.name,
+        counselor: lead.ownerId,
+        leadStatus: lead.status,
+        totalStages: stages.length,
+        currentStageNumber: stages.length,
+        latestFollowup: {
+          id: latest.id,
+          date: latest.date,
+          time: latest.time,
+          type: latest.type,
+          status: latest.status,
+          notes: latest.notes
+        },
+        stages: stages.map((s, idx) => ({
+          stageNumber: idx + 1,
+          id: s.id,
+          date: s.date,
+          time: s.time,
+          type: s.type,
+          status: s.status,
+          notes: s.notes
+        }))
+      });
+    }
+
+    // Leads with the most follow-up attempts (i.e. stuck the longest)
+    // surface first - that's usually what an admin wants to check on.
+    tracker.sort((a, b) => b.totalStages - a.totalStages);
+    return tracker;
+  }
 }

@@ -323,6 +323,7 @@ export default function App() {
               key={`module-${currentRoute}-${refreshKey}`}
               routeId={currentRoute}
               onNavigateToLeads={() => setCurrentRoute('leads')}
+              onNavigateRoute={setCurrentRoute}
               onSelectLead={handleSelectLead}
               currentUser={currentUser}
               onNotify={(msg) => showToast(msg)}

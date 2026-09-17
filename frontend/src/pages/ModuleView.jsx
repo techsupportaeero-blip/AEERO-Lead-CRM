@@ -7,8 +7,13 @@ import { CustomersView } from './CustomersView';
 import { CoursesView } from './CoursesView';
 import { LeadSourcesView } from './LeadSourcesView';
 import { AuditLogsView } from './AuditLogsView';
+import { NotificationsView } from './NotificationsView';
+import { SettingsView } from './SettingsView';
+import { SystemSettingsView } from './SystemSettingsView';
+import { AboutAppView } from './AboutAppView';
+import { FollowupTrackerView } from './FollowupTrackerView';
 
-export const ModuleView = ({ routeId, onNavigateToLeads, onSelectLead, currentUser, onNotify, darkMode }) => {
+export const ModuleView = ({ routeId, onNavigateToLeads, onNavigateRoute, onSelectLead, currentUser, onNotify, darkMode }) => {
   if (routeId === 'ai-assistant') {
     return (
       <div className={`flex flex-col items-center justify-center min-h-[60vh] rounded-xl border p-8 shadow-sm text-center ${
@@ -57,6 +62,26 @@ export const ModuleView = ({ routeId, onNavigateToLeads, onSelectLead, currentUs
 
   if (routeId === 'activities') {
     return <AuditLogsView onSelectLead={onSelectLead} onNotify={onNotify} darkMode={darkMode} />;
+  }
+
+  if (routeId === 'notifications') {
+    return <NotificationsView currentUser={currentUser} onNavigateRoute={onNavigateRoute} onSelectLead={onSelectLead} darkMode={darkMode} />;
+  }
+
+  if (routeId === 'settings') {
+    return <SettingsView currentUser={currentUser} onNotify={onNotify} darkMode={darkMode} />;
+  }
+
+  if (routeId === 'system-settings') {
+    return <SystemSettingsView currentUser={currentUser} onNotify={onNotify} darkMode={darkMode} />;
+  }
+
+  if (routeId === 'about-app') {
+    return <AboutAppView darkMode={darkMode} />;
+  }
+
+  if (routeId === 'followup-tracker') {
+    return <FollowupTrackerView currentUser={currentUser} onSelectLead={onSelectLead} darkMode={darkMode} />;
   }
 
   // For all in-progress pages (email-triggers, email-templates, settings, system-settings, users, etc.),

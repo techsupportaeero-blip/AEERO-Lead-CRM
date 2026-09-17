@@ -70,6 +70,8 @@ model Course {
   code        String   @unique
   name        String
   description String?
+  category    String?
+  duration    String?
   price       Decimal  @default(0.00) @db.Decimal(10, 2)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())

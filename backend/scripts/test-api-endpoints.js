@@ -22,7 +22,7 @@ async function testApi() {
       name: 'API Test Student',
       mobile: '+91 91234 56789',
       email: 'api.student@example.com',
-      interestedCourse: 'Commercial Pilot License (CPL)',
+      interestedCourse: 'Commercial Pilot License (solar)',
       campaign: 'Google Sheets Ingestion Test',
       sourceSpreadsheetName: 'API Ingest Sheet'
     })

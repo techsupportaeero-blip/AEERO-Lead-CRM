@@ -420,12 +420,12 @@ export async function ingestLeadRecord(leadPayload, options = {}, dbData = null)
       global.io.emit('newLead', finalLead);
     }
 
-    await NotificationService.notifyUserByName(
-      assignedCounselor,
-      'New Lead Assigned',
-      `${finalLead.name || 'A new lead'} (${finalLead.leadId}) has been assigned to you.`,
-      'lead'
-    );
+    // NOTE: this branch only exists for offline/mock testing (an in-memory
+    // dbData object standing in for the real database) - it deliberately
+    // does NOT touch NotificationService here, since that writes straight
+    // to the real Neon database regardless of dbData, and would otherwise
+    // leave real "New Lead Assigned" notifications pointing at leads that
+    // only ever existed in a test run's in-memory array.
 
     return {
       success: true,
@@ -529,12 +529,9 @@ export async function ingestLeadRecord(leadPayload, options = {}, dbData = null)
     global.io.emit('newLead', finalLead);
   }
 
-  await NotificationService.notifyUserByName(
-    assignedCounselor,
-    'New Lead Assigned',
-    `${finalLead.name || 'A new lead'} (${finalLead.leadId}) has been assigned to you.`,
-    'lead'
-  );
+  // NOTE: reached only when no Prisma connection is available at all - the
+  // lead isn't durably persisted anywhere, so it deliberately skips
+  // NotificationService too (same reasoning as the dbData branch above).
 
   return {
     success: true,

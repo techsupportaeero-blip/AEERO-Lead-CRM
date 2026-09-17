@@ -446,7 +446,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                   <div className="flex gap-2">
                     <input
                       type="text"
-                      placeholder="e.g. CPL Batch 2026, Urgent"
+                      placeholder="e.g. solar Batch 2026, Urgent"
                       value={tagInput}
                       onChange={(e) => setTagInput(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleAddTag(e)}

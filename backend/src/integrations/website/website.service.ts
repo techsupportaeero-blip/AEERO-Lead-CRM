@@ -6,7 +6,7 @@ export class WebsiteIntegrationService {
       email: payload.email || '',
       city: payload.city || '',
       state: payload.state || '',
-      interestedCourse: payload.interestedCourse || payload.course || 'Commercial Pilot License (CPL)',
+      interestedCourse: payload.interestedCourse || payload.course || 'Commercial Pilot License (solar)',
       source: 'Website',
       platform: payload.platform || 'Direct Website',
       campaign: payload.campaign || 'Web Organic',

@@ -310,6 +310,27 @@ export const api = {
     return res.json();
   },
 
+  async updateFollowup(id, data) {
+    const res = await fetch(`${API_BASE}/followups/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Failed to update followup');
+    return res.json();
+  },
+
+  // Admin / Sr. Counsellor only - which counselor's leads are stuck at which follow-up stage
+  async getFollowupStageTracker(currentUser = 'Admin', userRole = 'ADMIN') {
+    const params = new URLSearchParams({ currentUser, userRole });
+    const res = await fetch(`${API_BASE}/followups/stage-tracker?${params.toString()}`);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || 'Failed to fetch follow-up stage tracker');
+    }
+    return res.json();
+  },
+
   // Notes
   async getNotes(leadId) {
     const res = await fetch(`${API_BASE}/leads/${leadId}/notes`);

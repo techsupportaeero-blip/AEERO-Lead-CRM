@@ -180,7 +180,7 @@ export const Header = ({ onOpenAddLead, onToggleMobileSidebar, globalSearch, set
         'Filter by Counselor owner.'
       ],
       howToUse: 'Din bhar apne scheduled time slots dekhein aur promised time par exact call lagayein. Punctuality se student trust badhta hai.',
-      proTip: 'Promised time par callback karne se Commercial Pilot (CPL) aur Cabin Crew enrollments 40% badhte hain.'
+      proTip: 'Promised time par callback karne se enrollments 40% badhte hain.'
     },
     users: {
       title: 'User & Staff Management',
@@ -202,15 +202,15 @@ export const Header = ({ onOpenAddLead, onToggleMobileSidebar, globalSearch, set
       subtitle: 'Course details & fee structures',
       icon: 'school',
       color: 'bg-amber-100 text-[#7D610F]',
-      purpose: 'Is page par AEERO ke saare active courses (CPL, Cabin Crew, AME, Airport Mgmt, Safety) aur unke official Fee Structure ko manage kiya jata hai.',
+      purpose: 'Is page par AEERO ke saare active courses aur unke official Fee Structure ko manage kiya jata hai.',
       features: [
-        'Aviation Courses List (CPL, Cabin Crew, AME, Airport Mgmt, Safety).',
+        'Aviation Courses List & Categories.',
         'Official Program Fees (INR ₹) setup.',
         'Course Duration & Ground Theory Details.',
         'Active / Inactive Status Toggle.'
       ],
       howToUse: 'Admins yahan course fee update karte hain. Yeh fees auto-populate ho kar lead form aur pipeline deal value calculation me use hoti hai.',
-      proTip: 'Fee details accurate rakhein taaki counselors call par sahi commercial pilot fee quotes de sakein.'
+      proTip: 'Fee details accurate rakhein taaki counselors call par sahi fee quotes de sakein.'
     },
     customers: {
       title: 'Converted Students Directory',
@@ -282,7 +282,7 @@ export const Header = ({ onOpenAddLead, onToggleMobileSidebar, globalSearch, set
       features: [
         'Interactive AI Chat: Funnel analysis, hot leads scanner, aur custom prompt suggestions.',
         'AI Lead Intent Scoring Matrix: High-converting lead attributes aur student conversion probabilities.',
-        'AI Script Generator: Tailored WhatsApp messages, Email copy, aur Counselor phone pitch scripts for CPL/Cabin Crew.'
+        'AI Script Generator: Tailored WhatsApp messages, Email copy, aur Counselor phone pitch scripts.'
       ],
       howToUse: 'Counselors Chat tab par quick prompts click karke conversion analysis le sakte hain ya Script Generator tab se 1-click WhatsApp text copy kar sakte hain.',
       proTip: 'Script Generator se personalized WhatsApp scripts bhejkar prospective pilots se 2x faster reply payein.'

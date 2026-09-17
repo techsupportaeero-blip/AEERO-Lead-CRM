@@ -6,34 +6,22 @@
 // Standard AEERO Course Catalog with Aliases & Keywords
 export const COURSE_CATALOG = [
   {
-    code: 'CPL',
-    name: 'Commercial Pilot License (CPL)',
-    aliases: ['cpl', 'commercial pilot', 'commercial pilot license', 'pilot license', 'cpl training', 'cpl aviation'],
-    keywords: ['cpl', 'pilot']
+    code: 'solar',
+    name: 'Commercial Pilot License (solar)',
+    aliases: ['solar', 'commercial pilot', 'commercial pilot license', 'pilot license', 'solar training', 'solar aviation'],
+    keywords: ['solar', 'pilot']
   },
   {
-    code: 'PPL',
-    name: 'Private Pilot License (PPL)',
-    aliases: ['ppl', 'private pilot', 'private pilot license', 'ppl training'],
-    keywords: ['ppl', 'private pilot']
-  },
-  {
-    code: 'CABIN_CREW',
-    name: 'Cabin Crew & Ground Staff Training',
-    aliases: ['cabin crew', 'air hostess', 'flight attendant', 'cabin crew training', 'ground staff', 'aviation hospitality'],
-    keywords: ['cabin', 'crew', 'hostess', 'flight attendant', 'ground staff']
+    code: 'MSME',
+    name: 'Private Pilot License (MSME)',
+    aliases: ['MSME', 'private pilot', 'private pilot license', 'MSME training'],
+    keywords: ['MSME', 'private pilot']
   },
   {
     code: 'AME',
     name: 'Aircraft Maintenance Engineering (AME)',
     aliases: ['ame', 'aircraft maintenance', 'aeronautical engineering', 'aircraft engineering', 'dgca ame'],
     keywords: ['ame', 'maintenance', 'aircraft maintenance', 'aeronautical']
-  },
-  {
-    code: 'AIRPORT_MGMT',
-    name: 'Airport Management & Operations',
-    aliases: ['airport management', 'aviation management', 'airport operations', 'ground operations'],
-    keywords: ['airport', 'operations', 'airport management']
   },
   {
     code: 'SAFETY',

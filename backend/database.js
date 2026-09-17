@@ -140,8 +140,8 @@ const loadFromFile = () => {
 
       if (!dbData.courses || dbData.courses.length === 0) {
         dbData.courses = [
-          { id: 1, code: 'CPL', name: 'Commercial Pilot License (CPL)', description: 'Full Flight Simulator & Flying Hours Training', price: 4500000, active: true },
-          { id: 2, code: 'CABIN_CREW', name: 'Cabin Crew & Ground Staff Training', description: 'Diploma in Flight Attendant Services', price: 150000, active: true },
+          { id: 1, code: 'solar', name: 'Commercial Pilot License (solar)', description: 'Full Flight Simulator & Flying Hours Training', price: 4500000, active: true },
+          { id: 2, code: 'CABIN_CREW', name: 'YCMOU & Ground Staff Training', description: 'Diploma in Flight Attendant Services', price: 150000, active: true },
           { id: 3, code: 'AME', name: 'Aircraft Maintenance Engineering (AME)', description: 'DGCA Approved Aeronautical Maintenance Course', price: 650000, active: true },
           { id: 4, code: 'AIRPORT_MGMT', name: 'Airport Management & Operations', description: 'Diploma in Aviation Ground Operations', price: 180000, active: true },
           { id: 5, code: 'SAFETY', name: 'Diploma in Industrial Safety', description: 'Aviation Fire & Safety Inspection Course', price: 120000, active: true }
@@ -164,8 +164,8 @@ const loadFromFile = () => {
       if (!dbData.customers || dbData.customers.length === 0) {
         dbData.customers = [
           { customerId: 1, name: 'Rahul Sharma', email: 'rahul.sharma@example.com', phone: '+91 98765 43210', whatsapp: '+91 98765 43210', city: 'Delhi', state: 'Delhi', notes: 'Interested in flight simulator sessions.', createdAt: now, updatedAt: now },
-          { customerId: 2, name: 'Priya Patel', email: 'priya.patel@example.com', phone: '+91 98123 45678', whatsapp: '+91 98123 45678', city: 'Ahmedabad', state: 'Gujarat', notes: 'Inquired for Cabin Crew training.', createdAt: now, updatedAt: now },
-          { customerId: 3, name: 'Ananya Roy', email: 'ananya.roy@example.com', phone: '+91 98450 12345', whatsapp: '+91 98450 12345', city: 'Bengaluru', state: 'Karnataka', notes: 'Enrolled student for CPL 2026 Batch.', createdAt: now, updatedAt: now }
+          { customerId: 2, name: 'Priya Patel', email: 'priya.patel@example.com', phone: '+91 98123 45678', whatsapp: '+91 98123 45678', city: 'Ahmedabad', state: 'Gujarat', notes: 'Inquired for YCMOU training.', createdAt: now, updatedAt: now },
+          { customerId: 3, name: 'Ananya Roy', email: 'ananya.roy@example.com', phone: '+91 98450 12345', whatsapp: '+91 98450 12345', city: 'Bengaluru', state: 'Karnataka', notes: 'Enrolled student for solar 2026 Batch.', createdAt: now, updatedAt: now }
         ];
       }
 
@@ -437,7 +437,7 @@ export const checkDuplicate = (mobile, email, excludeId) => {
       state: '',
       age: null,
       qualification: '',
-      interestedCourse: 'Commercial Pilot License (CPL)',
+      interestedCourse: 'Commercial Pilot License (solar)',
       preferredStudyMode: 'Offline',
       requirement: 'Inquiry received via Facebook Lead Ads form',
       remarks: 'Automated Meta webhook lead capture & round-robin assignment',
@@ -1014,8 +1014,8 @@ export const checkDuplicate = (mobile, email, excludeId) => {
   export const getCourses = () => {
     if (!dbData.courses || dbData.courses.length === 0) {
       dbData.courses = [
-        { id: 'PRD001', code: 'CPL-2026', name: 'Commercial Pilot License (CPL)', description: 'DGCA approved ground school & flight simulator training', category: 'Pilot Training', duration: '18 Months', price: 1850000, status: 'Active', created: 'Jan 10, 2026', active: true },
-        { id: 'PRD002', code: 'CCG-2026', name: 'Cabin Crew & Ground Staff Training', description: 'Aviation hospitality, in-flight safety & airport ground handling', category: 'Cabin Crew & Ground', duration: '6 Months', price: 180000, status: 'Active', created: 'Jan 12, 2026', active: true },
+        { id: 'PRD001', code: 'solar-2026', name: 'Commercial Pilot License (solar)', description: 'DGCA approved ground school & flight simulator training', category: 'Pilot Training', duration: '18 Months', price: 1850000, status: 'Active', created: 'Jan 10, 2026', active: true },
+        { id: 'PRD002', code: 'CCG-2026', name: 'YCMOU & Ground Staff Training', description: 'Aviation hospitality, in-flight safety & airport ground handling', category: 'YCMOU & Ground', duration: '6 Months', price: 180000, status: 'Active', created: 'Jan 12, 2026', active: true },
         { id: 'PRD003', code: 'AME-2026', name: 'Aircraft Maintenance Engineering (AME)', description: 'Avionics and mechanical maintenance certification program', category: 'Engineering', duration: '3 Years', price: 450000, status: 'Active', created: 'Jan 15, 2026', active: true },
         { id: 'PRD004', code: 'SFO-2026', name: 'Sub Fire Officer', description: 'Advanced fire prevention & rescue operations training', category: 'Safety & Officer', duration: '1 Year', price: 95000, status: 'Active', created: 'Jan 18, 2026', active: true },
         { id: 'PRD005', code: 'DIS-2026', name: 'Diploma in Industrial Safety', description: 'Industrial hazard control, safety protocols & workplace audit', category: 'Technical Diploma', duration: '1 Year', price: 120000, status: 'Active', created: 'Jan 20, 2026', active: true },

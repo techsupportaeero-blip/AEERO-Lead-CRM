@@ -27,7 +27,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('Pilot Training');
+  const [category, setCategory] = useState('MSME');
   const [duration, setDuration] = useState('1 Year');
   const [price, setPrice] = useState('');
   const [status, setStatus] = useState('Active');
@@ -69,7 +69,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
     setCode(`CRS-${Math.floor(100 + Math.random() * 900)}`);
     setName('');
     setDescription('');
-    setCategory('Pilot Training');
+    setCategory('MSME');
     setDuration('1 Year');
     setPrice('1850000');
     setStatus('Active');
@@ -81,10 +81,10 @@ export const CoursesView = ({ onNotify, darkMode }) => {
     setCode(c.code || '');
     setName(c.name || '');
     setDescription(c.description || '');
-    setCategory(c.category || 'Pilot Training');
+    setCategory(c.category || 'MSME');
     setDuration(c.duration || '1 Year');
     setPrice(String(c.price || ''));
-    setStatus(c.status || 'Active');
+    setStatus(c.isActive === false ? 'Inactive' : 'Active');
     setShowModal(true);
   };
 
@@ -152,8 +152,8 @@ export const CoursesView = ({ onNotify, darkMode }) => {
       c.category || '',
       c.duration || '',
       c.price || 0,
-      c.status || 'Active',
-      c.created || ''
+      c.isActive === false ? 'Inactive' : 'Active',
+      c.createdAt ? new Date(c.createdAt).toLocaleDateString() : ''
     ]);
     const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
     const encodedUri = encodeURI(csvContent);
@@ -169,9 +169,17 @@ export const CoursesView = ({ onNotify, darkMode }) => {
     window.print();
   };
 
+  // Category is now free text (counselors type whatever they want in Add
+  // Product), so the filter dropdown's options are built from whatever
+  // categories actually exist, plus AEERO's baseline categories so they're
+  // always selectable even before any course is tagged with them.
+  const BASELINE_CATEGORIES = ['MSME', 'YCMOU', 'DCAP'];
+  const categoryOptions = [...new Set([...BASELINE_CATEGORIES, ...(courses || []).map(c => c.category).filter(Boolean)])].sort();
+
   // Filtering Logic
   const filteredCourses = (courses || []).filter(c => {
-    if (filterStatus !== 'All Status' && c.status !== filterStatus) return false;
+    const statusLabel = c.isActive === false ? 'Inactive' : 'Active';
+    if (filterStatus !== 'All Status' && statusLabel !== filterStatus) return false;
     if (filterCategory !== 'All Categories' && c.category !== filterCategory) return false;
     if (filterDuration !== 'All Durations') {
       if (filterDuration === 'Under 1 Year' && (c.duration || '').includes('Year') && !(c.duration || '').includes('Months')) return false;
@@ -319,11 +327,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
               }`}
             >
               <option>All Categories</option>
-              <option>Pilot Training</option>
-              <option>Cabin Crew & Ground</option>
-              <option>Engineering</option>
-              <option>Safety & Officer</option>
-              <option>Technical Diploma</option>
+              {categoryOptions.map(c => <option key={c}>{c}</option>)}
             </select>
           </div>
 
@@ -483,7 +487,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
                       <td className={`py-3 px-4 max-w-xs truncate ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>{c.description || '-'}</td>
                       <td className="py-3 px-4">
                         <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-700 font-semibold text-[10px] border border-amber-200">
-                          {c.category || 'Pilot Training'}
+                          {c.category || 'MSME'}
                         </span>
                       </td>
                       <td className={`py-3 px-4 font-medium ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{c.duration || '1 Year'}</td>
@@ -492,9 +496,9 @@ export const CoursesView = ({ onNotify, darkMode }) => {
                       </td>
                       <td className="py-3 px-4 text-center">
                         <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                          c.status === 'Active' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300'
+                          c.isActive !== false ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300'
                         }`}>
-                          {c.status || 'Active'}
+                          {c.isActive === false ? 'Inactive' : 'Active'}
                         </span>
                       </td>
                       <td className={`py-3 px-4 text-[11px] ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{c.created || 'Jan 10, 2026'}</td>
@@ -537,9 +541,9 @@ export const CoursesView = ({ onNotify, darkMode }) => {
                       {c.id} • {c.code}
                     </span>
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                      c.status === 'Active' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                      c.isActive !== false ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
                     }`}>
-                      {c.status || 'Active'}
+                      {c.isActive === false ? 'Inactive' : 'Active'}
                     </span>
                   </div>
 
@@ -548,7 +552,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
 
                   <div className="flex items-center gap-2 pt-1">
                     <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-700 font-semibold text-[10px] border border-amber-200">
-                      {c.category || 'Pilot Training'}
+                      {c.category || 'MSME'}
                     </span>
                     <span className={`text-[11px] ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>⏱️ {c.duration || '1 Year'}</span>
                   </div>
@@ -639,7 +643,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Commercial Pilot License (CPL)"
+                    placeholder="e.g. YCMOU "
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className={`w-full border rounded-lg p-2 outline-none ${
@@ -652,7 +656,7 @@ export const CoursesView = ({ onNotify, darkMode }) => {
                   <label className={`block font-semibold mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Product Code</label>
                   <input
                     type="text"
-                    placeholder="e.g. CPL-2026"
+                    placeholder="e.g. MSME-2026"
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
                     className={`w-full border rounded-lg p-2 font-mono outline-none ${
@@ -678,19 +682,15 @@ export const CoursesView = ({ onNotify, darkMode }) => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
                   <label className={`block font-semibold mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Category</label>
-                  <select
+                  <input
+                    type="text"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
+                    placeholder="e.g. MSME"
                     className={`w-full border rounded-lg p-2 outline-none ${
                       darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                     }`}
-                  >
-                    <option>Pilot Training</option>
-                    <option>Cabin Crew & Ground</option>
-                    <option>Engineering</option>
-                    <option>Safety & Officer</option>
-                    <option>Technical Diploma</option>
-                  </select>
+                  />
                 </div>
 
                 <div>

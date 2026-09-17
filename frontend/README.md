@@ -1,6 +1,6 @@
-# AEERO CRM — Frontend Web Application
+# AEERO CRM — Frontend Web AMSMEication
 
-This directory contains the isolated Vite + React frontend web application for AEERO CRM Phase 1.
+This directory contains the isolated Vite + React frontend web aMSMEication for AEERO CRM Phase 1.
 
 ## 🚀 How to Run Frontend
 
@@ -15,4 +15,4 @@ npm install
 npm run dev
 ```
 
-The frontend application proxies `/api/*` requests to the backend server running at `http://localhost:3001`.
+The frontend aMSMEication proxies `/api/*` requests to the backend server running at `http://localhost:3001`.

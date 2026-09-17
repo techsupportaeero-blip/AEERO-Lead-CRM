@@ -28,7 +28,7 @@ export class MetaIntegrationService {
     let mobile = '';
     let email = '';
     let city = '';
-    let interestedCourse = 'Commercial Pilot License (CPL)';
+    let interestedCourse = 'Commercial Pilot License (solar)';
 
     (metaLead.field_data || []).forEach(field => {
       const key = field.name.toLowerCase();

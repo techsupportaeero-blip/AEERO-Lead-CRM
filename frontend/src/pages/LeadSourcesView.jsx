@@ -135,13 +135,16 @@ export const LeadSourcesView = ({ onNotify, darkMode }) => {
 
   const handleExportCSV = () => {
     if (sources.length === 0) return alert("No sources to export");
-    const headers = ["ID", "Source Name", "Description", "Type", "Category", "Cost/Lead", "Status", "Created"];
+    const headers = ["ID", "Source Name", "Description", "Type", "Category", "Total Leads", "Converted", "Conv. Rate", "Cost/Lead", "Status", "Created"];
     const rows = sources.map(s => [
-      s.id,
+      s.id ?? '',
       `"${(s.name || '').replace(/"/g, '""')}"`,
       `"${(s.description || '').replace(/"/g, '""')}"`,
       s.type || '',
       s.category || '',
+      s.totalLeads ?? 0,
+      s.convertedLeads ?? 0,
+      `${s.conversionRate ?? 0}%`,
       s.costPerLead || '-',
       s.isActive === false ? 'Inactive' : 'Active',
       s.createdAt ? new Date(s.createdAt).toLocaleDateString() : ''
@@ -355,6 +358,9 @@ export const LeadSourcesView = ({ onNotify, darkMode }) => {
                 <th className="py-3 px-4">Description</th>
                 <th className="py-3 px-4">Type</th>
                 <th className="py-3 px-4">Category</th>
+                <th className="py-3 px-4 text-center">Total Leads</th>
+                <th className="py-3 px-4 text-center">Converted</th>
+                <th className="py-3 px-4 text-center">Conv. Rate</th>
                 <th className="py-3 px-4 text-center">Cost/Lead</th>
                 <th className="py-3 px-4 text-center">Status</th>
                 <th className="py-3 px-4">Created</th>
@@ -364,27 +370,37 @@ export const LeadSourcesView = ({ onNotify, darkMode }) => {
             <tbody className={`divide-y ${darkMode ? 'divide-[#222936]' : 'divide-slate-100'}`}>
               {loading ? (
                 <tr>
-                  <td colSpan="9" className="py-12 text-center text-slate-400">
+                  <td colSpan="12" className="py-12 text-center text-slate-400">
                     <span className="material-symbols-outlined text-3xl animate-spin text-slate-600">sync</span>
-                    <TableSkeleton columns={6} rows={8} />
+                    <TableSkeleton columns={12} rows={8} />
                   </td>
                 </tr>
               ) : currentEntries.length === 0 ? (
                 <tr>
-                  <td colSpan="9" className="py-12 text-center text-slate-400 font-medium">
+                  <td colSpan="12" className="py-12 text-center text-slate-400 font-medium">
                     No lead sources found matching filters
                   </td>
                 </tr>
               ) : (
                 currentEntries.map(s => (
-                  <tr key={s.id} className={`transition-colors ${
+                  <tr key={s.id ?? `auto-${s.name}`} className={`transition-colors ${
                     darkMode ? 'hover:bg-[#3D3212]' : 'hover:bg-slate-50/80'
                   }`}>
-                    <td className={`py-3 px-4 font-mono font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{s.id}</td>
-                    <td className={`py-3 px-4 font-bold ${darkMode ? 'text-sky-400 hover:text-sky-300' : 'text-[#0284C7] hover:underline'} cursor-pointer`}>{s.name}</td>
+                    <td className={`py-3 px-4 font-mono font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{s.id ?? '-'}</td>
+                    <td className={`py-3 px-4 font-bold ${darkMode ? 'text-sky-400 hover:text-sky-300' : 'text-[#0284C7] hover:underline'} cursor-pointer`}>
+                      {s.name}
+                      {s.isAutoDiscovered && (
+                        <span className={`ml-1.5 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase align-middle ${darkMode ? 'bg-amber-950/50 text-amber-300 border border-amber-800/40' : 'bg-amber-50 text-amber-700 border border-amber-200'}`} title="Found on real leads but not yet added to the catalog below">
+                          Auto-detected
+                        </span>
+                      )}
+                    </td>
                     <td className={`py-3 px-4 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>{s.description || '-'}</td>
-                    <td className={`py-3 px-4 font-medium ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{s.type || 'Online'}</td>
-                    <td className={`py-3 px-4 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>{s.category || 'Other'}</td>
+                    <td className={`py-3 px-4 font-medium ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{s.type || (s.isAutoDiscovered ? '-' : 'Online')}</td>
+                    <td className={`py-3 px-4 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>{s.category || (s.isAutoDiscovered ? '-' : 'Other')}</td>
+                    <td className={`py-3 px-4 text-center font-semibold ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>{s.totalLeads ?? 0}</td>
+                    <td className={`py-3 px-4 text-center font-semibold ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>{s.convertedLeads ?? 0}</td>
+                    <td className={`py-3 px-4 text-center font-mono ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{s.conversionRate ?? 0}%</td>
                     <td className={`py-3 px-4 text-center font-mono font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{s.costPerLead || '-'}</td>
                     <td className="py-3 px-4 text-center">
                       <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
@@ -395,9 +411,18 @@ export const LeadSourcesView = ({ onNotify, darkMode }) => {
                     </td>
                     <td className={`py-3 px-4 text-[11px] ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{s.createdAt ? new Date(s.createdAt).toLocaleDateString() : '-'}</td>
                     <td className="py-3 px-4 text-center">
+                      {s.isAutoDiscovered ? (
+                        <button
+                          onClick={() => { setEditingSource(null); setSourceName(s.name); setDescription(''); setSourceType('Online'); setCategory('Other'); setCostPerLead('-'); setStatus('Active'); setShowModal(true); }}
+                          className="px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded text-[10px] font-bold hover:bg-amber-100 transition-colors"
+                          title="Add this auto-detected source to the catalog"
+                        >
+                          + Add to Catalog
+                        </button>
+                      ) : (
                       <div className="flex items-center justify-center gap-2">
                         <button
-                          onClick={() => alert(`Source ID: ${s.id}\nName: ${s.name}\nDescription: ${s.description}\nType: ${s.type}\nCategory: ${s.category}\nCost/Lead: ${s.costPerLead}`)}
+                          onClick={() => alert(`Source ID: ${s.id}\nName: ${s.name}\nDescription: ${s.description}\nType: ${s.type}\nCategory: ${s.category}\nCost/Lead: ${s.costPerLead}\nTotal Leads: ${s.totalLeads}\nConverted: ${s.convertedLeads} (${s.conversionRate}%)`)}
                           className="w-7 h-7 rounded bg-sky-50 text-sky-600 border border-sky-200 flex items-center justify-center hover:bg-sky-100 transition-colors"
                           title="View Details"
                         >
@@ -418,6 +443,7 @@ export const LeadSourcesView = ({ onNotify, darkMode }) => {
                           <span className="material-symbols-outlined text-[16px]">delete</span>
                         </button>
                       </div>
+                      )}
                     </td>
                   </tr>
                 ))

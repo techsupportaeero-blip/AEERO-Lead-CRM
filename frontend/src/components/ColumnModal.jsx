@@ -121,7 +121,7 @@ export const ColumnModal = ({ visibleColumns, setVisibleColumns, onClose, darkMo
             onClick={onClose}
             className="px-5 py-2 bg-[#9A7310] hover:bg-[#85620D] text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
           >
-            Apply Columns
+            AMSMEy Columns
           </button>
         </div>
 

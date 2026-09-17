@@ -1,5 +1,14 @@
 import { prisma } from '../config/database.js';
 
+// Accepts either an explicit boolean (isActive/active) or the UI's
+// 'Active'/'Inactive' status string, so old and new callers both work.
+function resolveIsActive(data: any): boolean | undefined {
+  if (data.isActive !== undefined) return Boolean(data.isActive);
+  if (data.active !== undefined) return Boolean(data.active);
+  if (data.status !== undefined) return data.status === 'Active';
+  return undefined;
+}
+
 export class CourseService {
   static async getCourses() {
     return prisma.course.findMany({
@@ -20,8 +29,10 @@ export class CourseService {
         code: data.code.toUpperCase(),
         name: data.name.trim(),
         description: data.description || null,
+        category: data.category || null,
+        duration: data.duration || null,
         price: parseFloat(data.price) || 0,
-        isActive: data.isActive !== undefined ? Boolean(data.isActive) : data.active !== undefined ? Boolean(data.active) : true
+        isActive: resolveIsActive(data) ?? true
       }
     });
   }
@@ -31,9 +42,11 @@ export class CourseService {
     if (data.code !== undefined) updateData.code = data.code.toUpperCase();
     if (data.name !== undefined) updateData.name = data.name.trim();
     if (data.description !== undefined) updateData.description = data.description;
+    if (data.category !== undefined) updateData.category = data.category;
+    if (data.duration !== undefined) updateData.duration = data.duration;
     if (data.price !== undefined) updateData.price = parseFloat(data.price);
-    if (data.isActive !== undefined) updateData.isActive = Boolean(data.isActive);
-    if (data.active !== undefined) updateData.isActive = Boolean(data.active);
+    const isActive = resolveIsActive(data);
+    if (isActive !== undefined) updateData.isActive = isActive;
 
     return prisma.course.update({
       where: { id },
