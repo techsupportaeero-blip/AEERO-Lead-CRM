@@ -48,7 +48,7 @@ export const NotificationsView = ({ currentUser, onNavigateRoute, onSelectLead, 
     // the message text (e.g. "... (LD-001564) ...").
     if (notif.type === 'task' && onNavigateRoute) {
       onNavigateRoute('tasks');
-    } else if (notif.type === 'lead') {
+    } else if ((notif.type === 'lead' || String(notif.type || '').startsWith('followup'))) {
       const match = notif.message?.match(/\(([A-Za-z]{1,4}-\d+)\)/);
       if (match && onSelectLead) {
         onSelectLead(match[1]);

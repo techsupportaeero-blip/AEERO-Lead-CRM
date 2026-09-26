@@ -293,7 +293,7 @@ export class LeadService {
   /**
    * Get filtered leads list
    */
-  static async getLeads(params: LeadFilterParams = {}) {
+  static async getLeads(params: LeadFilterParams = {}, requestingUser?: { name: string; role: string }) {
     const where: Record<string, any> = {};
 
     // 1. Archive filter
@@ -374,6 +374,15 @@ export class LeadService {
         endDate.setHours(23, 59, 59, 999);
         where.createdAt.lte = endDate;
       }
+    }
+
+    // 11. Mandatory server-side visibility restriction: a plain counselor
+    // (LEAD_FINDER) only ever sees leads assigned to them, no matter what
+    // filters were requested - this overrides the optional `owner` filter
+    // above (which Admin/Manager use to narrow their own unrestricted view)
+    // and can't be bypassed by a query param, unlike that one.
+    if (requestingUser?.role === 'LEAD_FINDER') {
+      where.ownerId = { equals: requestingUser.name, mode: 'insensitive' };
     }
 
     const orderBy: Record<string, any> = {};
@@ -634,8 +643,12 @@ export class LeadService {
    * Cheap total-active-leads count (single COUNT query) for badges/UI chrome
    * that only needs the number, not the full stats aggregate.
    */
-  static async getLeadsCount() {
-    return prisma.lead.count({ where: { isArchived: false } });
+  static async getLeadsCount(requestingUser?: { name: string; role: string }) {
+    const where: Record<string, any> = { isArchived: false };
+    if (requestingUser?.role === 'LEAD_FINDER') {
+      where.ownerId = { equals: requestingUser.name, mode: 'insensitive' };
+    }
+    return prisma.lead.count({ where });
   }
 
   /**

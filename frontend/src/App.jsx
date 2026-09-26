@@ -133,6 +133,28 @@ export default function App() {
       }, 800);
     });
 
+    // Live popup for THIS counselor's own notifications (new lead assigned,
+    // new task assigned) - the Header bell already tracks these too (badge
+    // count + dropdown list), but a bell nobody's looking at doesn't get
+    // noticed; a popup does. Clicking it deep-links straight to the lead/
+    // task and marks it read, same convention as the bell dropdown.
+    socket.on('notification', (notif) => {
+      if (notif.userId !== currentUser.id) return;
+
+      const goToNotification = () => {
+        api.markNotificationRead(notif.id).catch(() => {});
+        if (notif.type === 'task') {
+          setCurrentRoute('tasks');
+        } else if ((notif.type === 'lead' || String(notif.type || '').startsWith('followup'))) {
+          const match = notif.message?.match(/\(([A-Za-z]{1,4}-\d+)\)/);
+          if (match) handleSelectLead(match[1]);
+          else setCurrentRoute('leads');
+        }
+      };
+
+      showToast(notif.message, 'info', { title: notif.title, onClick: goToNotification });
+    });
+
     return () => {
       clearTimeout(debounceTimer);
       socket.disconnect();
@@ -149,8 +171,8 @@ export default function App() {
     }
   };
 
-  const showToast = (message, type = 'success') => {
-    setToast({ message, type });
+  const showToast = (message, type = 'success', options = {}) => {
+    setToast({ message, type, title: options.title, onClick: options.onClick });
   };
 
   // Nav Handlers
@@ -210,6 +232,7 @@ export default function App() {
     setCurrentUser(null);
     localStorage.removeItem('aeero_user');
     localStorage.removeItem('aeero_route');
+    localStorage.removeItem('aeero_token');
     setCurrentRoute('login');
     showToast('Signed out successfully.');
   };
@@ -299,6 +322,7 @@ export default function App() {
               onOpenAddLead={() => setShowAddLeadModal(true)}
               onOpenColumnModal={() => setShowColumnModal(true)}
               onNavigateToCustomers={() => setCurrentRoute('customers')}
+              onNotify={(msg) => showToast(msg)}
               currentUser={currentUser}
               visibleColumns={visibleColumns}
               initialFilters={{ search: globalSearch }}
@@ -384,8 +408,10 @@ export default function App() {
       {toast && (
         <NotificationToast
           message={toast.message}
+          title={toast.title}
           type={toast.type}
           onClose={() => setToast(null)}
+          onClick={toast.onClick ? () => { toast.onClick(); setToast(null); } : undefined}
           darkMode={darkMode}
         />
       )}

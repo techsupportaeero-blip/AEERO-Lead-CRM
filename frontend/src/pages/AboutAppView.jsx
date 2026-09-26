@@ -224,9 +224,7 @@ export const AboutAppView = ({ darkMode }) => {
         capabilities: [
           'Whoever a task is assigned to (or re-assigned to) gets a notification instantly.'
         ],
-        knownIssues: [
-          'The "Assigned Counselor" dropdown on this page\'s Create Task form is a different, older hardcoded list ("Rahul Sharma", "Anita Verma", "Suresh Menon") than the one used on the Calendar page and everywhere else in the CRM ("MS. INDU", "MS. AYESHA", "MS. PRITI", "Admin User 1") - worth knowing this inconsistency exists until it\'s cleaned up.'
-        ]
+        knownIssues: []
       }
     },
     {

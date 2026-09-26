@@ -164,7 +164,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
     loadStats({ startDate: s, endDate: e });
   };
 
-  const handleAMSMEyCustomRange = () => {
+  const handlechangeCustomRange = () => {
     if (!dateFrom || !dateTo) {
       alert("Please select both Start Date and End Date.");
       return;
@@ -1823,12 +1823,12 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
                   Cancel
                 </button>
                 <button
-                  onClick={handleAMSMEyCustomRange}
+                  onClick={handlechangeCustomRange}
                   className={`px-5 py-2 rounded-xl text-xs font-black shadow-sm transition-all active:scale-95 ${
                     darkMode ? 'bg-[#E5A812] hover:bg-[#F5B822] text-slate-950' : 'bg-[#7D610F] hover:bg-[#634C0A] text-white'
                   }`}
                 >
-                  AMSMEy Date Range
+                  change Date Range
                 </button>
               </div>
             </div>

@@ -17,16 +17,21 @@ export const Login = ({ onLoginSuccess }) => {
     try {
       // Authenticate against backend persistent storage
       const res = await api.login(username.trim(), password);
+      // The JWT is what makes every "admin only" / "your leads only" check
+      // on the backend actually verifiable instead of trusting whatever
+      // currentUser/userRole string a request claims - api/client.js's
+      // authFetch attaches it to every subsequent call automatically.
+      if (res.token) {
+        localStorage.setItem('aeero_token', res.token);
+      }
       onLoginSuccess(res.user);
     } catch (err) {
-      // Fallback check for demo usernames
-      if ((username === 'admin' || username === 'admin@AEERO.in') && password === 'admin123') {
-        onLoginSuccess({ id: 1, name: 'Admin User 1', username: 'admin', role: 'ADMIN', email: 'admin@AEERO.edu' });
-      } else if ((username === 'sourav' || username === 'rahul') && password === 'password123') {
-        onLoginSuccess({ id: 2, name: 'Sourav Sharma', username: 'sourav', role: 'LEAD_FINDER', email: 'sourav@AEERO.edu' });
-      } else {
-        setError(err.message || 'Invalid login credentials. Please check username and password.');
-      }
+      // NOTE: there used to be a hardcoded demo-login fallback here
+      // (admin/admin123, sourav/password123) that bypassed real backend
+      // authentication entirely - removed since it issued no real JWT,
+      // silently defeating the access-control fix above, and was a visible
+      // backdoor in the shipped frontend bundle.
+      setError(err.message || 'Invalid login credentials. Please check username and password.');
     } finally {
       setLoading(false);
     }

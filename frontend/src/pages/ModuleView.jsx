@@ -12,6 +12,8 @@ import { SettingsView } from './SettingsView';
 import { SystemSettingsView } from './SystemSettingsView';
 import { AboutAppView } from './AboutAppView';
 import { FollowupTrackerView } from './FollowupTrackerView';
+import { UsersManagementView } from './UsersManagementView';
+import { EmailTriggersView } from './EmailTriggersView';
 
 export const ModuleView = ({ routeId, onNavigateToLeads, onNavigateRoute, onSelectLead, currentUser, onNotify, darkMode }) => {
   if (routeId === 'ai-assistant') {
@@ -66,6 +68,14 @@ export const ModuleView = ({ routeId, onNavigateToLeads, onNavigateRoute, onSele
 
   if (routeId === 'notifications') {
     return <NotificationsView currentUser={currentUser} onNavigateRoute={onNavigateRoute} onSelectLead={onSelectLead} darkMode={darkMode} />;
+  }
+
+  if (routeId === 'email-triggers') {
+    return <EmailTriggersView currentUser={currentUser} darkMode={darkMode} />;
+  }
+
+  if (routeId === 'users') {
+    return <UsersManagementView currentUser={currentUser} darkMode={darkMode} />;
   }
 
   if (routeId === 'settings') {

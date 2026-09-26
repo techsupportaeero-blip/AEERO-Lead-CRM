@@ -51,7 +51,8 @@ export class LeadController {
 
   static async getLeads(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const leads = await LeadService.getLeads(req.query);
+      const requestingUser = req.user ? { name: req.user.name, role: req.user.role } : undefined;
+      const leads = await LeadService.getLeads(req.query, requestingUser);
       res.json(leads);
     } catch (err) {
       next(err);
@@ -60,7 +61,8 @@ export class LeadController {
 
   static async getLeadsCount(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const totalLeads = await LeadService.getLeadsCount();
+      const requestingUser = req.user ? { name: req.user.name, role: req.user.role } : undefined;
+      const totalLeads = await LeadService.getLeadsCount(requestingUser);
       res.json({ totalLeads });
     } catch (err) {
       next(err);
@@ -74,6 +76,18 @@ export class LeadController {
         res.status(404).json({ error: 'Lead not found' });
         return;
       }
+
+      // A plain counselor (LEAD_FINDER) can't open a lead that isn't theirs,
+      // even by guessing/typing the URL - mirrors the list-level restriction
+      // in getLeads() so direct access can't bypass it.
+      if (
+        req.user?.role === 'LEAD_FINDER' &&
+        String(lead.ownerId || '').toLowerCase() !== req.user.name.toLowerCase()
+      ) {
+        res.status(403).json({ error: 'Access Denied: This lead is not assigned to you.' });
+        return;
+      }
+
       res.json(lead);
     } catch (err) {
       next(err);

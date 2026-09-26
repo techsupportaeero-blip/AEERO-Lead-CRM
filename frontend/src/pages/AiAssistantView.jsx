@@ -5,6 +5,7 @@ import { AVIATION_COURSES } from '../config/constants';
 export const AiAssistantView = ({ onSelectLead, onNotify }) => {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [activeTab, setActiveTab] = useState('chat'); // 'chat' | 'lead-scoring' | 'script-generator'
 
   // Chat State
@@ -32,10 +33,13 @@ export const AiAssistantView = ({ onSelectLead, onNotify }) => {
   const loadLeadsData = async () => {
     try {
       setLoading(true);
+      setLoadError(null);
       const data = await api.getLeads();
-      setLeads(data);
+      setLeads(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Failed to load leads for AI analysis:", err);
+      setLeads([]);
+      setLoadError(err.message || "Failed to load leads. AI insights will be incomplete until this is fixed.");
     } finally {
       setLoading(false);
     }
@@ -65,6 +69,7 @@ export const AiAssistantView = ({ onSelectLead, onNotify }) => {
     setIsTyping(true);
 
     setTimeout(() => {
+      try {
       let aiResponseText = "";
       const qLower = query.toLowerCase();
 
@@ -110,11 +115,22 @@ export const AiAssistantView = ({ onSelectLead, onNotify }) => {
       };
 
       setMessages(prev => [...prev, aiMsg]);
-      setIsTyping(false);
+      } catch (err) {
+        console.error("AI response generation failed:", err);
+        setMessages(prev => [...prev, {
+          id: Date.now() + 1,
+          sender: 'ai',
+          text: "Sorry, I ran into an error generating that response. Please try again.",
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }]);
+      } finally {
+        setIsTyping(false);
+      }
     }, 1000);
   };
 
   const handleGenerateScript = () => {
+    try {
     let script = "";
     if (scriptChannel === 'whatsapp') {
       script = `Hi [Student Name]! 👋 Thank you for inquiring about ${selectedCourse} at AEERO.\n\n` +
@@ -143,6 +159,10 @@ export const AiAssistantView = ({ onSelectLead, onNotify }) => {
     }
 
     setGeneratedScript(script);
+    } catch (err) {
+      console.error("Script generation failed:", err);
+      alert("Failed to generate script: " + err.message);
+    }
   };
 
   // Lead Scoring Calculator
@@ -204,6 +224,22 @@ export const AiAssistantView = ({ onSelectLead, onNotify }) => {
           ))}
         </div>
       </div>
+
+      {/* Lead data load error - shown across all tabs since every tab depends on `leads` */}
+      {loadError && (
+        <div className="flex items-center justify-between gap-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl px-4 py-3 text-xs font-semibold">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px]">error</span>
+            <span>{loadError}</span>
+          </div>
+          <button
+            onClick={loadLeadsData}
+            className="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded text-[11px] font-bold transition-colors flex-shrink-0"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       {/* TAB 1: AI COPILOT CHAT */}
       {activeTab === 'chat' && (
@@ -508,9 +544,14 @@ export const AiAssistantView = ({ onSelectLead, onNotify }) => {
                 <h3 className="font-bold text-base text-slate-900">Generated Script Result</h3>
                 {generatedScript && (
                   <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(generatedScript);
-                      if (onNotify) onNotify("Script copied to clipboard!");
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(generatedScript);
+                        if (onNotify) onNotify("Script copied to clipboard!");
+                      } catch (err) {
+                        console.error("Clipboard copy failed:", err);
+                        alert("Couldn't copy to clipboard. Please select and copy the text manually.");
+                      }
                     }}
                     className="px-3 py-1 bg-amber-50 text-[#7D610F] border border-[#CDB46A] rounded text-xs font-bold hover:bg-amber-100 transition-colors flex items-center gap-1"
                   >

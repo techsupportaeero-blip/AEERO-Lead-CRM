@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import { ConfirmModal } from '../components/ConfirmModal';
+import { COUNSELORS } from '../config/constants';
 
 export const TasksView = ({ currentUser, onNotify, darkMode }) => {
   // "Create Task" was Admin-only; Sr. Counsellor (Indu) now gets it too, same
   // elevated-but-not-full-admin level as archived-lead restore.
-  const canCreateTask = currentUser?.role?.toUpperCase() === 'ADMIN' || currentUser?.name?.toUpperCase()?.includes('INDU');
+  const canCreateTask = currentUser?.role?.toUpperCase() === 'ADMIN' || currentUser?.role?.toUpperCase() === 'SR_COUNSELLOR';
   const [tasks, setTasks] = useState([]);
   const [filterStatus, setFilterStatus] = useState('All');
   const [loading, setLoading] = useState(true);
@@ -20,7 +21,7 @@ export const TasksView = ({ currentUser, onNotify, darkMode }) => {
   const [dueDate, setDueDate] = useState(new Date().toISOString().split('T')[0]);
   const [dueTime, setDueTime] = useState('12:00');
   const [priority, setPriority] = useState('Medium');
-  const [assignedUser, setAssignedUser] = useState('Rahul Sharma');
+  const [assignedUser, setAssignedUser] = useState(COUNSELORS[0]);
 
   useEffect(() => {
     loadTasks();
@@ -275,9 +276,7 @@ export const TasksView = ({ currentUser, onNotify, darkMode }) => {
                       darkMode ? 'bg-[#12161F] border-[#262F3D] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                     }`}
                   >
-                    <option value="Rahul Sharma">Rahul Sharma</option>
-                    <option value="Anita Verma">Anita Verma</option>
-                    <option value="Suresh Menon">Suresh Menon</option>
+                    {COUNSELORS.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
               </div>

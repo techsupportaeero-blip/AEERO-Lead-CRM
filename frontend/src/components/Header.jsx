@@ -59,7 +59,7 @@ export const Header = ({ onOpenAddLead, onToggleMobileSidebar, globalSearch, set
     if (notif.type === 'task' && onNavigateRoute) {
       onNavigateRoute('tasks');
       setShowNotifDropdown(false);
-    } else if (notif.type === 'lead') {
+    } else if ((notif.type === 'lead' || String(notif.type || '').startsWith('followup'))) {
       const match = notif.message?.match(/\(([A-Za-z]{1,4}-\d+)\)/);
       if (match && onSelectLead) {
         onSelectLead(match[1]);

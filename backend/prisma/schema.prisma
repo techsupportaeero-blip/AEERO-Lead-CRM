@@ -327,6 +327,7 @@ model GoogleSheetSource {
 enum Role {
   ADMIN
   MANAGER
+  SR_COUNSELLOR
   LEAD_FINDER
   VIEWER
 }

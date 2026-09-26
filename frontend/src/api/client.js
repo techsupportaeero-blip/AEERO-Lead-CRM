@@ -12,11 +12,38 @@ const getApiBaseUrl = () => {
 
 const API_BASE = getApiBaseUrl();
 
+// Every API call goes through this instead of bare fetch() so the JWT issued
+// at login rides along automatically - without it, req.user is never
+// populated server-side, and every "admin only" / "your leads only" check
+// silently falls back to trusting whatever currentUser/userRole string the
+// request body happens to contain (which anyone can just make up).
+const authFetch = async (url, options = {}) => {
+  const token = localStorage.getItem('aeero_token');
+  const headers = { ...(options.headers || {}) };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(url, { ...options, headers });
+
+  // Sessions saved before this token-based auth existed (or an expired
+  // token) have no valid JWT to send - every request would otherwise fail
+  // silently over and over. Force a clean re-login instead of leaving the
+  // user staring at an app that looks logged in but can't load anything.
+  if (res.status === 401 && !url.includes('/auth/login')) {
+    localStorage.removeItem('aeero_user');
+    localStorage.removeItem('aeero_token');
+    localStorage.removeItem('aeero_route');
+    if (!window.location.href.includes('#relogin')) {
+      window.location.href = window.location.pathname + '#relogin';
+      window.location.reload();
+    }
+  }
+
+  return res;
+};
 
 export const api = {
   // Authentication
   async login(username, password) {
-    const res = await fetch(`${API_BASE}/auth/login`, {
+    const res = await authFetch(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
@@ -27,7 +54,7 @@ export const api = {
   },
 
   async getUsers() {
-    const res = await fetch(`${API_BASE}/users`);
+    const res = await authFetch(`${API_BASE}/users`);
     if (!res.ok) throw new Error('Failed to fetch users');
     return res.json();
   },
@@ -42,21 +69,21 @@ export const api = {
     if (filters.period) params.append('period', filters.period);
 
     const queryString = params.toString() ? `?${params.toString()}` : '';
-    const res = await fetch(`${API_BASE}/stats${queryString}`);
+    const res = await authFetch(`${API_BASE}/stats${queryString}`);
     if (!res.ok) throw new Error('Failed to fetch stats');
     return res.json();
   },
 
   // Config
   async getConfig() {
-    const res = await fetch(`${API_BASE}/config`);
+    const res = await authFetch(`${API_BASE}/config`);
     if (!res.ok) throw new Error('Failed to fetch config');
     return res.json();
   },
 
   // Public Website Lead Capture API (POST /api/public/leads)
   async submitPublicLead(publicData) {
-    const res = await fetch(`${API_BASE}/public/leads`, {
+    const res = await authFetch(`${API_BASE}/public/leads`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(publicData),
@@ -81,7 +108,7 @@ export const api = {
     if (filters.onlyArchived) params.append('onlyArchived', 'true');
     if (filters.includeArchived) params.append('includeArchived', 'true');
 
-    const res = await fetch(`${API_BASE}/leads?${params.toString()}`);
+    const res = await authFetch(`${API_BASE}/leads?${params.toString()}`);
     if (!res.ok) throw new Error('Failed to fetch leads');
     return res.json();
   },
@@ -89,19 +116,19 @@ export const api = {
   // Lightweight total-active-leads count for badges/UI chrome - avoids
   // hitting the full /stats aggregate just to read one number.
   async getLeadsCount() {
-    const res = await fetch(`${API_BASE}/leads/count`);
+    const res = await authFetch(`${API_BASE}/leads/count`);
     if (!res.ok) throw new Error('Failed to fetch leads count');
     return res.json();
   },
 
   async getLeadById(id) {
-    const res = await fetch(`${API_BASE}/leads/${id}`);
+    const res = await authFetch(`${API_BASE}/leads/${id}`);
     if (!res.ok) throw new Error('Failed to fetch lead details');
     return res.json();
   },
 
   async checkDuplicate(data) {
-    const res = await fetch(`${API_BASE}/leads/check-duplicate`, {
+    const res = await authFetch(`${API_BASE}/leads/check-duplicate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -111,7 +138,7 @@ export const api = {
   },
 
   async createLead(leadData) {
-    const res = await fetch(`${API_BASE}/leads`, {
+    const res = await authFetch(`${API_BASE}/leads`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(leadData),
@@ -127,7 +154,7 @@ export const api = {
   },
 
   async updateLead(id, leadData) {
-    const res = await fetch(`${API_BASE}/leads/${id}`, {
+    const res = await authFetch(`${API_BASE}/leads/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(leadData),
@@ -137,7 +164,7 @@ export const api = {
   },
 
   async updateLeadStatus(id, status, updatedBy) {
-    const res = await fetch(`${API_BASE}/leads/${id}/status`, {
+    const res = await authFetch(`${API_BASE}/leads/${id}/status`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status, updatedBy }),
@@ -148,7 +175,7 @@ export const api = {
 
   // Soft Archive Lead instead of permanent deletion
   async archiveLead(id, currentUser = 'System') {
-    const res = await fetch(`${API_BASE}/leads/${id}/archive`, {
+    const res = await authFetch(`${API_BASE}/leads/${id}/archive`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ currentUser }),
@@ -159,7 +186,7 @@ export const api = {
 
   // Unarchive / Restore Lead (Admin Only)
   async unarchiveLead(id, currentUser = 'Admin', userRole = 'ADMIN') {
-    const res = await fetch(`${API_BASE}/leads/${id}/unarchive`, {
+    const res = await authFetch(`${API_BASE}/leads/${id}/unarchive`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ currentUser, userRole }),
@@ -171,7 +198,7 @@ export const api = {
 
   // Bulk-archive ALL active leads in one shot (Admin Only)
   async bulkArchiveActiveLeads(currentUser = 'Admin', userRole = 'ADMIN') {
-    const res = await fetch(`${API_BASE}/leads/bulk-archive`, {
+    const res = await authFetch(`${API_BASE}/leads/bulk-archive`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ currentUser, userRole }),
@@ -183,7 +210,7 @@ export const api = {
 
   // Permanently delete ALL archived leads in one shot (Admin Only, irreversible)
   async bulkDeleteArchivedLeads(currentUser = 'Admin', userRole = 'ADMIN') {
-    const res = await fetch(`${API_BASE}/leads/bulk-delete-archived`, {
+    const res = await authFetch(`${API_BASE}/leads/bulk-delete-archived`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ currentUser, userRole }),
@@ -194,13 +221,13 @@ export const api = {
   },
 
   async getWhatsAppTemplates() {
-    const res = await fetch(`${API_BASE}/whatsapp/templates`);
+    const res = await authFetch(`${API_BASE}/whatsapp/templates`);
     if (!res.ok) throw new Error('Failed to fetch WhatsApp templates');
     return res.json();
   },
 
   async bulkSendWhatsApp(leadIds, templateId, currentUser = 'Counselor') {
-    const res = await fetch(`${API_BASE}/whatsapp/bulk-send`, {
+    const res = await authFetch(`${API_BASE}/whatsapp/bulk-send`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ leadIds, templateId, currentUser }),
@@ -211,13 +238,13 @@ export const api = {
   },
 
   async getCampaignAssignments() {
-    const res = await fetch(`${API_BASE}/campaign-assignments`);
+    const res = await authFetch(`${API_BASE}/campaign-assignments`);
     if (!res.ok) throw new Error('Failed to fetch campaign assignments');
     return res.json();
   },
 
   async assignCampaignToCounselor(campaignName, ownerId, reassignExisting, currentUser, userRole) {
-    const res = await fetch(`${API_BASE}/campaign-assignments`, {
+    const res = await authFetch(`${API_BASE}/campaign-assignments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ campaignName, ownerId, reassignExisting, currentUser, userRole }),
@@ -228,7 +255,7 @@ export const api = {
   },
 
   async removeCampaignAssignment(campaignName, currentUser, userRole) {
-    const res = await fetch(`${API_BASE}/campaign-assignments/${encodeURIComponent(campaignName)}`, {
+    const res = await authFetch(`${API_BASE}/campaign-assignments/${encodeURIComponent(campaignName)}`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ currentUser, userRole }),
@@ -240,13 +267,13 @@ export const api = {
 
   // Payments
   async getLeadPayments(leadId) {
-    const res = await fetch(`${API_BASE}/leads/${leadId}/payments`);
+    const res = await authFetch(`${API_BASE}/leads/${leadId}/payments`);
     if (!res.ok) throw new Error('Failed to fetch payments');
     return res.json();
   },
 
   async recordPayment(leadId, paymentData) {
-    const res = await fetch(`${API_BASE}/leads/${leadId}/payments`, {
+    const res = await authFetch(`${API_BASE}/leads/${leadId}/payments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(paymentData),
@@ -260,7 +287,7 @@ export const api = {
 
   // Activities
   async getActivities(leadId) {
-    const res = await fetch(`${API_BASE}/leads/${leadId}/activities`);
+    const res = await authFetch(`${API_BASE}/leads/${leadId}/activities`);
     if (!res.ok) throw new Error('Failed to fetch activities');
     return res.json();
   },
@@ -269,13 +296,13 @@ export const api = {
     const params = new URLSearchParams();
     if (filters.type) params.append('type', filters.type);
     if (filters.limit) params.append('limit', filters.limit);
-    const res = await fetch(`${API_BASE}/activities?${params.toString()}`);
+    const res = await authFetch(`${API_BASE}/activities?${params.toString()}`);
     if (!res.ok) throw new Error('Failed to fetch activities');
     return res.json();
   },
 
   async recordActivity(leadId, activityData) {
-    const res = await fetch(`${API_BASE}/leads/${leadId}/activities`, {
+    const res = await authFetch(`${API_BASE}/leads/${leadId}/activities`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(activityData),
@@ -286,7 +313,7 @@ export const api = {
 
   // Followups
   async getFollowups(leadId) {
-    const res = await fetch(`${API_BASE}/leads/${leadId}/followups`);
+    const res = await authFetch(`${API_BASE}/leads/${leadId}/followups`);
     if (!res.ok) throw new Error('Failed to fetch followups');
     return res.json();
   },
@@ -295,13 +322,13 @@ export const api = {
     const params = new URLSearchParams();
     if (filters.date) params.append('date', filters.date);
     if (filters.status) params.append('status', filters.status);
-    const res = await fetch(`${API_BASE}/followups?${params.toString()}`);
+    const res = await authFetch(`${API_BASE}/followups?${params.toString()}`);
     if (!res.ok) throw new Error('Failed to fetch followups');
     return res.json();
   },
 
   async addFollowup(leadId, followupData) {
-    const res = await fetch(`${API_BASE}/leads/${leadId}/followups`, {
+    const res = await authFetch(`${API_BASE}/leads/${leadId}/followups`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(followupData),
@@ -311,7 +338,7 @@ export const api = {
   },
 
   async updateFollowup(id, data) {
-    const res = await fetch(`${API_BASE}/followups/${id}`, {
+    const res = await authFetch(`${API_BASE}/followups/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -323,7 +350,7 @@ export const api = {
   // Admin / Sr. Counsellor only - which counselor's leads are stuck at which follow-up stage
   async getFollowupStageTracker(currentUser = 'Admin', userRole = 'ADMIN') {
     const params = new URLSearchParams({ currentUser, userRole });
-    const res = await fetch(`${API_BASE}/followups/stage-tracker?${params.toString()}`);
+    const res = await authFetch(`${API_BASE}/followups/stage-tracker?${params.toString()}`);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
       throw new Error(data.error || 'Failed to fetch follow-up stage tracker');
@@ -333,13 +360,13 @@ export const api = {
 
   // Notes
   async getNotes(leadId) {
-    const res = await fetch(`${API_BASE}/leads/${leadId}/notes`);
+    const res = await authFetch(`${API_BASE}/leads/${leadId}/notes`);
     if (!res.ok) throw new Error('Failed to fetch notes');
     return res.json();
   },
 
   async addNote(leadId, noteData) {
-    const res = await fetch(`${API_BASE}/leads/${leadId}/notes`, {
+    const res = await authFetch(`${API_BASE}/leads/${leadId}/notes`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(noteData),
@@ -349,7 +376,7 @@ export const api = {
   },
 
   async updateNote(noteId, noteData) {
-    const res = await fetch(`${API_BASE}/notes/${noteId}`, {
+    const res = await authFetch(`${API_BASE}/notes/${noteId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(noteData),
@@ -359,7 +386,7 @@ export const api = {
   },
 
   async deleteNote(noteId) {
-    const res = await fetch(`${API_BASE}/notes/${noteId}`, {
+    const res = await authFetch(`${API_BASE}/notes/${noteId}`, {
       method: 'DELETE',
     });
     if (!res.ok) throw new Error('Failed to delete note');
@@ -371,13 +398,13 @@ export const api = {
     const params = new URLSearchParams();
     if (filters.leadId) params.append('leadId', filters.leadId);
     if (filters.status) params.append('status', filters.status);
-    const res = await fetch(`${API_BASE}/tasks?${params.toString()}`);
+    const res = await authFetch(`${API_BASE}/tasks?${params.toString()}`);
     if (!res.ok) throw new Error('Failed to fetch tasks');
     return res.json();
   },
 
   async addTask(taskData) {
-    const res = await fetch(`${API_BASE}/tasks`, {
+    const res = await authFetch(`${API_BASE}/tasks`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(taskData),
@@ -390,7 +417,7 @@ export const api = {
   },
 
   async updateTask(taskId, taskData) {
-    const res = await fetch(`${API_BASE}/tasks/${taskId}`, {
+    const res = await authFetch(`${API_BASE}/tasks/${taskId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(taskData),
@@ -404,20 +431,20 @@ export const api = {
 
   // Customers
   async getCustomers() {
-    const res = await fetch(`${API_BASE}/customers`);
+    const res = await authFetch(`${API_BASE}/customers`);
     if (!res.ok) throw new Error('Failed to fetch customers');
     return res.json();
   },
 
   // Courses
   async getCourses() {
-    const res = await fetch(`${API_BASE}/courses`);
+    const res = await authFetch(`${API_BASE}/courses`);
     if (!res.ok) throw new Error('Failed to fetch courses');
     return res.json();
   },
 
   async addCourse(courseData) {
-    const res = await fetch(`${API_BASE}/courses`, {
+    const res = await authFetch(`${API_BASE}/courses`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(courseData),
@@ -427,7 +454,7 @@ export const api = {
   },
 
   async updateCourse(id, courseData) {
-    const res = await fetch(`${API_BASE}/courses/${id}`, {
+    const res = await authFetch(`${API_BASE}/courses/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(courseData),
@@ -437,7 +464,7 @@ export const api = {
   },
 
   async deleteCourse(id) {
-    const res = await fetch(`${API_BASE}/courses/${id}`, {
+    const res = await authFetch(`${API_BASE}/courses/${id}`, {
       method: 'DELETE',
     });
     if (!res.ok) throw new Error('Failed to delete course');
@@ -446,13 +473,13 @@ export const api = {
 
   // Lead Sources
   async getLeadSources() {
-    const res = await fetch(`${API_BASE}/lead-sources`);
+    const res = await authFetch(`${API_BASE}/lead-sources`);
     if (!res.ok) throw new Error('Failed to fetch lead sources');
     return res.json();
   },
 
   async addLeadSource(sourceData) {
-    const res = await fetch(`${API_BASE}/lead-sources`, {
+    const res = await authFetch(`${API_BASE}/lead-sources`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(sourceData),
@@ -462,7 +489,7 @@ export const api = {
   },
 
   async updateLeadSource(id, sourceData) {
-    const res = await fetch(`${API_BASE}/lead-sources/${id}`, {
+    const res = await authFetch(`${API_BASE}/lead-sources/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(sourceData),
@@ -472,7 +499,7 @@ export const api = {
   },
 
   async deleteLeadSource(id) {
-    const res = await fetch(`${API_BASE}/lead-sources/${id}`, {
+    const res = await authFetch(`${API_BASE}/lead-sources/${id}`, {
       method: 'DELETE',
     });
     if (!res.ok) throw new Error('Failed to delete lead source');
@@ -481,19 +508,19 @@ export const api = {
 
   // Audit Logs & Notifications
   async getAuditLogs() {
-    const res = await fetch(`${API_BASE}/audit-logs`);
+    const res = await authFetch(`${API_BASE}/audit-logs`);
     if (!res.ok) throw new Error('Failed to fetch audit logs');
     return res.json();
   },
 
   async getNotifications(userId) {
-    const res = await fetch(`${API_BASE}/notifications${userId ? `?userId=${userId}` : ''}`);
+    const res = await authFetch(`${API_BASE}/notifications${userId ? `?userId=${userId}` : ''}`);
     if (!res.ok) throw new Error('Failed to fetch notifications');
     return res.json();
   },
 
   async markNotificationRead(id) {
-    const res = await fetch(`${API_BASE}/notifications/${id}/read`, {
+    const res = await authFetch(`${API_BASE}/notifications/${id}/read`, {
       method: 'PUT',
     });
     if (!res.ok) throw new Error('Failed to update notification');

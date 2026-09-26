@@ -61,7 +61,7 @@ export const DuplicateModal = ({ duplicateData, onViewExisting, onCreateAnyway, 
               </div>
               <div>
                 <span className="text-slate-400 block uppercase tracking-wider font-semibold text-[10px]">Assigned Counselor</span>
-                <span className={`font-medium ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{lead.ownerId || 'Rahul Sharma'}</span>
+                <span className={`font-medium ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{lead.ownerId || 'Unassigned'}</span>
               </div>
               <div>
                 <span className="text-slate-400 block uppercase tracking-wider font-semibold text-[10px]">Created Date</span>

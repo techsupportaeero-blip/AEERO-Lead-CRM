@@ -10,6 +10,7 @@ import { apiRouter } from './routes/index.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { globalRateLimiter } from './middleware/rateLimit.middleware.js';
 import { logger } from './utils/logger.js';
+import { FollowupReminderService } from './services/followupReminder.service.js';
 
 const app = express();
 const httpServer = createServer(app);
@@ -100,6 +101,9 @@ const server = httpServer.listen(PORT, async () => {
   setInterval(() => {
     checkDatabaseConnection().catch(() => {});
   }, 4 * 60 * 1000);
+
+  // Notify counselors when a scheduled follow-up comes due.
+  FollowupReminderService.start();
 });
 
 server.on('error', (err: any) => {

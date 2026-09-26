@@ -8,6 +8,7 @@ import { ConfirmModal } from '../components/ConfirmModal';
 import { RecordPaymentModal } from '../components/RecordPaymentModal';
 import { BulkWhatsAppModal } from '../components/BulkWhatsAppModal';
 import { AssignCampaignModal } from '../components/AssignCampaignModal';
+import { CallUpdateDrawer } from '../components/CallUpdateDrawer';
 
 export const AllLeads = ({
   onSelectLead,
@@ -15,6 +16,7 @@ export const AllLeads = ({
   onOpenAddLead,
   onOpenColumnModal,
   onNavigateToCustomers,
+  onNotify,
   currentUser,
   visibleColumns,
   initialFilters = {},
@@ -33,6 +35,7 @@ export const AllLeads = ({
   const [selectedLeadIds, setSelectedLeadIds] = useState([]);
   const [showBulkWhatsApp, setShowBulkWhatsApp] = useState(false);
   const [showAssignCampaign, setShowAssignCampaign] = useState(false);
+  const [quickCallLead, setQuickCallLead] = useState(null);
 
   // Filters State matching screenshot
   const [dateFromFilter, setDateFromFilter] = useState('');
@@ -196,6 +199,39 @@ export const AllLeads = ({
   // viewing the Archived directory. Two-step confirm (ConfirmModal + a
   // typed "DELETE" phrase for the irreversible wipe) since this touches
   // the whole database, not a single record.
+  // Downloads a full-record CSV backup (every field, ignoring the table's
+  // current filters) of the leads a Clear All is about to affect. Returns
+  // false if the backup couldn't be produced, so callers can abort rather
+  // than proceed with a destructive action that has no safety copy.
+  const downloadClearAllBackup = async (archivedOnly) => {
+    try {
+      const all = await api.getLeads(archivedOnly ? { onlyArchived: true } : {});
+      const list = Array.isArray(all) ? all : [];
+      if (list.length === 0) return true; // nothing to lose
+      const columns = [...new Set(list.flatMap(l => Object.keys(l)))];
+      const esc = (v) => {
+        const s = v === null || v === undefined ? '' : (typeof v === 'object' ? JSON.stringify(v) : String(v));
+        return `"${s.replace(/"/g, '""')}"`;
+      };
+      const csv = [
+        columns.map(esc).join(','),
+        ...list.map(l => columns.map(c => esc(l[c])).join(','))
+      ].join('\r\n');
+      const blob = new Blob(["﻿" + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `AEERO_${archivedOnly ? 'Archived' : 'Active'}_Leads_BACKUP_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      return true;
+    } catch (err) {
+      return false;
+    }
+  };
+
   const promptBulkClearAll = () => {
     if (!isAdmin) {
       alert("Access Denied: Only administrators can use Clear All.");
@@ -205,7 +241,7 @@ export const AllLeads = ({
     if (viewArchived) {
       setConfirmConfig({
         title: "Permanently Delete ALL Archived Leads?",
-        message: "This will PERMANENTLY delete every lead currently in the Archived directory from the database. This action CANNOT be undone. You will be asked to type a confirmation phrase next.",
+        message: "This will PERMANENTLY delete every lead currently in the Archived directory from the database. This action CANNOT be undone. A full CSV backup of these leads will be downloaded automatically first, then you'll be asked to type a confirmation phrase.",
         confirmText: "Continue",
         type: "danger",
         onConfirm: () => {
@@ -218,6 +254,12 @@ export const AllLeads = ({
           (async () => {
             try {
               setLoading(true);
+              const backedUp = await downloadClearAllBackup(true);
+              if (!backedUp) {
+                setLoading(false);
+                alert('Could not create the safety backup CSV, so nothing was deleted. Please try again.');
+                return;
+              }
               const res = await api.bulkDeleteArchivedLeads(currentUser ? currentUser.name : 'Admin', currentUser ? currentUser.role : 'ADMIN');
               await fetchLeads();
               alert(res.message || 'Archived leads permanently deleted.');
@@ -237,6 +279,13 @@ export const AllLeads = ({
         onConfirm: async () => {
           try {
             setLoading(true);
+            const backedUp = await downloadClearAllBackup(false);
+            if (!backedUp) {
+              setConfirmConfig(null);
+              setLoading(false);
+              alert('Could not create the safety backup CSV, so nothing was archived. Please try again.');
+              return;
+            }
             const res = await api.bulkArchiveActiveLeads(currentUser ? currentUser.name : 'Admin', currentUser ? currentUser.role : 'ADMIN');
             setConfirmConfig(null);
             await fetchLeads();
@@ -1008,7 +1057,8 @@ export const AllLeads = ({
                     {isColVisible('name') && (
                       <td className="py-2.5 px-3 font-medium whitespace-nowrap">
                         <button
-                          onClick={() => onSelectLead(lead.leadId)}
+                          onClick={() => setQuickCallLead(lead)}
+                          title="Quick Call & Update"
                           className={`hover:underline text-left font-semibold ${
                             darkMode ? 'text-slate-100 hover:text-[#E5A812]' : 'text-slate-900 hover:text-[#9A7310]'
                           }`}
@@ -1362,6 +1412,22 @@ export const AllLeads = ({
         darkMode={darkMode}
         onClose={() => setShowAssignCampaign(false)}
         onAssigned={() => fetchLeads()}
+      />
+
+      {/* Quick Call & Update Drawer - half-screen, opened by clicking a lead's name */}
+      <CallUpdateDrawer
+        lead={quickCallLead}
+        currentUser={currentUser}
+        darkMode={darkMode}
+        onNotify={onNotify}
+        onClose={() => setQuickCallLead(null)}
+        onSaved={() => {
+          fetchLeads();
+        }}
+        onOpenFullWorkspace={(leadId) => {
+          setQuickCallLead(null);
+          onSelectLead(leadId);
+        }}
       />
 
     </div>
