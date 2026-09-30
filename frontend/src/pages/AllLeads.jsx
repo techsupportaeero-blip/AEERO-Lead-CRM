@@ -360,7 +360,12 @@ export const AllLeads = ({
         if (leadDate < from) return false;
       }
       if (dateToFilter) {
+        // A date-only string parses to midnight, so comparing against that
+        // excluded every lead created later that same day - push the
+        // boundary to the end of the selected day so "To" actually
+        // includes it.
         const to = new Date(dateToFilter);
+        to.setHours(23, 59, 59, 999);
         const leadDate = new Date(lead.createdAt || '2026-12-31');
         if (leadDate > to) return false;
       }

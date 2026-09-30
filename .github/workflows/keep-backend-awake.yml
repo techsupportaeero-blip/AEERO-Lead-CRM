@@ -1,0 +1,17 @@
+name: Keep Render backend awake
+
+# Render's free tier sleeps the whole backend process after ~15 minutes with
+# no incoming requests, and takes 30-60s to cold-start on the next one. This
+# pings the health endpoint every 10 minutes (under that 15-minute window)
+# so the service never gets a chance to go idle long enough to sleep.
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend health endpoint
+        run: curl -sS -m 30 https://aeero-lead-crm.onrender.com/api/health || true

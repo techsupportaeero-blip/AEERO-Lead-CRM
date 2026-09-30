@@ -31,6 +31,10 @@
  * ============================================================================
  */
 
+// Only these tabs get synced - add a name here when you want another tab
+// included later (e.g. a new month or campaign tab), leave others alone.
+var TAB_NAMES_TO_SYNC = ['August', 'Solar webinar'];
+
 function getTestConfig() {
   var props = PropertiesService.getScriptProperties();
   return {
@@ -178,6 +182,29 @@ function sendTestRowToCRM(config, ss, sheet, headers, rowData, rowNumber) {
 // ─────────────────────────────────────────────
 
 function syncSingleSheetTest() {
+  // Guard against overlapping runs: if a backfill takes longer than the
+  // 1-minute trigger interval, the next scheduled run would otherwise start
+  // while the previous one is still mid-row, and both would race the CRM's
+  // duplicate check on the same rows at nearly the same instant - creating
+  // 2-3 real duplicate leads per person (this happened once already; see
+  // the dedupe cleanup). If another run already holds the lock, skip this
+  // one entirely rather than waiting/queuing, so it never processes stale
+  // (not-yet-advanced) cursor rows twice.
+  var lock = LockService.getScriptLock();
+  var gotLock = lock.tryLock(5000);
+  if (!gotLock) {
+    Logger.log('⏭️ Another sync is already running - skipping this run to avoid duplicate leads.');
+    return;
+  }
+
+  try {
+    syncSingleSheetTestBody();
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function syncSingleSheetTestBody() {
   var config = getTestConfig();
   var props = PropertiesService.getScriptProperties();
 
@@ -195,61 +222,81 @@ function syncSingleSheetTest() {
     return;
   }
 
-  var sheet = ss.getSheets()[0]; // Process the first sheet tab only
-  var data = sheet.getDataRange().getValues();
+  // Only the tabs named in TAB_NAMES_TO_SYNC - not every tab in the
+  // spreadsheet, so unrelated tabs (Sheet4, WPA S_1, etc.) never get sent
+  // to the CRM as if they were leads.
+  var grandImported = 0;
+  var grandUpdated = 0;
+  var grandFailed = 0;
 
-  if (data.length < 2) {
-    Logger.log('ℹ️ Sheet "' + ss.getName() + '" has no data rows to sync.');
-    return;
-  }
-
-  var headers = data[0];
-  var cursorKey = 'CURSOR_TEST_' + ss.getId();
-  var startRow = parseInt(props.getProperty(cursorKey) || '1', 10);
-
-  if (startRow >= data.length) {
-    Logger.log('✅ Sheet "' + ss.getName() + '" is already fully synced (up to row ' + startRow + ').');
-    return;
-  }
-
-  Logger.log('🧪 TEST SYNC → Sheet: ' + ss.getName() + ' (Starting from row ' + (startRow + 1) + ')');
-
-  var totalImported = 0;
-  var totalUpdated = 0;
-  var totalFailed = 0;
-
-  for (var i = startRow; i < data.length; i++) {
-    var rowData = data[i];
-    var hasData = false;
-    for (var j = 0; j < rowData.length; j++) {
-      if (rowData[j] !== null && rowData[j] !== undefined && String(rowData[j]).trim() !== '') {
-        hasData = true;
-        break;
-      }
+  for (var s = 0; s < TAB_NAMES_TO_SYNC.length; s++) {
+    var sheet = ss.getSheetByName(TAB_NAMES_TO_SYNC[s]);
+    if (!sheet) {
+      Logger.log('⚠️ Tab "' + TAB_NAMES_TO_SYNC[s] + '" not found in this spreadsheet. Skipping.');
+      continue;
     }
+    var data = sheet.getDataRange().getValues();
 
-    if (!hasData) {
-      props.setProperty(cursorKey, String(i + 1));
+    if (data.length < 2) {
+      Logger.log('ℹ️ Tab "' + sheet.getName() + '" has no data rows to sync. Skipping.');
       continue;
     }
 
-    var result = sendTestRowToCRM(config, ss, sheet, headers, rowData, i + 1);
+    var headers = data[0];
+    // Cursor is per-tab, not just per-spreadsheet, so each tab tracks its
+    // own "synced up to row N" independently.
+    var cursorKey = 'CURSOR_TEST_' + ss.getId() + '_' + sheet.getName();
+    var startRow = parseInt(props.getProperty(cursorKey) || '1', 10);
 
-    if (result && result.success) {
-      if (result.data.action === 'created') totalImported++;
-      else totalUpdated++;
-    } else {
-      totalFailed++;
-      if (result && result.status === 429) Utilities.sleep(5000);
+    if (startRow >= data.length) {
+      Logger.log('✅ Tab "' + sheet.getName() + '" is already fully synced (up to row ' + startRow + ').');
+      continue;
     }
 
-    props.setProperty(cursorKey, String(i + 1));
-    Utilities.sleep(250);
+    Logger.log('🧪 TEST SYNC → Tab: ' + sheet.getName() + ' (Starting from row ' + (startRow + 1) + ')');
+
+    var totalImported = 0;
+    var totalUpdated = 0;
+    var totalFailed = 0;
+
+    for (var i = startRow; i < data.length; i++) {
+      var rowData = data[i];
+      var hasData = false;
+      for (var j = 0; j < rowData.length; j++) {
+        if (rowData[j] !== null && rowData[j] !== undefined && String(rowData[j]).trim() !== '') {
+          hasData = true;
+          break;
+        }
+      }
+
+      if (!hasData) {
+        props.setProperty(cursorKey, String(i + 1));
+        continue;
+      }
+
+      var result = sendTestRowToCRM(config, ss, sheet, headers, rowData, i + 1);
+
+      if (result && result.success) {
+        if (result.data.action === 'created') totalImported++;
+        else totalUpdated++;
+      } else {
+        totalFailed++;
+        if (result && result.status === 429) Utilities.sleep(5000);
+      }
+
+      props.setProperty(cursorKey, String(i + 1));
+      Utilities.sleep(250);
+    }
+
+    Logger.log('   Tab "' + sheet.getName() + '" done → Imported: ' + totalImported + ' | Updated: ' + totalUpdated + ' | Failed: ' + totalFailed);
+    grandImported += totalImported;
+    grandUpdated += totalUpdated;
+    grandFailed += totalFailed;
   }
 
   Logger.log('═══════════════════════════════════');
-  Logger.log('✅ TEST SYNC COMPLETE for "' + ss.getName() + '"');
-  Logger.log('Imported: ' + totalImported + ' | Updated: ' + totalUpdated + ' | Failed: ' + totalFailed);
+  Logger.log('✅ TEST SYNC COMPLETE for "' + ss.getName() + '" (all tabs)');
+  Logger.log('Imported: ' + grandImported + ' | Updated: ' + grandUpdated + ' | Failed: ' + grandFailed);
   Logger.log('═══════════════════════════════════');
 }
 
@@ -302,9 +349,12 @@ function resetTestCursor() {
     return;
   }
 
-  var cursorKey = 'CURSOR_TEST_' + ss.getId();
-  props.deleteProperty(cursorKey);
-  Logger.log('✅ Reset complete! Next run of syncSingleSheetTest() will re-import from row 1.');
+  // Reset the cursor for each synced tab (TAB_NAMES_TO_SYNC), not every tab.
+  for (var s = 0; s < TAB_NAMES_TO_SYNC.length; s++) {
+    var cursorKey = 'CURSOR_TEST_' + ss.getId() + '_' + TAB_NAMES_TO_SYNC[s];
+    props.deleteProperty(cursorKey);
+  }
+  Logger.log('✅ Reset complete for synced tabs! Next run of syncSingleSheetTest() will re-import everything from row 1.');
 }
 
 // ─────────────────────────────────────────────
