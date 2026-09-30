@@ -3,6 +3,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import helmet from 'helmet';
+import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import { env } from './config/env.js';
 import { prisma, checkDatabaseConnection } from './config/database.js';
@@ -23,6 +24,11 @@ app.use(
     crossOriginEmbedderPolicy: false
   })
 );
+
+// gzip every JSON response - the leads list alone can be several MB
+// uncompressed (thousands of rows), and this was never being compressed at
+// all before, so every request paid the full transfer time over the network.
+app.use(compression());
 
 // 2. CORS Setup
 const allowedOrigins = env.CORS_ORIGIN === '*' ? '*' : env.CORS_ORIGIN.split(',').map(o => o.trim());

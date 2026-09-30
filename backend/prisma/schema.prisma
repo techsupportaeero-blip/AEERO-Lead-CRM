@@ -159,6 +159,15 @@ model Lead {
   @@index([ownerId])
   @@index([isArchived])
   @@index([createdAt])
+  // These 3 filters (Priority/Source/Campaign dropdowns on All Leads) had no
+  // index at all - every filtered query was a full table scan.
+  @@index([priority])
+  @@index([source])
+  @@index([campaign])
+  // Matches the single most common real query shape: active leads, newest
+  // first - a composite index here serves it directly instead of Postgres
+  // combining the separate isArchived and createdAt indexes at query time.
+  @@index([isArchived, createdAt])
   @@map("leads")
 }
 
