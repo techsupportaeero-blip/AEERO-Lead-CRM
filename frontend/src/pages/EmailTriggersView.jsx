@@ -17,9 +17,8 @@ const emptyForm = {
   filterCampaign: '', subject: '', body: '', active: true
 };
 
-export const EmailTriggersView = ({ currentUser, darkMode }) => {
-  const isPrivileged = ['ADMIN', 'MANAGER', 'SR_COUNSELLOR'].includes(String(currentUser?.role || '').toUpperCase());
-
+export const EmailTriggersView = ({ darkMode }) => {
+  // Every counselor gets access, not just Admin/Manager/Sr. Counsellor.
   // Local-only: no email-trigger backend exists yet, so nothing persists.
   const [triggers, setTriggers] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -34,16 +33,6 @@ export const EmailTriggersView = ({ currentUser, darkMode }) => {
   }`;
   const labelCls = `block font-semibold mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`;
   const muted = darkMode ? 'text-slate-400' : 'text-slate-600';
-
-  if (!isPrivileged) {
-    return (
-      <div className={`flex flex-col items-center justify-center min-h-[50vh] rounded-xl border p-8 text-center ${card}`}>
-        <span className="material-symbols-outlined text-[40px] text-slate-400 mb-2">lock</span>
-        <h2 className={`font-extrabold text-lg ${darkMode ? 'text-white' : 'text-slate-900'}`}>Access Restricted</h2>
-        <p className={`text-sm max-w-md mt-1 ${muted}`}>Email triggers can be managed by Admin, Manager and Sr. Counsellor roles.</p>
-      </div>
-    );
-  }
 
   const setField = (k, v) => setForm(p => ({ ...p, [k]: v }));
   const eventOf = (id) => EVENTS.find(e => e.id === id) || EVENTS[0];

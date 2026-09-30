@@ -4,7 +4,7 @@ import { WhatsAppService } from '../services/whatsapp.service.js';
 export class WhatsAppController {
   static async listTemplates(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      res.json(WhatsAppService.listTemplates());
+      res.json(await WhatsAppService.listTemplates());
     } catch (err) {
       next(err);
     }

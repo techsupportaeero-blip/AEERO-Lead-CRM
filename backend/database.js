@@ -93,7 +93,7 @@ const seedInitialData = () => {
       { id: 1, username: 'admin', password: 'admin123', name: 'Admin User 1', role: 'ADMIN', email: 'admin@aeero.edu', active: true },
       { id: 2, username: 'indu', password: 'Indu@2026', name: 'MS. INDU', role: 'LEAD_FINDER', email: 'indu@aeero.edu', active: true },
       { id: 3, username: 'ayesha', password: 'Ayesha@2026', name: 'MS. AYESHA', role: 'LEAD_FINDER', email: 'ayesha@aeero.edu', active: true },
-      { id: 4, username: 'priti', password: 'Priti@2026', name: 'MS. PRITI', role: 'LEAD_FINDER', email: 'priti@aeero.edu', active: true }
+      { id: 4, username: 'Preeti Sharma', password: 'Preeti Sharma@2026', name: 'MS. Preeti Sharma', role: 'LEAD_FINDER', email: 'Preeti Sharma@aeero.edu', active: true }
     ],
     courses: [
       { id: 1, code: 'SAFETY', name: 'Diploma in Industrial Safety', description: 'Course', price: 120000, active: true }
@@ -135,7 +135,7 @@ const loadFromFile = () => {
         { id: 1, username: 'admin', password: 'admin123', name: 'Admin User 1', role: 'ADMIN', email: 'admin@aeero.edu', active: true },
         { id: 2, username: 'indu', password: 'Indu@2026', name: 'MS. INDU', role: 'LEAD_FINDER', email: 'indu@aeero.edu', active: true },
         { id: 3, username: 'ayesha', password: 'Ayesha@2026', name: 'MS. AYESHA', role: 'LEAD_FINDER', email: 'ayesha@aeero.edu', active: true },
-        { id: 4, username: 'priti', password: 'Priti@2026', name: 'MS. PRITI', role: 'LEAD_FINDER', email: 'priti@aeero.edu', active: true }
+        { id: 4, username: 'Preeti Sharma', password: 'Preeti Sharma@2026', name: 'MS. Preeti Sharma', role: 'LEAD_FINDER', email: 'Preeti Sharma@aeero.edu', active: true }
       ];
 
       if (!dbData.courses || dbData.courses.length === 0) {
@@ -388,7 +388,7 @@ export const checkDuplicate = (mobile, email, excludeId) => {
       .map(u => u.name);
 
     if (!activeCounselors || activeCounselors.length === 0) {
-      activeCounselors = ['MS. INDU', 'MS. AYESHA', 'MS. PRITI'];
+      activeCounselors = ['MS. INDU', 'MS. AYESHA', 'MS. Preeti Sharma'];
     }
 
     const currentIndex = dbData.lastAssignedCounselorIndex || 0;
@@ -1377,7 +1377,7 @@ export const checkDuplicate = (mobile, email, excludeId) => {
       .map(u => u.name);
 
     if (!activeCounselors || activeCounselors.length === 0) {
-      activeCounselors = ['MS. INDU', 'MS. AYESHA', 'MS. PRITI'];
+      activeCounselors = ['MS. INDU', 'MS. AYESHA', 'MS. Preeti Sharma'];
     }
 
     const employeeMap = {};
@@ -1392,7 +1392,7 @@ export const checkDuplicate = (mobile, email, excludeId) => {
         owner = 'MS. INDU';
       }
       if (owner === 'Anita Verma') owner = 'MS. AYESHA';
-      if (owner === 'Suresh Menon') owner = 'MS. PRITI';
+      if (owner === 'Suresh Menon') owner = 'MS. Preeti Sharma';
 
       if (employeeMap[owner]) {
         employeeMap[owner].assigned += 1;

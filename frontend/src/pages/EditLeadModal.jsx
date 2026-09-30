@@ -44,7 +44,19 @@ export const EditLeadModal = ({ lead, onClose, onLeadUpdated, darkMode }) => {
   const [errorMsg, setErrorMsg] = useState(null);
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const next = { ...prev, [field]: value };
+      // WhatsApp Number defaults to Mobile Number when a lead is first
+      // created, but they're stored as two separate fields - editing only
+      // Mobile here left WhatsApp Number silently stuck on the old number,
+      // which is what WhatsApp messaging actually uses. Keep them in sync
+      // as long as WhatsApp Number was just mirroring the old mobile (i.e.
+      // never deliberately set to something different).
+      if (field === 'mobile' && prev.whatsappNumber === (lead.mobile || '')) {
+        next.whatsappNumber = value;
+      }
+      return next;
+    });
     setErrorMsg(null);
   };
 
@@ -168,6 +180,9 @@ export const EditLeadModal = ({ lead, onClose, onLeadUpdated, darkMode }) => {
                   <input type="text" value={formData.whatsappNumber} onChange={(e) => handleInputChange('whatsappNumber', e.target.value)} className={`w-full border rounded-lg py-2 px-3 text-xs outline-none focus:ring-2 focus:ring-[#9A7310] ${
                     darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`} />
+                  <p className={`mt-1 text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                    Auto-follows Mobile Number unless you set it to something different here.
+                  </p>
                 </div>
                 <div>
                   <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Email Address</label>

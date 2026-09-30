@@ -80,6 +80,23 @@ model Course {
   @@map("courses")
 }
 
+// Meta/WhatsApp still has to approve a template's exact text on Omtel's
+// side before it can ever be sent - this table just lets an admin register
+// an already-approved template's id/text/variable-count from the CRM UI
+// instead of it being hardcoded in source and needing a redeploy.
+model WhatsAppTemplate {
+  id            Int      @id @default(autoincrement())
+  templateId    String   @unique
+  name          String
+  body          String
+  variableCount Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("whatsapp_templates")
+}
+
 model Lead {
   id                    Int         @id @default(autoincrement())
   leadId                String      @unique

@@ -5,7 +5,7 @@ import { api } from '../api/client';
 // follow-up stage (1st, 2nd, 3rd... attempt), so a manager can spot leads
 // that have had many follow-ups with no resolution.
 export const FollowupTrackerView = ({ currentUser, onSelectLead, darkMode }) => {
-  const isElevated = currentUser?.role?.toUpperCase() === 'ADMIN' || currentUser?.name?.toUpperCase()?.includes('INDU');
+  const isElevated = ['ADMIN', 'SR_COUNSELLOR'].includes(currentUser?.role?.toUpperCase());
   const [tracker, setTracker] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -23,7 +23,7 @@ export const FollowupTrackerView = ({ currentUser, onSelectLead, darkMode }) => 
     try {
       setLoading(true);
       setError(null);
-      const data = await api.getFollowupStageTracker(currentUser?.name, currentUser?.role);
+      const data = await api.getFollowupStageTracker();
       setTracker(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err.message || 'Failed to load follow-up stage tracker');

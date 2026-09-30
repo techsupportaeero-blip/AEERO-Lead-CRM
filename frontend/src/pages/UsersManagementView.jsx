@@ -49,15 +49,14 @@ export const UsersManagementView = ({ currentUser, darkMode }) => {
   const [editingUser, setEditingUser] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [formError, setFormError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const [resetTarget, setResetTarget] = useState(null);
   const [newPassword, setNewPassword] = useState('');
+  const [resetting, setResetting] = useState(false);
   const [confirmConfig, setConfirmConfig] = useState(null);
 
-  // Create / edit / deactivate / reset-password have no backend endpoints yet
-  // (only GET /users exists), so those actions are UI-only for now - this
-  // banner makes that explicit instead of implying something was saved.
-  const [previewNotice, setPreviewNotice] = useState(null);
+  const [actionNotice, setActionNotice] = useState(null);
 
   useEffect(() => {
     if (isAdmin) loadUsers();
@@ -68,7 +67,9 @@ export const UsersManagementView = ({ currentUser, darkMode }) => {
     try {
       setLoading(true);
       setLoadError(null);
-      const data = await api.getUsers();
+      // includeInactive so deactivated accounts still show up here (with an
+      // "Inactive" badge) instead of silently vanishing from the list.
+      const data = await api.getUsers(true);
       setUsers(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Failed to load users:', err);
@@ -138,7 +139,7 @@ export const UsersManagementView = ({ currentUser, darkMode }) => {
 
   const setField = (key, value) => setForm(prev => ({ ...prev, [key]: value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name.trim() || !form.username.trim() || !form.email.trim()) {
       setFormError('Name, username and email are required.');
@@ -152,31 +153,105 @@ export const UsersManagementView = ({ currentUser, darkMode }) => {
       setFormError('Temporary password must be at least 8 characters.');
       return;
     }
-    setShowModal(false);
-    setPreviewNotice(editingUser
-      ? `Edit for "${editingUser.name}" isn't connected to the backend yet - nothing was saved.`
-      : `Creating "${form.name.trim()}" isn't connected to the backend yet - nothing was saved.`);
+
+    try {
+      setSubmitting(true);
+      setFormError(null);
+      if (editingUser) {
+        const updated = await api.updateUser(editingUser.id, {
+          name: form.name.trim(),
+          username: form.username.trim(),
+          email: form.email.trim(),
+          phone: form.phone.trim() || null,
+          role: form.role,
+          isActive: form.isActive
+        });
+        setUsers(prev => prev.map(u => u.id === updated.id ? { ...u, ...updated } : u));
+        setActionNotice(`"${updated.name}" was updated.`);
+      } else {
+        const created = await api.addUser({
+          name: form.name.trim(),
+          username: form.username.trim(),
+          email: form.email.trim(),
+          phone: form.phone.trim() || null,
+          role: form.role,
+          password: form.password
+        });
+        setUsers(prev => [...prev, created]);
+        setActionNotice(`"${created.name}" was created.`);
+      }
+      setShowModal(false);
+    } catch (err) {
+      setFormError(err.message || 'Failed to save user.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const promptDeactivate = (u) => {
     setConfirmConfig({
       title: 'Deactivate User?',
-      message: `"${u.name}" will no longer be able to log in, and stops receiving auto-assigned leads. (UI preview - not connected to the backend yet.)`,
+      message: `"${u.name}" will no longer be able to log in, and stops receiving auto-assigned leads.`,
       confirmText: 'Yes, Deactivate',
       type: 'danger',
-      onConfirm: () => {
-        setPreviewNotice(`Deactivating "${u.name}" isn't connected to the backend yet - nothing was changed.`);
-        setConfirmConfig(null);
+      onConfirm: async () => {
+        try {
+          const updated = await api.updateUser(u.id, { isActive: false });
+          setUsers(prev => prev.map(x => x.id === u.id ? { ...x, ...updated } : x));
+          setActionNotice(`"${u.name}" was deactivated.`);
+        } catch (err) {
+          alert('Failed to deactivate user: ' + err.message);
+        } finally {
+          setConfirmConfig(null);
+        }
       }
     });
   };
 
-  const submitReset = (e) => {
+  const handleReactivate = async (u) => {
+    try {
+      const updated = await api.updateUser(u.id, { isActive: true });
+      setUsers(prev => prev.map(x => x.id === u.id ? { ...x, ...updated } : x));
+      setActionNotice(`"${u.name}" was reactivated.`);
+    } catch (err) {
+      alert('Failed to reactivate user: ' + err.message);
+    }
+  };
+
+  const promptDeleteUser = (u) => {
+    setConfirmConfig({
+      title: 'Permanently Delete User?',
+      message: `"${u.name}" will be permanently deleted and can no longer log in. This cannot be undone - if you just want to revoke access reversibly, use Deactivate instead. Their past activity/audit history is kept, just unlinked from this account.`,
+      confirmText: 'Yes, Delete Permanently',
+      type: 'danger',
+      onConfirm: async () => {
+        try {
+          await api.deleteUser(u.id);
+          setUsers(prev => prev.filter(x => x.id !== u.id));
+          setActionNotice(`"${u.name}" was permanently deleted.`);
+        } catch (err) {
+          alert('Failed to delete user: ' + err.message);
+        } finally {
+          setConfirmConfig(null);
+        }
+      }
+    });
+  };
+
+  const submitReset = async (e) => {
     e.preventDefault();
     if (newPassword.length < 8) return;
-    setPreviewNotice(`Password reset for "${resetTarget.name}" isn't connected to the backend yet - nothing was changed.`);
-    setResetTarget(null);
-    setNewPassword('');
+    try {
+      setResetting(true);
+      await api.resetUserPassword(resetTarget.id, newPassword);
+      setActionNotice(`Password reset for "${resetTarget.name}".`);
+      setResetTarget(null);
+      setNewPassword('');
+    } catch (err) {
+      alert('Failed to reset password: ' + err.message);
+    } finally {
+      setResetting(false);
+    }
   };
 
   const initials = (name) => (name || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0]).join('').toUpperCase();
@@ -199,20 +274,12 @@ export const UsersManagementView = ({ currentUser, darkMode }) => {
         </button>
       </div>
 
-      {/* Persistent UI-preview banner */}
-      <div className={`flex items-start gap-2 rounded-xl border px-4 py-2.5 text-xs font-medium ${
-        darkMode ? 'bg-amber-950/30 border-amber-800/40 text-amber-200' : 'bg-amber-50 border-amber-200 text-amber-800'
-      }`}>
-        <span className="material-symbols-outlined text-[16px] mt-px">info</span>
-        <span>UI preview: the user list is live, but adding, editing, deactivating and password reset are not connected to the backend yet.</span>
-      </div>
-
-      {previewNotice && (
+      {actionNotice && (
         <div className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-2.5 text-xs font-semibold ${
-          darkMode ? 'bg-sky-950/30 border-sky-800/40 text-sky-200' : 'bg-sky-50 border-sky-200 text-sky-800'
+          darkMode ? 'bg-emerald-950/30 border-emerald-800/40 text-emerald-200' : 'bg-emerald-50 border-emerald-200 text-emerald-800'
         }`}>
-          <span>{previewNotice}</span>
-          <button onClick={() => setPreviewNotice(null)} className="opacity-70 hover:opacity-100">
+          <span>{actionNotice}</span>
+          <button onClick={() => setActionNotice(null)} className="opacity-70 hover:opacity-100">
             <span className="material-symbols-outlined text-[16px]">close</span>
           </button>
         </div>
@@ -318,10 +385,22 @@ export const UsersManagementView = ({ currentUser, darkMode }) => {
                           className="w-7 h-7 rounded bg-sky-50 text-sky-600 border border-sky-200 flex items-center justify-center hover:bg-sky-100 transition-colors">
                           <span className="material-symbols-outlined text-[16px]">key</span>
                         </button>
-                        <button onClick={() => promptDeactivate(u)} disabled={isSelf}
-                          title={isSelf ? "You can't deactivate your own account" : 'Deactivate user'}
-                          className="w-7 h-7 rounded bg-rose-50 text-rose-600 border border-rose-200 flex items-center justify-center hover:bg-rose-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-                          <span className="material-symbols-outlined text-[16px]">person_off</span>
+                        {u.isActive === false ? (
+                          <button onClick={() => handleReactivate(u)} title="Reactivate user"
+                            className="w-7 h-7 rounded bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center hover:bg-emerald-100 transition-colors">
+                            <span className="material-symbols-outlined text-[16px]">person_check</span>
+                          </button>
+                        ) : (
+                          <button onClick={() => promptDeactivate(u)} disabled={isSelf}
+                            title={isSelf ? "You can't deactivate your own account" : 'Deactivate user'}
+                            className="w-7 h-7 rounded bg-rose-50 text-rose-600 border border-rose-200 flex items-center justify-center hover:bg-rose-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                            <span className="material-symbols-outlined text-[16px]">person_off</span>
+                          </button>
+                        )}
+                        <button onClick={() => promptDeleteUser(u)} disabled={isSelf}
+                          title={isSelf ? "You can't delete your own account" : 'Permanently delete user'}
+                          className="w-7 h-7 rounded bg-rose-100 text-rose-700 border border-rose-300 flex items-center justify-center hover:bg-rose-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                          <span className="material-symbols-outlined text-[16px]">delete_forever</span>
                         </button>
                       </div>
                     </td>
@@ -406,8 +485,8 @@ export const UsersManagementView = ({ currentUser, darkMode }) => {
                   className={`px-4 py-2 rounded-lg font-semibold transition-colors ${darkMode ? 'bg-[#1A1608] hover:bg-[#3D3212] text-slate-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}`}>
                   Cancel
                 </button>
-                <button type="submit" className="px-5 py-2 bg-[#10B981] hover:bg-[#059669] text-white rounded-lg font-bold shadow-sm">
-                  {editingUser ? 'Save Changes' : 'Create User'}
+                <button type="submit" disabled={submitting} className="px-5 py-2 bg-[#10B981] hover:bg-[#059669] text-white rounded-lg font-bold shadow-sm disabled:opacity-50">
+                  {submitting ? 'Saving...' : (editingUser ? 'Save Changes' : 'Create User')}
                 </button>
               </div>
             </form>
@@ -431,8 +510,8 @@ export const UsersManagementView = ({ currentUser, darkMode }) => {
               <div className="flex justify-end gap-2">
                 <button type="button" onClick={() => setResetTarget(null)}
                   className={`px-4 py-2 rounded-lg font-semibold ${darkMode ? 'bg-[#1A1608] text-slate-300' : 'bg-slate-100 text-slate-700'}`}>Cancel</button>
-                <button type="submit" disabled={newPassword.length < 8}
-                  className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-bold disabled:opacity-50">Reset Password</button>
+                <button type="submit" disabled={newPassword.length < 8 || resetting}
+                  className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-bold disabled:opacity-50">{resetting ? 'Resetting...' : 'Reset Password'}</button>
               </div>
             </form>
           </div>

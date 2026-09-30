@@ -83,7 +83,7 @@ function sendRowToCRM(config, ss, sheet, headers, rowData, rowNumber) {
   // permission error instead of the actual value. Match on a short, stable
   // fragment (case-insensitive) rather than the full message, since Meta's
   // wording/punctuation for this error has changed before.
-  var fbErrorNeedle = 'enough permissions';
+  var fbErrorNeedle = 'enough permission';
   for (var key in payload) {
     if (typeof payload[key] === 'string' && payload[key].toLowerCase().indexOf(fbErrorNeedle) !== -1) {
       payload[key] = 'No Permission';

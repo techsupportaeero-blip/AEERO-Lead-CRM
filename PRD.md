@@ -41,7 +41,7 @@ AEERO CRM is an enterprise-grade Lead Management and Student Enrollment CRM buil
 1. **Lead ID Sequencing**: Every lead gets a permanent unique identifier format `LD-XXXXXX` (e.g., `LD-000001`), generated atomically using the `LeadCounter` model.
 2. **Dynamic Round-Robin Counselor Routing**:
    - Leads ingested from webhooks, Google Sheets, or web forms are auto-assigned to active counselors (`role: LEAD_FINDER` or `ADMIN`, `active: true`).
-   - Active counselors: `MS. INDU`, `MS. AYESHA`, `MS. PRITI`, `Admin User 1`.
+   - Active counselors: `MS. INDU`, `MS. AYESHA`, `MS. Preeti Sharma`, `Admin User 1`.
    - Routing is 100% dynamic from database users. No hardcoded names in routing logic.
 3. **Multi-Tier Duplicate Detection**:
    - **Tier 1**: External Meta Lead ID (`externalLeadId`).
@@ -100,7 +100,7 @@ AEERO CRM is an enterprise-grade Lead Management and Student Enrollment CRM buil
 
 - [`frontend/src/pages/Login.jsx`](file:///frontend/src/pages/Login.jsx):
   - User authentication view.
-  - Includes a quick-fill test credentials card for `admin`, `indu`, `ayesha`, `priti`.
+  - Includes a quick-fill test credentials card for `admin`, `indu`, `ayesha`, `Preeti Sharma`.
   - Communicates with `api.login()`.
 - [`frontend/src/pages/Dashboard.jsx`](file:///frontend/src/pages/Dashboard.jsx):
   - Executive KPI dashboard.
@@ -285,12 +285,12 @@ Contains all business logic and Prisma database operations:
 
 ### 6.1 Default User Accounts
 
-| Role                 | Full Name    | Username _(Case-Insensitive)_ | Password      |
-| :------------------- | :----------- | :---------------------------- | :------------ |
-| 👑 **Administrator** | Admin User 1 | `admin`                       | `admin123`    |
-| 👩‍💼 **Counselor 1**   | MS. INDU     | `indu` _(or `MS. INDU`)_      | `Indu@2026`   |
-| 👩‍💼 **Counselor 2**   | MS. AYESHA   | `ayesha` _(or `MS. AYESHA`)_  | `Ayesha@2026` |
-| 👩‍💼 **Counselor 3**   | MS. PRITI    | `priti` _(or `MS. PRITI`)_    | `Priti@2026`  |
+| Role                 | Full Name         | Username _(Case-Insensitive)_              | Password             |
+| :------------------- | :---------------- | :----------------------------------------- | :------------------- |
+| 👑 **Administrator** | Admin User 1      | `admin`                                    | `admin123`           |
+| 👩‍💼 **Counselor 1**   | MS. INDU          | `indu` _(or `MS. INDU`)_                   | `Indu@2026`          |
+| 👩‍💼 **Counselor 2**   | MS. AYESHA        | `ayesha` _(or `MS. AYESHA`)_               | `Ayesha@2026`        |
+| 👩‍💼 **Counselor 3**   | MS. Preeti Sharma | `Preeti Sharma` _(or `MS. Preeti Sharma`)_ | `Preeti Sharma@2026` |
 
 ### 6.2 Environment Configuration (`backend/.env`)
 

@@ -2,6 +2,7 @@ import Skeleton, { TableSkeleton, CardSkeleton } from '../components/Skeleton.js
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import { StatusBadge } from '../components/StatusBadge';
+import { cleanFbPermissionError } from '../utils/cleanFbPermissionError';
 
 export const KanbanBoard = ({ onSelectLead, currentUser, onNotify, darkMode }) => {
   const [leads, setLeads] = useState([]);
@@ -49,16 +50,22 @@ export const KanbanBoard = ({ onSelectLead, currentUser, onNotify, darkMode }) =
     const leadId = draggedLeadId || e.dataTransfer.getData('text/plain');
     if (!leadId) return;
 
+    // Remember the previous status so a failed request can revert this one
+    // card locally instead of re-fetching the entire (unpaginated,
+    // thousands-of-rows) leads list - that full reload on every single drag
+    // is what made this feel slow.
+    const previousLead = leads.find(l => l.leadId === leadId || String(l.id) === String(leadId));
+    const previousStatus = previousLead?.status;
+
     try {
       // Optimistic update
       setLeads(prev => prev.map(l => (l.leadId === leadId || String(l.id) === String(leadId)) ? { ...l, status: targetStatusCode } : l));
 
       await api.updateLeadStatus(leadId, targetStatusCode, currentUser ? currentUser.name : 'Counselor');
       if (onNotify) onNotify(`Lead status updated to ${targetStatusCode}!`);
-      loadLeads();
     } catch (err) {
       alert("Failed to update status: " + err.message);
-      loadLeads();
+      setLeads(prev => prev.map(l => (l.leadId === leadId || String(l.id) === String(leadId)) ? { ...l, status: previousStatus } : l));
     } finally {
       setDraggedLeadId(null);
     }
@@ -167,7 +174,7 @@ export const KanbanBoard = ({ onSelectLead, currentUser, onNotify, darkMode }) =
                         <span className={`truncate font-semibold px-1.5 py-0.5 rounded text-[9px] ${
                           darkMode ? 'bg-[#1A1608] text-slate-300 border border-[#574719]' : 'bg-slate-100 text-slate-800'
                         }`}>
-                          {lead.interestedCourse || 'General'}
+                          {cleanFbPermissionError(lead.interestedCourse) || 'General'}
                         </span>
                       </div>
 

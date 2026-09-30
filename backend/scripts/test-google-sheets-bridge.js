@@ -36,7 +36,7 @@ const testDb = {
     { id: 1, name: 'Admin User 1', role: 'ADMIN', active: true },
     { id: 2, name: 'MS. INDU', role: 'LEAD_FINDER', active: true },
     { id: 3, name: 'MS. AYESHA', role: 'LEAD_FINDER', active: true },
-    { id: 4, name: 'MS. PRITI', role: 'LEAD_FINDER', active: true }
+    { id: 4, name: 'MS. Preeti Sharma', role: 'LEAD_FINDER', active: true }
   ]
 };
 
@@ -108,7 +108,7 @@ async function runTestSuite() {
   assert(firstLead.source === 'Meta Ads', `Source correctly attributed: ${firstLead.source}`);
   assert(firstLead.sourceSpreadsheetName !== undefined, `Attribution preserved sourceSpreadsheetName: "${firstLead.sourceSpreadsheetName}"`);
   assert(firstLead.sourceRowNumber !== undefined, `Attribution preserved sourceRowNumber: ${firstLead.sourceRowNumber}`);
-  assert(['MS. INDU', 'MS. AYESHA', 'MS. PRITI', 'Admin User 1'].includes(firstLead.ownerId), `Dynamically assigned to counselor: ${firstLead.ownerId}`);
+  assert(['MS. INDU', 'MS. AYESHA', 'MS. Preeti Sharma', 'Admin User 1'].includes(firstLead.ownerId), `Dynamically assigned to counselor: ${firstLead.ownerId}`);
 
   // --------------------------------------------------------------------------
   // TEST 3: Idempotency & Duplicate Protection

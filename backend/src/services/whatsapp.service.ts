@@ -1,7 +1,7 @@
 import { prisma } from '../config/database.js';
 import { sendOmtelTemplateMessage } from '../integrations/whatsapp/omtel.client.js';
-import { getTemplateById, WHATSAPP_TEMPLATES } from '../integrations/whatsapp/templates.js';
 import { ActivityService } from './activity.service.js';
+import { WhatsAppTemplateService } from './whatsappTemplate.service.js';
 
 export interface BulkSendResultItem {
   leadId: string;
@@ -41,12 +41,12 @@ function extractFailureReason(response: any): string {
 }
 
 export class WhatsAppService {
-  static listTemplates() {
-    return WHATSAPP_TEMPLATES;
+  static async listTemplates() {
+    return WhatsAppTemplateService.getActiveTemplates();
   }
 
   static async bulkSend(leadIds: string[], templateId: string, createdBy = 'Counselor'): Promise<BulkSendResultItem[]> {
-    const template = getTemplateById(templateId);
+    const template = await WhatsAppTemplateService.getTemplateById(templateId);
     if (!template) {
       throw new Error(`Unknown WhatsApp template: ${templateId}`);
     }

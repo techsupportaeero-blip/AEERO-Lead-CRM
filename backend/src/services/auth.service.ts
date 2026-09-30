@@ -78,9 +78,12 @@ export class AuthService {
     return user;
   }
 
-  static async getUsers() {
+  // includeInactive is only honored by admin-gated callers (checked in the
+  // controller) - every other caller (owner dropdowns, filters, assignment
+  // lists) must keep seeing active users only.
+  static async getUsers(includeInactive = false) {
     return prisma.user.findMany({
-      where: { isActive: true },
+      where: includeInactive ? {} : { isActive: true },
       select: {
         id: true,
         username: true,
@@ -134,6 +137,69 @@ export class AuthService {
         isActive: true,
         createdAt: true
       }
+    });
+  }
+
+  static async updateUser(
+    id: number,
+    data: { name?: string; username?: string; email?: string; phone?: string | null; role?: Role; isActive?: boolean }
+  ) {
+    if (data.username !== undefined || data.email !== undefined) {
+      const existing = await prisma.user.findFirst({
+        where: {
+          id: { not: id },
+          OR: [
+            ...(data.username !== undefined ? [{ username: data.username }] : []),
+            ...(data.email !== undefined ? [{ email: data.email.toLowerCase() }] : [])
+          ]
+        }
+      });
+      if (existing) {
+        throw new Error('A user with this username or email already exists.');
+      }
+    }
+
+    return prisma.user.update({
+      where: { id },
+      data: {
+        ...(data.name !== undefined && { name: data.name }),
+        ...(data.username !== undefined && { username: data.username }),
+        ...(data.email !== undefined && { email: data.email.toLowerCase() }),
+        ...(data.phone !== undefined && { phone: data.phone }),
+        ...(data.role !== undefined && { role: data.role }),
+        ...(data.isActive !== undefined && { isActive: data.isActive })
+      },
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+        isActive: true,
+        updatedAt: true
+      }
+    });
+  }
+
+  static async resetPassword(id: number, newPassword: string) {
+    const passwordHash = await hashPassword(newPassword);
+    return prisma.user.update({
+      where: { id },
+      data: { passwordHash },
+      select: { id: true, username: true, name: true }
+    });
+  }
+
+  // Hard delete. Safe to do: every FK referencing users (activities,
+  // audit_logs, notifications) is ON DELETE SET NULL, so those historical
+  // rows survive with userId cleared rather than being blocked or cascaded
+  // away. Lead ownerId / Task assignedTo / etc. are plain name strings, not
+  // FKs, so they're untouched either way.
+  static async deleteUser(id: number) {
+    return prisma.user.delete({
+      where: { id },
+      select: { id: true, username: true, name: true }
     });
   }
 }

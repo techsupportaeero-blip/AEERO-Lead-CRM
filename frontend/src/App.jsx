@@ -6,6 +6,7 @@ import { NotificationToast } from './components/NotificationToast';
 import { DuplicateModal } from './components/DuplicateModal';
 import { ColumnModal, ALL_COLUMNS } from './components/ColumnModal';
 import Loader from './components/Loader';
+import { playNotificationSound } from './utils/notificationSound';
 
 import { Login } from './pages/Login';
 
@@ -140,6 +141,8 @@ export default function App() {
     // task and marks it read, same convention as the bell dropdown.
     socket.on('notification', (notif) => {
       if (notif.userId !== currentUser.id) return;
+
+      playNotificationSound();
 
       const goToNotification = () => {
         api.markNotificationRead(notif.id).catch(() => {});

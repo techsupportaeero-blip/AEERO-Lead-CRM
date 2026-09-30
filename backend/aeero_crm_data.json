@@ -29,11 +29,11 @@
     },
     {
       "id": 4,
-      "username": "priti",
-      "password": "Priti@2026",
-      "name": "MS. PRITI",
+      "username": "Preeti Sharma",
+      "password": "Preeti Sharma@2026",
+      "name": "MS. Preeti Sharma",
       "role": "LEAD_FINDER",
-      "email": "priti@aeero.edu",
+      "email": "Preeti Sharma@aeero.edu",
       "active": true
     }
   ],
@@ -76,7 +76,7 @@
       "updatedAt": "2026-08-27T11:13:20.595Z",
       "id": 40,
       "leadId": "LD-000040",
-      "ownerId": "MS. PRITI",
+      "ownerId": "MS. Preeti Sharma",
       "isArchived": 1
     },
     {
@@ -351,7 +351,7 @@
       "landingPage": "https://aeero.edu/msme-skill-training",
       "requirement": "Inquired about heavy equipment and industrial safety certification.",
       "remarks": "Inquiry received today morning from Google Ads.",
-      "ownerId": "MS. PRITI",
+      "ownerId": "MS. Preeti Sharma",
       "status": "NEW",
       "priority": "Medium",
       "tags": "[\"MSME\",\"Andhra\",\"Fresh\"]",
@@ -391,7 +391,7 @@
       "landingPage": "https://aeero.edu/sub-fire-officer",
       "requirement": "Seeking advanced NFPA compliance and hazardous material response modules.",
       "remarks": "Already working in private safety firm, upgrading credentials for state fire officer exam.",
-      "ownerId": "MS. PRITI",
+      "ownerId": "MS. Preeti Sharma",
       "status": "INTERESTED",
       "priority": "High",
       "tags": "[\"Sub Fire\",\"Upgradation\",\"Experienced\"]",
@@ -511,7 +511,7 @@
       "landingPage": "https://aeero.edu/diploma-in-sanitary-inspector",
       "requirement": "Inquired about hospital sanitation internship tie-ups.",
       "remarks": "Discussed partner hospital training programs in Bengaluru.",
-      "ownerId": "MS. PRITI",
+      "ownerId": "MS. Preeti Sharma",
       "status": "GIVEN_DETAILS",
       "priority": "Medium",
       "tags": "[\"Sanitary\",\"Bengaluru\",\"Hospital Internship\"]",
@@ -711,7 +711,7 @@
       "landingPage": "https://aeero.edu/fireman",
       "requirement": "Fire fighting equipment training & hostel accommodation details.",
       "remarks": "Campus tour completed with senior instructor.",
-      "ownerId": "MS. PRITI",
+      "ownerId": "MS. Preeti Sharma",
       "status": "GIVEN_DETAILS",
       "priority": "Medium",
       "tags": "[\"Fireman\",\"Jaipur\",\"Campus Visit\"]",
@@ -791,7 +791,7 @@
       "landingPage": "https://aeero.edu/health-sanitary-inspector",
       "requirement": "Inquired about municipal corporation vacancy eligibility.",
       "remarks": "Referred by batch alumni Rajesh Ghosh. Highly positive.",
-      "ownerId": "MS. PRITI",
+      "ownerId": "MS. Preeti Sharma",
       "status": "INTERESTED",
       "priority": "Medium",
       "tags": "[\"Sanitary Inspector\",\"Referral\",\"Kolkata\"]",
@@ -871,7 +871,7 @@
       "landingPage": "https://aeero.edu/sub-fire-officer",
       "requirement": "Inquired about physical endurance test & government exam eligibility.",
       "remarks": "Needs guidance on state fire service recruitment criteria.",
-      "ownerId": "MS. PRITI",
+      "ownerId": "MS. Preeti Sharma",
       "status": "INTERESTED",
       "priority": "High",
       "tags": "[\"Sub Fire\",\"Physical Test\",\"Hot\"]",
@@ -1141,7 +1141,7 @@
       "preferredStudyMode": "Online",
       "source": "WhatsApp",
       "campaign": "Direct WhatsApp Inquiry",
-      "ownerId": "MS. PRITI",
+      "ownerId": "MS. Preeti Sharma",
       "status": "NEW",
       "priority": "Low",
       "tags": [
@@ -1619,10 +1619,10 @@
       "leadId": "LD-000040",
       "activityType": "Lead Created",
       "subject": "Facebook / Meta Lead Ads Form",
-      "description": "New lead received from campaign: \"Meta Ads Campaign 2026\" (Form ID: FORM_330912). Auto-assigned to counselor MS. PRITI.",
-      "outcome": "Auto-Assigned to MS. PRITI",
+      "description": "New lead received from campaign: \"Meta Ads Campaign 2026\" (Form ID: FORM_330912). Auto-assigned to counselor MS. Preeti Sharma.",
+      "outcome": "Auto-Assigned to MS. Preeti Sharma",
       "duration": 0,
-      "participants": "Vikramaditya Roy, MS. PRITI",
+      "participants": "Vikramaditya Roy, MS. Preeti Sharma",
       "attachmentUrl": "",
       "createdBy": "Meta Webhook",
       "createdAt": "2026-08-26T06:39:54.637Z"
@@ -1752,9 +1752,9 @@
       "description": "Discussed specialized NFPA standard modules.",
       "outcome": "Interested",
       "duration": 7,
-      "participants": "Gaurav Chopra, MS. PRITI",
+      "participants": "Gaurav Chopra, MS. Preeti Sharma",
       "attachmentUrl": "",
-      "createdBy": "MS. PRITI",
+      "createdBy": "MS. Preeti Sharma",
       "createdAt": "2026-08-19T11:59:59.443Z"
     },
     {
@@ -1830,9 +1830,9 @@
       "description": "Sent list of accredited partner hospitals and internship schedules.",
       "outcome": "Interested",
       "duration": 23,
-      "participants": "Deepika Rao, MS. PRITI",
+      "participants": "Deepika Rao, MS. Preeti Sharma",
       "attachmentUrl": "",
-      "createdBy": "MS. PRITI",
+      "createdBy": "MS. Preeti Sharma",
       "createdAt": "2026-08-22T11:59:59.443Z"
     },
     {
@@ -1960,9 +1960,9 @@
       "description": "Guided through safety training lab and simulation ground.",
       "outcome": "Interested",
       "duration": 15,
-      "participants": "Harsh Vardhan, MS. PRITI",
+      "participants": "Harsh Vardhan, MS. Preeti Sharma",
       "attachmentUrl": "",
-      "createdBy": "MS. PRITI",
+      "createdBy": "MS. Preeti Sharma",
       "createdAt": "2026-08-22T11:59:59.443Z"
     },
     {
@@ -2012,9 +2012,9 @@
       "description": "Counselor explained syllabus modules and field visit schedule.",
       "outcome": "Interested",
       "duration": 19,
-      "participants": "Tanmay Sen, MS. PRITI",
+      "participants": "Tanmay Sen, MS. Preeti Sharma",
       "attachmentUrl": "",
-      "createdBy": "MS. PRITI",
+      "createdBy": "MS. Preeti Sharma",
       "createdAt": "2026-08-20T11:59:59.443Z"
     },
     {
@@ -2051,9 +2051,9 @@
       "description": "Discussed eligibility norms and upcoming batch dates.",
       "outcome": "Interested",
       "duration": 23,
-      "participants": "Aditya Deshmukh, MS. PRITI",
+      "participants": "Aditya Deshmukh, MS. Preeti Sharma",
       "attachmentUrl": "",
-      "createdBy": "MS. PRITI",
+      "createdBy": "MS. Preeti Sharma",
       "createdAt": "2026-08-24T11:59:59.443Z"
     },
     {
@@ -3139,7 +3139,7 @@
       "type": "Call",
       "notes": "Initial counseling call and course brochure dispatch.",
       "status": "Pending",
-      "createdBy": "MS. PRITI",
+      "createdBy": "MS. Preeti Sharma",
       "createdAt": "2026-08-24T11:28:59.926Z"
     },
     {
@@ -3150,7 +3150,7 @@
       "type": "Call",
       "notes": "Send batch confirmation invoice.",
       "status": "Pending",
-      "createdBy": "MS. PRITI",
+      "createdBy": "MS. Preeti Sharma",
       "createdAt": "2026-08-18T11:01:06.647Z"
     },
     {
@@ -3183,7 +3183,7 @@
       "type": "Call",
       "notes": "Follow up call for admission confirmation.",
       "status": "Pending",
-      "createdBy": "MS. PRITI",
+      "createdBy": "MS. Preeti Sharma",
       "createdAt": "2026-08-21T11:28:08.740Z"
     },
     {
@@ -3227,7 +3227,7 @@
       "type": "Call",
       "notes": "Call for seat reservation advance deposit.",
       "status": "Pending",
-      "createdBy": "MS. PRITI",
+      "createdBy": "MS. Preeti Sharma",
       "createdAt": "2026-08-21T11:51:31.831Z"
     },
     {
@@ -3249,7 +3249,7 @@
       "type": "Call",
       "notes": "Follow up regarding scholarship test registration.",
       "status": "Pending",
-      "createdBy": "MS. PRITI",
+      "createdBy": "MS. Preeti Sharma",
       "createdAt": "2026-08-19T11:44:11.889Z"
     },
     {
@@ -3271,7 +3271,7 @@
       "type": "Call",
       "notes": "Send physical test benchmark guidelines.",
       "status": "Pending",
-      "createdBy": "MS. PRITI",
+      "createdBy": "MS. Preeti Sharma",
       "createdAt": "2026-08-23T11:09:43.883Z"
     },
     {
@@ -3657,7 +3657,7 @@
       "title": "Candidate Profile Note - Visakhapatnam",
       "content": "Inquired about heavy equipment and industrial safety certification. Background: B.Tech Marine, Age: 24.",
       "isPinned": false,
-      "createdBy": "MS. PRITI",
+      "createdBy": "MS. Preeti Sharma",
       "createdAt": "2026-08-24T11:28:59.926Z",
       "updatedAt": "2026-08-24T11:59:59.443Z"
     },
@@ -3667,7 +3667,7 @@
       "title": "Candidate Profile Note - Ludhiana",
       "content": "Seeking advanced NFPA compliance and hazardous material response modules. Background: B.Sc Fire & Safety, Age: 27.",
       "isPinned": true,
-      "createdBy": "MS. PRITI",
+      "createdBy": "MS. Preeti Sharma",
       "createdAt": "2026-08-18T11:01:06.647Z",
       "updatedAt": "2026-08-19T11:59:59.443Z"
     },
@@ -3697,7 +3697,7 @@
       "title": "Candidate Profile Note - Bengaluru",
       "content": "Inquired about hospital sanitation internship tie-ups. Background: B.Sc Biotechnology, Age: 23.",
       "isPinned": false,
-      "createdBy": "MS. PRITI",
+      "createdBy": "MS. Preeti Sharma",
       "createdAt": "2026-08-21T11:28:08.740Z",
       "updatedAt": "2026-08-22T11:59:59.443Z"
     },
@@ -3747,7 +3747,7 @@
       "title": "Candidate Profile Note - Jaipur",
       "content": "Fire fighting equipment training & hostel accommodation details. Background: 12th Standard Science, Age: 23.",
       "isPinned": false,
-      "createdBy": "MS. PRITI",
+      "createdBy": "MS. Preeti Sharma",
       "createdAt": "2026-08-21T11:51:31.831Z",
       "updatedAt": "2026-08-22T11:59:59.443Z"
     },
@@ -3767,7 +3767,7 @@
       "title": "Candidate Profile Note - Kolkata",
       "content": "Inquired about municipal corporation vacancy eligibility. Background: B.Sc Microbiology, Age: 26.",
       "isPinned": false,
-      "createdBy": "MS. PRITI",
+      "createdBy": "MS. Preeti Sharma",
       "createdAt": "2026-08-19T11:44:11.889Z",
       "updatedAt": "2026-08-20T11:59:59.443Z"
     },
@@ -3787,7 +3787,7 @@
       "title": "Candidate Profile Note - Nagpur",
       "content": "Inquired about physical endurance test & government exam eligibility. Background: Diploma in Fire Technology, Age: 25.",
       "isPinned": true,
-      "createdBy": "MS. PRITI",
+      "createdBy": "MS. Preeti Sharma",
       "createdAt": "2026-08-23T11:09:43.883Z",
       "updatedAt": "2026-08-24T11:59:59.443Z"
     },
@@ -3853,13 +3853,13 @@
       "title": "Follow up with Varun Teja (MSME Skill Training)",
       "description": "Initial counseling call and course brochure dispatch.",
       "leadId": "LD-000033",
-      "assignedUser": "MS. PRITI",
+      "assignedUser": "MS. Preeti Sharma",
       "dueDate": "2026-08-24",
       "dueTime": "15:00",
       "priority": "Medium",
       "repeat": "None",
       "status": "Completed",
-      "createdBy": "MS. PRITI",
+      "createdBy": "MS. Preeti Sharma",
       "createdAt": "2026-08-24T11:28:59.926Z",
       "updatedAt": "2026-08-27T06:28:36.972Z"
     },
@@ -3868,13 +3868,13 @@
       "title": "Follow up with Gaurav Chopra (Sub Fire Officer)",
       "description": "Send batch confirmation invoice.",
       "leadId": "LD-000032",
-      "assignedUser": "MS. PRITI",
+      "assignedUser": "MS. Preeti Sharma",
       "dueDate": "2026-08-25",
       "dueTime": "15:00",
       "priority": "High",
       "repeat": "None",
       "status": "Pending",
-      "createdBy": "MS. PRITI",
+      "createdBy": "MS. Preeti Sharma",
       "createdAt": "2026-08-18T11:01:06.647Z",
       "updatedAt": "2026-08-19T11:59:59.443Z"
     },
@@ -3913,13 +3913,13 @@
       "title": "Follow up with Deepika Rao (Diploma In Sanitary Inspector)",
       "description": "Follow up call for admission confirmation.",
       "leadId": "LD-000029",
-      "assignedUser": "MS. PRITI",
+      "assignedUser": "MS. Preeti Sharma",
       "dueDate": "2026-08-26",
       "dueTime": "15:00",
       "priority": "Medium",
       "repeat": "None",
       "status": "Pending",
-      "createdBy": "MS. PRITI",
+      "createdBy": "MS. Preeti Sharma",
       "createdAt": "2026-08-21T11:28:08.740Z",
       "updatedAt": "2026-08-22T11:59:59.443Z"
     },
@@ -3973,13 +3973,13 @@
       "title": "Follow up with Harsh Vardhan (Fireman)",
       "description": "Call for seat reservation advance deposit.",
       "leadId": "LD-000024",
-      "assignedUser": "MS. PRITI",
+      "assignedUser": "MS. Preeti Sharma",
       "dueDate": "2026-08-25",
       "dueTime": "15:00",
       "priority": "Medium",
       "repeat": "None",
       "status": "Pending",
-      "createdBy": "MS. PRITI",
+      "createdBy": "MS. Preeti Sharma",
       "createdAt": "2026-08-21T11:51:31.831Z",
       "updatedAt": "2026-08-22T11:59:59.443Z"
     },
@@ -4003,13 +4003,13 @@
       "title": "Follow up with Tanmay Sen (Health Sanitary Inspector)",
       "description": "Follow up regarding scholarship test registration.",
       "leadId": "LD-000022",
-      "assignedUser": "MS. PRITI",
+      "assignedUser": "MS. Preeti Sharma",
       "dueDate": "2026-08-25",
       "dueTime": "15:00",
       "priority": "Medium",
       "repeat": "None",
       "status": "Pending",
-      "createdBy": "MS. PRITI",
+      "createdBy": "MS. Preeti Sharma",
       "createdAt": "2026-08-19T11:44:11.889Z",
       "updatedAt": "2026-08-20T11:59:59.443Z"
     },
@@ -4033,13 +4033,13 @@
       "title": "Follow up with Aditya Deshmukh (Sub Fire Officer)",
       "description": "Send physical test benchmark guidelines.",
       "leadId": "LD-000020",
-      "assignedUser": "MS. PRITI",
+      "assignedUser": "MS. Preeti Sharma",
       "dueDate": "2026-08-26",
       "dueTime": "15:00",
       "priority": "High",
       "repeat": "None",
       "status": "Pending",
-      "createdBy": "MS. PRITI",
+      "createdBy": "MS. Preeti Sharma",
       "createdAt": "2026-08-23T11:09:43.883Z",
       "updatedAt": "2026-08-24T11:59:59.443Z"
     },
@@ -4163,7 +4163,7 @@
       "entityId": "LD-000040",
       "timestamp": "2026-08-26T06:39:54.650Z",
       "oldValue": "",
-      "newValue": "{\"name\":\"Vikramaditya Roy\",\"mobile\":\"+91 98111 90666\",\"whatsappNumber\":\"+91 98111 90666\",\"email\":\"vikramaditya.roy.1787726394634@example.com\",\"city\":\"Bengaluru\",\"state\":\"Karnataka\",\"age\":null,\"qualification\":\"B.Sc Aviation\",\"interestedCourse\":\"Commercial Pilot License (solar)\",\"preferredStudyMode\":\"Offline\",\"requirement\":\"Inquiry received via Facebook Lead Ads form\",\"remarks\":\"Automated Meta webhook lead capture & round-robin assignment\",\"source\":\"Meta Ads\",\"platform\":\"Facebook / Instagram\",\"campaign\":\"Meta Ads Campaign 2026\",\"campaignId\":\"CAMP_770192\",\"adSet\":\"\",\"adSetId\":\"ADSET_440912\",\"ad\":\"\",\"adId\":\"AD_6098234\",\"formId\":\"FORM_330912\",\"externalLeadId\":\"META_TEST_LEAD_1787726394634\",\"utmSource\":\"facebook\",\"utmMedium\":\"cpc\",\"utmCampaign\":\"CAMP_770192\",\"utmContent\":\"\",\"utmTerm\":\"pilot_training\",\"gclid\":\"\",\"fbclid\":\"fb.1.1787726394638.47719\",\"landingPage\":\"https://aeero.edu\",\"priority\":\"High\",\"status\":\"NEW\",\"tags\":\"[\\\"Meta Ads\\\",\\\"Facebook Lead Ads\\\",\\\"Auto-Assigned\\\"]\",\"createdAt\":\"2026-08-26T06:39:54.637Z\",\"updatedAt\":\"2026-08-26T06:39:54.637Z\",\"id\":40,\"leadId\":\"LD-000040\",\"ownerId\":\"MS. PRITI\",\"isArchived\":0}"
+      "newValue": "{\"name\":\"Vikramaditya Roy\",\"mobile\":\"+91 98111 90666\",\"whatsappNumber\":\"+91 98111 90666\",\"email\":\"vikramaditya.roy.1787726394634@example.com\",\"city\":\"Bengaluru\",\"state\":\"Karnataka\",\"age\":null,\"qualification\":\"B.Sc Aviation\",\"interestedCourse\":\"Commercial Pilot License (solar)\",\"preferredStudyMode\":\"Offline\",\"requirement\":\"Inquiry received via Facebook Lead Ads form\",\"remarks\":\"Automated Meta webhook lead capture & round-robin assignment\",\"source\":\"Meta Ads\",\"platform\":\"Facebook / Instagram\",\"campaign\":\"Meta Ads Campaign 2026\",\"campaignId\":\"CAMP_770192\",\"adSet\":\"\",\"adSetId\":\"ADSET_440912\",\"ad\":\"\",\"adId\":\"AD_6098234\",\"formId\":\"FORM_330912\",\"externalLeadId\":\"META_TEST_LEAD_1787726394634\",\"utmSource\":\"facebook\",\"utmMedium\":\"cpc\",\"utmCampaign\":\"CAMP_770192\",\"utmContent\":\"\",\"utmTerm\":\"pilot_training\",\"gclid\":\"\",\"fbclid\":\"fb.1.1787726394638.47719\",\"landingPage\":\"https://aeero.edu\",\"priority\":\"High\",\"status\":\"NEW\",\"tags\":\"[\\\"Meta Ads\\\",\\\"Facebook Lead Ads\\\",\\\"Auto-Assigned\\\"]\",\"createdAt\":\"2026-08-26T06:39:54.637Z\",\"updatedAt\":\"2026-08-26T06:39:54.637Z\",\"id\":40,\"leadId\":\"LD-000040\",\"ownerId\":\"MS. Preeti Sharma\",\"isArchived\":0}"
     },
     {
       "id": 68,
@@ -4592,8 +4592,8 @@
       "entity": "LEAD",
       "entityId": "LD-000004",
       "timestamp": "2026-08-17T05:19:31.401Z",
-      "oldValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. PRITI\",\"status\":\"GIVEN_DETAILS\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-17T05:17:49.102Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}",
-      "newValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. PRITI\",\"status\":\"NEW\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-17T05:19:31.401Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}"
+      "oldValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. Preeti Sharma\",\"status\":\"GIVEN_DETAILS\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-17T05:17:49.102Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}",
+      "newValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. Preeti Sharma\",\"status\":\"NEW\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-17T05:19:31.401Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}"
     },
     {
       "id": 25,
@@ -4632,8 +4632,8 @@
       "entity": "LEAD",
       "entityId": "LD-000004",
       "timestamp": "2026-08-17T05:17:49.102Z",
-      "oldValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. PRITI\",\"status\":\"INTERESTED\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T12:08:01.324Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}",
-      "newValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. PRITI\",\"status\":\"GIVEN_DETAILS\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-17T05:17:49.102Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}"
+      "oldValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. Preeti Sharma\",\"status\":\"INTERESTED\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T12:08:01.324Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}",
+      "newValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. Preeti Sharma\",\"status\":\"GIVEN_DETAILS\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-17T05:17:49.102Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}"
     },
     {
       "id": 21,
@@ -4692,8 +4692,8 @@
       "entity": "LEAD",
       "entityId": "LD-000004",
       "timestamp": "2026-08-14T12:08:01.324Z",
-      "oldValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. PRITI\",\"status\":\"NEW\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T12:07:44.285Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}",
-      "newValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. PRITI\",\"status\":\"INTERESTED\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T12:08:01.324Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}"
+      "oldValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. Preeti Sharma\",\"status\":\"NEW\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T12:07:44.285Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}",
+      "newValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. Preeti Sharma\",\"status\":\"INTERESTED\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T12:08:01.324Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}"
     },
     {
       "id": 15,
@@ -4712,8 +4712,8 @@
       "entity": "LEAD",
       "entityId": "LD-000004",
       "timestamp": "2026-08-14T12:07:44.285Z",
-      "oldValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. PRITI\",\"status\":\"NO_ANSWER\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T12:07:43.022Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}",
-      "newValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. PRITI\",\"status\":\"NEW\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T12:07:44.285Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}"
+      "oldValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. Preeti Sharma\",\"status\":\"NO_ANSWER\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T12:07:43.022Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}",
+      "newValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. Preeti Sharma\",\"status\":\"NEW\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T12:07:44.285Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}"
     },
     {
       "id": 13,
@@ -4722,8 +4722,8 @@
       "entity": "LEAD",
       "entityId": "LD-000004",
       "timestamp": "2026-08-14T12:07:43.022Z",
-      "oldValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. PRITI\",\"status\":\"NEW\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T08:56:13.651Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}",
-      "newValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. PRITI\",\"status\":\"NO_ANSWER\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T12:07:43.022Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}"
+      "oldValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. Preeti Sharma\",\"status\":\"NEW\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T08:56:13.651Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}",
+      "newValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. Preeti Sharma\",\"status\":\"NO_ANSWER\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T12:07:43.022Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}"
     },
     {
       "id": 12,
@@ -4812,8 +4812,8 @@
       "entity": "LEAD",
       "entityId": "LD-000004",
       "timestamp": "2026-08-14T08:56:13.651Z",
-      "oldValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. PRITI\",\"status\":\"GIVEN_DETAILS\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T08:56:11.096Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}",
-      "newValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. PRITI\",\"status\":\"NEW\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T08:56:13.651Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}"
+      "oldValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. Preeti Sharma\",\"status\":\"GIVEN_DETAILS\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T08:56:11.096Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}",
+      "newValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. Preeti Sharma\",\"status\":\"NEW\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T08:56:13.651Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}"
     },
     {
       "id": 3,
@@ -4822,8 +4822,8 @@
       "entity": "LEAD",
       "entityId": "LD-000004",
       "timestamp": "2026-08-14T08:56:11.096Z",
-      "oldValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. PRITI\",\"status\":\"NO_ANSWER\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T08:56:09.503Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}",
-      "newValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. PRITI\",\"status\":\"GIVEN_DETAILS\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T08:56:11.096Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}"
+      "oldValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. Preeti Sharma\",\"status\":\"NO_ANSWER\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T08:56:09.503Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}",
+      "newValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. Preeti Sharma\",\"status\":\"GIVEN_DETAILS\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T08:56:11.096Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}"
     },
     {
       "id": 2,
@@ -4832,8 +4832,8 @@
       "entity": "LEAD",
       "entityId": "LD-000004",
       "timestamp": "2026-08-14T08:56:09.503Z",
-      "oldValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. PRITI\",\"status\":\"GIVEN_DETAILS\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T04:46:00.564Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}",
-      "newValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. PRITI\",\"status\":\"NO_ANSWER\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T08:56:09.503Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}"
+      "oldValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. Preeti Sharma\",\"status\":\"GIVEN_DETAILS\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T04:46:00.564Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}",
+      "newValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. Preeti Sharma\",\"status\":\"NO_ANSWER\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T08:56:09.503Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}"
     },
     {
       "id": 1,
@@ -4842,8 +4842,8 @@
       "entity": "LEAD",
       "entityId": "LD-000004",
       "timestamp": "2026-08-14T04:46:00.565Z",
-      "oldValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Airport Management & Operations\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. PRITI\",\"status\":\"GIVEN_DETAILS\",\"priority\":\"Low\",\"tags\":\"[\\\"Airport Mgmt\\\",\\\"Distance\\\"]\",\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-12T06:58:27.579Z\",\"isArchived\":0}",
-      "newValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. PRITI\",\"status\":\"GIVEN_DETAILS\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T04:46:00.564Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}"
+      "oldValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Airport Management & Operations\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. Preeti Sharma\",\"status\":\"GIVEN_DETAILS\",\"priority\":\"Low\",\"tags\":\"[\\\"Airport Mgmt\\\",\\\"Distance\\\"]\",\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-12T06:58:27.579Z\",\"isArchived\":0}",
+      "newValue": "{\"id\":4,\"leadId\":\"LD-000004\",\"name\":\"Siddharth Das\",\"mobile\":\"+91 97112 23344\",\"whatsappNumber\":\"+91 97112 23344\",\"email\":\"siddharth.das@example.com\",\"city\":\"Kolkata\",\"state\":\"West Bengal\",\"age\":23,\"qualification\":\"Graduate\",\"interestedCourse\":\"Diploma In Sanitary Inspector\",\"preferredStudyMode\":\"Online\",\"source\":\"WhatsApp\",\"campaign\":\"Direct WhatsApp Inquiry\",\"ownerId\":\"MS. Preeti Sharma\",\"status\":\"GIVEN_DETAILS\",\"priority\":\"Low\",\"tags\":[\"Airport Mgmt\",\"Distance\"],\"createdAt\":\"2026-08-12T06:58:27.579Z\",\"updatedAt\":\"2026-08-14T04:46:00.564Z\",\"isArchived\":0,\"campaignId\":\"\",\"adSet\":\"\",\"adSetId\":\"\",\"ad\":\"\",\"adId\":\"\",\"utmSource\":\"\",\"utmMedium\":\"\",\"utmCampaign\":\"\",\"utmContent\":\"\",\"utmTerm\":\"\"}"
     },
     {
       "id": 72,
@@ -4942,7 +4942,7 @@
       "userId": 1,
       "leadId": "LD-000040",
       "title": "🎯 New Meta Lead: Vikramaditya Roy",
-      "message": "Lead LD-000040 (Vikramaditya Roy) for Commercial Pilot License (solar) auto-assigned to MS. PRITI.",
+      "message": "Lead LD-000040 (Vikramaditya Roy) for Commercial Pilot License (solar) auto-assigned to MS. Preeti Sharma.",
       "type": "META_LEAD",
       "isRead": false,
       "createdAt": "2026-08-26T06:39:54.662Z"

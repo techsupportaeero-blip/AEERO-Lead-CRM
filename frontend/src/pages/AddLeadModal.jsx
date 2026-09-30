@@ -8,7 +8,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
     name: '',
     company: 'AEERO',
     jobTitle: 'Student / Aviation Aspirant',
-    industry: 'Aviation & Aerospace',
+    industry: 'Education',
     mobile: '',
     whatsappNumber: '',
     email: '',

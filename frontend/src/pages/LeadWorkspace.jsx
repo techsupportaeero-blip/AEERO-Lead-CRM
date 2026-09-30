@@ -4,12 +4,14 @@ import { api } from '../api/client';
 import { StatusBadge, PriorityBadge } from '../components/StatusBadge';
 import { CallUpdatePanel } from '../components/CallUpdatePanel';
 import { FollowUpStagesPanel } from '../components/FollowUpStagesPanel';
+import { cleanFbPermissionError } from '../utils/cleanFbPermissionError';
 
 export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotify, darkMode }) => {
   const [lead, setLead] = useState(null);
   const [activities, setActivities] = useState([]);
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
 
   // New Note State
   const [newNoteTitle, setNewNoteTitle] = useState('');
@@ -28,6 +30,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
   const loadLeadData = async () => {
     try {
       setLoading(true);
+      setLoadError(null);
       const data = await api.getLeadById(leadId);
       if (data) {
         setLead(data);
@@ -43,6 +46,11 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
       }
     } catch (err) {
       console.error("Error loading lead workspace:", err);
+      // A 404 genuinely means the lead is gone - anything else (network
+      // blip, Render cold-start timeout, 5xx, a 403 access restriction) is
+      // a failure to load, not proof the record doesn't exist, so it gets
+      // a distinct retryable message instead of the same dead-end screen.
+      setLoadError(err.status === 404 ? 'not-found' : (err.status === 403 ? 'forbidden' : 'error'));
     } finally {
       setLoading(false);
     }
@@ -54,14 +62,14 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
 
     try {
       setAddingNote(true);
-      await api.addNote(lead.leadId, {
+      const created = await api.addNote(lead.leadId, {
         title: newNoteTitle.trim() || 'General Note',
         content: newNoteContent.trim(),
         isPinned: newNotePinned,
         createdBy: currentUser ? currentUser.name : 'Counselor'
       });
-      const freshNotes = await api.getNotes(lead.leadId);
-      setNotes(freshNotes);
+      // Prepend locally instead of re-fetching every note for this lead.
+      if (created) setNotes(prev => [created, ...prev]);
       setNewNoteTitle('');
       setNewNoteContent('');
       setNewNotePinned(false);
@@ -76,8 +84,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
   const handleTogglePin = async (note) => {
     try {
       await api.updateNote(note.noteId, { isPinned: !note.isPinned });
-      const freshNotes = await api.getNotes(lead.leadId);
-      setNotes(freshNotes);
+      setNotes(prev => prev.map(n => n.noteId === note.noteId ? { ...n, isPinned: !note.isPinned } : n));
     } catch (err) {
       alert("Failed to toggle pin");
     }
@@ -87,8 +94,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
     if (!window.confirm("Are you sure you want to delete this note?")) return;
     try {
       await api.deleteNote(noteId);
-      const freshNotes = await api.getNotes(lead.leadId);
-      setNotes(freshNotes);
+      setNotes(prev => prev.filter(n => n.noteId !== noteId));
     } catch (err) {
       alert("Failed to delete note");
     }
@@ -104,12 +110,32 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
   }
 
   if (!lead) {
+    const isForbidden = loadError === 'forbidden';
+    const isNotFound = loadError === 'not-found';
     return (
       <div className="py-20 text-center space-y-3">
-        <p className={`text-sm font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Lead record not found.</p>
-        <button onClick={onBack} className="px-4 py-2 bg-[#7D610F] text-white rounded text-xs font-semibold">
-          Return to All Leads
-        </button>
+        <p className={`text-sm font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+          {isNotFound
+            ? 'Lead record not found.'
+            : isForbidden
+              ? "You don't have access to this lead."
+              : "Couldn't load this lead - check your connection and try again."}
+        </p>
+        <div className="flex items-center justify-center gap-2">
+          {!isNotFound && !isForbidden && (
+            <button onClick={loadLeadData} className="px-4 py-2 bg-[#7D610F] text-white rounded text-xs font-semibold">
+              Retry
+            </button>
+          )}
+          <button
+            onClick={onBack}
+            className={`px-4 py-2 rounded text-xs font-semibold ${
+              isNotFound || isForbidden ? 'bg-[#7D610F] text-white' : (darkMode ? 'bg-[#1A1608] text-slate-300' : 'bg-slate-100 text-slate-700')
+            }`}
+          >
+            Return to All Leads
+          </button>
+        </div>
       </div>
     );
   }
@@ -224,7 +250,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
               </div>
               <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-100'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">Qualification</span>
-                <span className={`font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{lead.qualification || 'N/A'}</span>
+                <span className={`font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{cleanFbPermissionError(lead.qualification) || 'N/A'}</span>
               </div>
             </div>
           </div>
@@ -243,7 +269,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
                 darkMode ? 'bg-amber-950/20 border-amber-800/40' : 'bg-amber-50/50 border-[#CDB46A]/40'
               }`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">Interested Aviation Course</span>
-                <span className={`font-bold text-base ${darkMode ? 'text-amber-300' : 'text-[#7D610F]'}`}>{lead.interestedCourse}</span>
+                <span className={`font-bold text-base ${darkMode ? 'text-amber-300' : 'text-[#7D610F]'}`}>{cleanFbPermissionError(lead.interestedCourse)}</span>
               </div>
               <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-100'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">Preferred Study Mode</span>
@@ -256,7 +282,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
               {lead.requirement && (
                 <div className={`p-3 rounded-lg border sm:col-span-2 ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-100'}`}>
                   <span className="text-slate-400 block uppercase font-semibold text-[10px]">Student Requirement</span>
-                  <p className={`font-medium ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{lead.requirement}</p>
+                  <p className={`font-medium ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{cleanFbPermissionError(lead.requirement)}</p>
                 </div>
               )}
               {lead.remarks && (
@@ -265,7 +291,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
                     Additional Sheet Data
                     <span className="material-symbols-outlined text-[13px]" title="Extra / unmapped columns from the source Google Sheet (any language) - Hindi, new custom questions, etc. all land here.">info</span>
                   </span>
-                  <p className={`font-medium whitespace-pre-wrap ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{lead.remarks}</p>
+                  <p className={`font-medium whitespace-pre-wrap ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{cleanFbPermissionError(lead.remarks)}</p>
                 </div>
               )}
             </div>
@@ -287,7 +313,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
               </div>
               <div className={`p-2.5 rounded border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-200'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">Campaign</span>
-                <span className={`font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{lead.campaign || 'N/A'}</span>
+                <span className={`font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-800'}`}>{cleanFbPermissionError(lead.campaign) || 'N/A'}</span>
               </div>
               <div className={`p-2.5 rounded border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-200'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">Campaign ID</span>

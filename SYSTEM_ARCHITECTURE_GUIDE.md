@@ -26,7 +26,7 @@
    - **Tier 2 (Secondary)**: Normalized Mobile Number (E.164) + Lowercase Email.
    - **Tier 3 (Tertiary)**: Normalized Mobile Number + Source within a 48-hour tolerance window.
 3. **Dynamic Round-Robin Counselor Routing**:
-   - Automatically distributes incoming leads among active eligible counselors (`MS. INDU`, `MS. AYESHA`, `MS. PRITI`, `Admin User 1`) dynamically retrieved from the database (`role: LEAD_FINDER` or `ADMIN`, `active: true`). Zero hardcoded names in routing logic.
+   - Automatically distributes incoming leads among active eligible counselors (`MS. INDU`, `MS. AYESHA`, `MS. Preeti Sharma`, `Admin User 1`) dynamically retrieved from the database (`role: LEAD_FINDER` or `ADMIN`, `active: true`). Zero hardcoded names in routing logic.
 4. **Complete 360° Lead Lifecycle**:
    - `Inquiry` ➔ `Qualification` ➔ `Call Activity Logs` ➔ `Follow-up Reminders (Calendar & Tasks)` ➔ `Token Advance & Fee Payment Receipts` ➔ `Customer Admission Won`.
 5. **Database Architecture**:
@@ -118,7 +118,7 @@
 
 | Route ID       | Component File                                                                             | Primary Responsibility & Features                                                                                                                                                              |
 | :------------- | :----------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `login`        | [`frontend/src/pages/Login.jsx`](file:///frontend/src/pages/Login.jsx)                     | Authentication screen. Quick-fill credentials box for `admin`, `indu`, `ayesha`, `priti`. Authenticates via `/api/auth/login`.                                                                 |
+| `login`        | [`frontend/src/pages/Login.jsx`](file:///frontend/src/pages/Login.jsx)                     | Authentication screen. Quick-fill credentials box for `admin`, `indu`, `ayesha`, `Preeti Sharma`. Authenticates via `/api/auth/login`.                                                         |
 | `dashboard`    | [`frontend/src/pages/Dashboard.jsx`](file:///frontend/src/pages/Dashboard.jsx)             | KPI analytics dashboard. 4 KPI cards (Total Leads, Follow-ups, Won Leads, Conversion Rate), charts, Today's Follow-ups, Overdue Follow-ups, Recent Activities, and Employee Performance table. |
 | `leads`        | [`frontend/src/pages/AllLeads.jsx`](file:///frontend/src/pages/AllLeads.jsx)               | Central Leads Data Grid. Multi-column filters (Status, Counselor, Source, Date range), full-text search, column picker modal, bulk status changes, and Excel/CSV export.                       |
 | `lead-details` | [`frontend/src/pages/LeadWorkspace.jsx`](file:///frontend/src/pages/LeadWorkspace.jsx)     | 360° Lead Drawer/Profile. Interaction timeline, quick call outcome logging, follow-up scheduler, notepad, and fee payment receipt generator.                                                   |
@@ -224,12 +224,12 @@
 
 ### 6.2 Default User Accounts
 
-| Role                 | Full Name    | Username _(Case-Insensitive)_ | Password      |
-| :------------------- | :----------- | :---------------------------- | :------------ |
-| 👑 **Administrator** | Admin User 1 | `admin`                       | `admin123`    |
-| 👩‍💼 **Counselor 1**   | MS. INDU     | `indu` _(or `MS. INDU`)_      | `Indu@2026`   |
-| 👩‍💼 **Counselor 2**   | MS. AYESHA   | `ayesha` _(or `MS. AYESHA`)_  | `Ayesha@2026` |
-| 👩‍💼 **Counselor 3**   | MS. PRITI    | `priti` _(or `MS. PRITI`)_    | `Priti@2026`  |
+| Role                 | Full Name         | Username _(Case-Insensitive)_              | Password             |
+| :------------------- | :---------------- | :----------------------------------------- | :------------------- |
+| 👑 **Administrator** | Admin User 1      | `admin`                                    | `admin123`           |
+| 👩‍💼 **Counselor 1**   | MS. INDU          | `indu` _(or `MS. INDU`)_                   | `Indu@2026`          |
+| 👩‍💼 **Counselor 2**   | MS. AYESHA        | `ayesha` _(or `MS. AYESHA`)_               | `Ayesha@2026`        |
+| 👩‍💼 **Counselor 3**   | MS. Preeti Sharma | `Preeti Sharma` _(or `MS. Preeti Sharma`)_ | `Preeti Sharma@2026` |
 
 ### 6.3 Database Routing Notice (Neon PostgreSQL on Windows)
 

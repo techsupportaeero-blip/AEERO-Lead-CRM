@@ -2,14 +2,12 @@ import { Request, Response, NextFunction } from 'express';
 import { FollowupService } from '../services/followup.service.js';
 
 export class FollowupController {
-  // Admin, or Sr. Counsellor (Indu) - same elevated-but-not-full-admin tier
-  // used for restore/task-create/campaign-assign elsewhere in the app.
+  // Admin or Sr. Counsellor only. Reads req.user (set only by a verified
+  // JWT via authMiddleware) - never a client-supplied body/query field,
+  // which anyone could spoof to claim any role or name.
   static isElevatedRequest(req: Request): boolean {
-    const currentUser = req.user?.name || req.body?.currentUser || req.query?.currentUser || '';
-    const userRole = req.user?.role || req.body?.userRole || req.query?.userRole || '';
-    const roleUpper = String(userRole).toUpperCase();
-    const nameUpper = String(currentUser).toUpperCase();
-    return roleUpper === 'ADMIN' || nameUpper.includes('ADMIN') || nameUpper.includes('INDU');
+    const role = String(req.user?.role || '').toUpperCase();
+    return role === 'ADMIN' || role === 'SR_COUNSELLOR';
   }
 
   static async getStageTracker(req: Request, res: Response, next: NextFunction): Promise<void> {

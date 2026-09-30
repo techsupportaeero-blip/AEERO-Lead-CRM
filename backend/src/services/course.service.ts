@@ -59,4 +59,33 @@ export class CourseService {
       where: { id }
     });
   }
+
+  // Auto-registers a Products & Services entry for a campaign name that has
+  // no matching course yet, so it shows up in the catalog (price 0) ready
+  // for an admin to fill in - covers manual lead entry and Google Sheets
+  // ingestion, which is where most campaign names come from. Never throws:
+  // a failed auto-catalog entry must not block saving the lead it came from.
+  static async ensureCourseForCampaign(campaignName?: string | null) {
+    const name = (campaignName || '').trim();
+    if (!name) return;
+    try {
+      const existing = await prisma.course.findFirst({
+        where: { name: { equals: name, mode: 'insensitive' } }
+      });
+      if (existing) return;
+
+      const base = name.toUpperCase().replace(/[^A-Z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 20) || 'CAMPAIGN';
+      let code = base;
+      let suffix = 1;
+      while (await prisma.course.findUnique({ where: { code } })) {
+        code = `${base}-${suffix++}`;
+      }
+
+      await prisma.course.create({
+        data: { code, name, price: 0, category: 'Campaign', isActive: true }
+      });
+    } catch (e) {
+      // Non-critical - swallow and let the caller's lead save proceed
+    }
+  }
 }

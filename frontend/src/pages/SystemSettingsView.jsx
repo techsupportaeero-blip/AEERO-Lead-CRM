@@ -70,7 +70,7 @@ export const SystemSettingsView = ({ currentUser, onNotify, darkMode }) => {
                   <label className={`block text-xs font-extrabold uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Company Name</label>
                   <input 
                     type="text" 
-                    defaultValue="AEERO Technologies"
+                    defaultValue="AEERO ORG."
                     className={`w-full px-4 py-3 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all font-semibold ${
                       darkMode ? 'bg-[#0A0D14] border-slate-700 text-white focus:border-indigo-500' : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-indigo-500'
                     }`}

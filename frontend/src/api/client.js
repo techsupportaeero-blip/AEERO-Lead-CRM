@@ -53,10 +53,51 @@ export const api = {
     return data;
   },
 
-  async getUsers() {
-    const res = await authFetch(`${API_BASE}/users`);
+  async getUsers(includeInactive = false) {
+    const qs = includeInactive ? '?includeInactive=true' : '';
+    const res = await authFetch(`${API_BASE}/users${qs}`);
     if (!res.ok) throw new Error('Failed to fetch users');
     return res.json();
+  },
+
+  async addUser(userData) {
+    const res = await authFetch(`${API_BASE}/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(userData),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to create user');
+    return data;
+  },
+
+  async updateUser(id, userData) {
+    const res = await authFetch(`${API_BASE}/users/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(userData),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to update user');
+    return data;
+  },
+
+  async resetUserPassword(id, password) {
+    const res = await authFetch(`${API_BASE}/users/${id}/password`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to reset password');
+    return data;
+  },
+
+  async deleteUser(id) {
+    const res = await authFetch(`${API_BASE}/users/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to delete user');
+    return data;
   },
 
   // Stats
@@ -123,7 +164,20 @@ export const api = {
 
   async getLeadById(id) {
     const res = await authFetch(`${API_BASE}/leads/${id}`);
-    if (!res.ok) throw new Error('Failed to fetch lead details');
+    if (!res.ok) {
+      // Carry the HTTP status so callers can tell "genuinely doesn't exist"
+      // (404) apart from a transient network/server failure (Render
+      // cold-start, timeout, 5xx) or an access restriction (403) - those
+      // shouldn't all collapse into the same "not found" message.
+      let message = 'Failed to fetch lead details';
+      try {
+        const body = await res.json();
+        if (body?.error) message = body.error;
+      } catch {}
+      const err = new Error(message);
+      err.status = res.status;
+      throw err;
+    }
     return res.json();
   },
 
@@ -224,6 +278,44 @@ export const api = {
     const res = await authFetch(`${API_BASE}/whatsapp/templates`);
     if (!res.ok) throw new Error('Failed to fetch WhatsApp templates');
     return res.json();
+  },
+
+  // Full CRUD (incl. inactive) for the WhatsApp Templates management page -
+  // separate from getWhatsAppTemplates() above, which only ever returns
+  // active templates for the Bulk WhatsApp send picker.
+  async getAllWhatsAppTemplates() {
+    const res = await authFetch(`${API_BASE}/whatsapp-templates`);
+    if (!res.ok) throw new Error('Failed to fetch WhatsApp templates');
+    return res.json();
+  },
+
+  async addWhatsAppTemplate(templateData) {
+    const res = await authFetch(`${API_BASE}/whatsapp-templates`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(templateData),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to create WhatsApp template');
+    return data;
+  },
+
+  async updateWhatsAppTemplate(id, templateData) {
+    const res = await authFetch(`${API_BASE}/whatsapp-templates/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(templateData),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to update WhatsApp template');
+    return data;
+  },
+
+  async deleteWhatsAppTemplate(id) {
+    const res = await authFetch(`${API_BASE}/whatsapp-templates/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to delete WhatsApp template');
+    return data;
   },
 
   async bulkSendWhatsApp(leadIds, templateId, currentUser = 'Counselor') {
@@ -348,9 +440,10 @@ export const api = {
   },
 
   // Admin / Sr. Counsellor only - which counselor's leads are stuck at which follow-up stage
-  async getFollowupStageTracker(currentUser = 'Admin', userRole = 'ADMIN') {
-    const params = new URLSearchParams({ currentUser, userRole });
-    const res = await authFetch(`${API_BASE}/followups/stage-tracker?${params.toString()}`);
+  async getFollowupStageTracker() {
+    // Who's allowed is decided server-side from the JWT, not by anything
+    // passed here.
+    const res = await authFetch(`${API_BASE}/followups/stage-tracker`);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
       throw new Error(data.error || 'Failed to fetch follow-up stage tracker');

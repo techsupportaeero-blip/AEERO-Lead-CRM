@@ -11,6 +11,7 @@ import { getCounselorForCampaign } from '../../utils/campaignAssignment.js';
 import { discoverFolderSpreadsheets } from './discovery.js';
 import { NotificationService } from '../../services/notification.service.js';
 import { CampaignAssignmentService } from '../../services/campaignAssignment.service.js';
+import { CourseService } from '../../services/course.service.js';
 
 let prismaClient = null;
 async function getPrisma() {
@@ -22,6 +23,61 @@ async function getPrisma() {
   } catch (e) {
     return null;
   }
+}
+
+/**
+ * Auto-priority for Google Sheets / Meta Ads leads. Combines 3 signals
+ * instead of the old hardcoded 'MEDIUM':
+ *   1. Urgency wording in what the student wrote (requirement/remarks/etc.)
+ *      -> URGENT
+ *   2. Interested in an above-average-value course -> HIGH
+ *   3. Repeat submission from the same contact (handled by the caller,
+ *      which already knows this is a duplicate/update) -> at least HIGH
+ * Default (no signal) stays MEDIUM.
+ */
+const PRIORITY_RANK = { LOW: 0, MEDIUM: 1, HIGH: 2, URGENT: 3 };
+const URGENCY_KEYWORDS = [
+  'immediately', 'turant', 'turnt', 'asap', 'right away', 'ready to join',
+  'ready to start', 'urgent', 'jald', 'is hafte', 'this week', 'today', 'now'
+];
+
+function higherPriority(a, b) {
+  const ra = PRIORITY_RANK[a] ?? 1;
+  const rb = PRIORITY_RANK[b] ?? 1;
+  return ra >= rb ? a : b;
+}
+
+function hasUrgencySignal(leadPayload) {
+  const text = [leadPayload.requirement, leadPayload.remarks, leadPayload.additionalInformation]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  return URGENCY_KEYWORDS.some(k => text.includes(k));
+}
+
+// Compares the matched course's price against the average price of all
+// active courses - "high value" is relative to the current catalog, not a
+// hardcoded rupee figure, so it keeps making sense as courses/prices change.
+// Requires a real Prisma connection (skipped in mock/offline mode).
+async function getCourseValueTier(prisma, courseName) {
+  if (!prisma || !prisma.course || !courseName) return null;
+  try {
+    const courses = await prisma.course.findMany({ where: { isActive: true }, select: { name: true, price: true } });
+    if (courses.length === 0) return null;
+    const avg = courses.reduce((sum, c) => sum + Number(c.price || 0), 0) / courses.length;
+    const match = courses.find(c => c.name && String(c.name).toLowerCase() === String(courseName).toLowerCase());
+    if (!match) return null;
+    return Number(match.price || 0) >= avg ? 'high' : 'normal';
+  } catch (e) {
+    return null;
+  }
+}
+
+async function computeAutoPriority(leadPayload, prisma) {
+  if (hasUrgencySignal(leadPayload)) return 'URGENT';
+  const tier = await getCourseValueTier(prisma, leadPayload.interestedCourse);
+  if (tier === 'high') return 'HIGH';
+  return 'MEDIUM';
 }
 
 /**
@@ -146,7 +202,7 @@ export async function getNextCounselor(dbData = null, course = null, campaign = 
     const c = course.toLowerCase();
     if (c.includes('industrial safety') || c.includes('sub fire')) return 'MS. INDU';
     if (c.includes('fireman') || c.includes('diploma in sanitary')) return 'MS. AYESHA';
-    if (c.includes('health sanitary') || c.includes('msme')) return 'MS. PRITI';
+    if (c.includes('health sanitary') || c.includes('msme')) return 'MS. Preeti Sharma';
   }
 
   let eligibleCounselors = [];
@@ -158,7 +214,7 @@ export async function getNextCounselor(dbData = null, course = null, campaign = 
       .map(u => u.name);
 
     if (eligibleCounselors.length === 0) {
-      eligibleCounselors = ['MS. INDU', 'MS. AYESHA', 'MS. PRITI'];
+      eligibleCounselors = ['MS. INDU', 'MS. AYESHA', 'MS. Preeti Sharma'];
     }
 
     if (eligibleCounselors.length > 0) {
@@ -194,7 +250,7 @@ export async function getNextCounselor(dbData = null, course = null, campaign = 
     }
   }
 
-  return getCounselorForCampaign(campaign, ['MS. INDU', 'MS. AYESHA', 'MS. PRITI']) || 'MS. INDU';
+  return getCounselorForCampaign(campaign, ['MS. INDU', 'MS. AYESHA', 'MS. Preeti Sharma']) || 'MS. INDU';
 }
 
 /**
@@ -221,7 +277,7 @@ export async function ingestLeadRecord(leadPayload, options = {}, dbData = null)
   // so clean it here too regardless of which path fed in this payload.
   for (const key of Object.keys(leadPayload)) {
     const val = leadPayload[key];
-    if (typeof val === 'string' && val.toLowerCase().includes('enough permissions')) {
+    if (typeof val === 'string' && val.toLowerCase().includes('enough permission')) {
       leadPayload[key] = 'No Permission';
     }
   }
@@ -332,6 +388,23 @@ export async function ingestLeadRecord(leadPayload, options = {}, dbData = null)
             }
           }
 
+          // Same contact submitting again is itself a signal of genuine
+          // interest - bump to at least HIGH (never downgrades an existing
+          // higher priority), combined with any urgency wording in this
+          // latest submission.
+          // Same-mode note as computeAutoPriority above: this branch is only
+          // reached with a real Prisma connection, so it's safe to touch the
+          // Course catalog here (never runs in dbData/mock mode).
+          if (leadPayload.campaign) {
+            await CourseService.ensureCourseForCampaign(leadPayload.campaign);
+          }
+
+          const repeatSignal = await computeAutoPriority(leadPayload, prisma);
+          const bumped = higherPriority(higherPriority(repeatSignal, 'HIGH'), existing.priority);
+          if (bumped !== existing.priority) {
+            updateData.priority = bumped;
+          }
+
           if (Object.keys(updateData).length > 0) {
             await prisma.lead.update({
               where: { id: existing.id },
@@ -385,12 +458,26 @@ export async function ingestLeadRecord(leadPayload, options = {}, dbData = null)
     }
   }
 
+  // Priority: urgency wording + course-value tier. The course-value lookup
+  // needs a real Prisma connection, so dbData/mock-mode runs (offline
+  // testing) only check urgency wording and never touch the real database.
+  let leadPriority = 'MEDIUM';
+  if (dbData && Array.isArray(dbData.leads)) {
+    leadPriority = hasUrgencySignal(leadPayload) ? 'URGENT' : 'MEDIUM';
+  } else {
+    const prismaForPriority = await getPrisma();
+    leadPriority = await computeAutoPriority(leadPayload, prismaForPriority);
+    if (leadPayload.campaign) {
+      await CourseService.ensureCourseForCampaign(leadPayload.campaign);
+    }
+  }
+
   const finalLead = {
     ...leadPayload,
     leadId,
     ownerId: assignedCounselor,
     status: normalizedStatus,
-    priority: 'MEDIUM',
+    priority: leadPriority,
     tags: JSON.stringify(['Google Sheets', 'Meta Ads', leadPayload.interestedCourse || 'General'].filter(Boolean)),
     isArchived: false,
     createdAt: now,
@@ -458,7 +545,7 @@ export async function ingestLeadRecord(leadPayload, options = {}, dbData = null)
           remarks: finalLead.remarks,
           ownerId: finalLead.ownerId,
           status: normalizedStatus,
-          priority: 'MEDIUM',
+          priority: finalLead.priority,
           source: finalLead.source,
           platform: finalLead.platform,
           campaign: finalLead.campaign,

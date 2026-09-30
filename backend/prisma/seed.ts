@@ -10,7 +10,7 @@ async function main() {
   const adminPasswordHash = await bcrypt.hash('admin123', 10);
   const induPasswordHash = await bcrypt.hash('Indu@2026', 10);
   const ayeshaPasswordHash = await bcrypt.hash('Ayesha@2026', 10);
-  const pritiPasswordHash = await bcrypt.hash('Priti@2026', 10);
+  const preetiPasswordHash = await bcrypt.hash('Preeti Sharma@2026', 10);
 
   // 2. Seed Users
   console.log('👤 Seeding System Users with Individual Secure Passwords...');
@@ -43,11 +43,11 @@ async function main() {
       isActive: true
     },
     {
-      username: 'priti',
-      name: 'MS. PRITI',
-      email: 'priti@aeero.edu',
+      username: 'preeti',
+      name: 'MS. Preeti Sharma',
+      email: 'preeti@aeero.edu',
       phone: '+91 99999 00003',
-      passwordHash: pritiPasswordHash,
+      passwordHash: preetiPasswordHash,
       role: Role.LEAD_FINDER,
       isActive: true
     }

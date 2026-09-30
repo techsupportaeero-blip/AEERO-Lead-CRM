@@ -5,6 +5,7 @@ import { AuditLogService } from './auditLog.service.js';
 import { NotificationService } from './notification.service.js';
 import { CustomerService } from './customer.service.js';
 import { CampaignAssignmentService } from './campaignAssignment.service.js';
+import { CourseService } from './course.service.js';
 import { LeadStatus, Priority } from '../types/index.js';
 
 export interface LeadFilterParams {
@@ -138,7 +139,7 @@ export class LeadService {
         return 'MS. AYESHA';
       }
       if (c.includes('health sanitary') || c.includes('msme')) {
-        return 'MS. PRITI';
+        return 'MS. Preeti Sharma';
       }
     }
 
@@ -149,7 +150,7 @@ export class LeadService {
     });
     const counselors = activeUsers.length > 0
       ? activeUsers.map(u => u.name)
-      : ['MS. INDU', 'MS. AYESHA', 'MS. PRITI'];
+      : ['MS. INDU', 'MS. AYESHA', 'MS. Preeti Sharma'];
 
     const campaignCounselor = getCounselorForCampaign(campaign, counselors);
     if (campaignCounselor) return campaignCounselor;
@@ -248,7 +249,13 @@ export class LeadService {
       }
     });
 
-    // 6. Record Initial Activity
+    // 6. Auto-register the campaign in Products & Services (price 0) if it's
+    // not already in the catalog, so it's there ready for an admin to price.
+    if (data.campaign) {
+      await CourseService.ensureCourseForCampaign(data.campaign);
+    }
+
+    // 7. Record Initial Activity
     await prisma.activity.create({
       data: {
         leadId: newLead.leadId,
@@ -262,7 +269,7 @@ export class LeadService {
       }
     });
 
-    // 7. Audit log
+    // 8. Audit log
     await AuditLogService.log({
       userId: userContext?.userId,
       userName: userContext?.userName || createdBy,
@@ -279,7 +286,7 @@ export class LeadService {
       userAgent: userContext?.userAgent
     });
 
-    // 8. Notify whoever this lead just got assigned to
+    // 9. Notify whoever this lead just got assigned to
     await NotificationService.notifyUserByName(
       newLead.ownerId,
       'New Lead Assigned',
@@ -396,11 +403,30 @@ export class LeadService {
       where,
       orderBy,
       include: {
-        payments: true
+        payments: true,
+        // Nearest upcoming PENDING follow-up only - this is a list view, not
+        // the full history (that's the Follow-up Stages tracker on the
+        // lead's own Workspace page).
+        followUps: {
+          where: { status: 'PENDING' },
+          orderBy: [{ date: 'asc' }, { time: 'asc' }],
+          take: 1
+        }
       }
     });
 
-    return leads;
+    // Flatten to a single display-ready string so the All Leads table's
+    // "Follow-up" column (which was never wired to real data before - it
+    // always showed "-" regardless of what was scheduled) has something to
+    // read.
+    return leads.map((l: any) => {
+      const next = l.followUps[0];
+      const { followUps, ...rest } = l;
+      return {
+        ...rest,
+        followUp: next ? `${next.date}${next.time ? ' ' + next.time : ''}` : null
+      };
+    });
   }
 
   /**
@@ -478,6 +504,10 @@ export class LeadService {
     }
     if (updateData.tags !== undefined) {
       data.tags = Array.isArray(updateData.tags) ? JSON.stringify(updateData.tags) : updateData.tags;
+    }
+
+    if (updateData.campaign) {
+      await CourseService.ensureCourseForCampaign(updateData.campaign);
     }
 
     const updated = await prisma.lead.update({

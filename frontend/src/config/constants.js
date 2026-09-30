@@ -28,7 +28,7 @@ export const getStatusCode = (codeOrLabel) => {
 export const COUNSELORS = [
   'MS. INDU',
   'MS. AYESHA',
-  'MS. PRITI',
+  'MS. Preeti Sharma',
   'Admin User 1'
 ];
 

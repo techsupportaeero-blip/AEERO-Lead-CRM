@@ -100,7 +100,7 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
 
     try {
       setSubmittingTask(true);
-      await api.addTask({
+      const created = await api.addTask({
         title: taskTitle.trim(),
         description: taskDesc.trim(),
         leadId: leadId.trim() || undefined,
@@ -116,7 +116,9 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
       setTaskDesc('');
       setLeadId('');
       if (onNotify) onNotify("Task scheduled successfully!");
-      loadTasks();
+      // Add it locally instead of re-fetching every task (unfiltered here,
+      // so there's no filter-match check needed like in TasksView).
+      if (created) setTasks(prev => [created, ...prev]);
     } catch (err) {
       alert("Failed to create task: " + err.message);
     } finally {

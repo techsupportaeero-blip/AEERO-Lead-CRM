@@ -9,6 +9,7 @@ import { RecordPaymentModal } from '../components/RecordPaymentModal';
 import { BulkWhatsAppModal } from '../components/BulkWhatsAppModal';
 import { AssignCampaignModal } from '../components/AssignCampaignModal';
 import { CallUpdateDrawer } from '../components/CallUpdateDrawer';
+import { cleanFbPermissionError } from '../utils/cleanFbPermissionError';
 
 export const AllLeads = ({
   onSelectLead,
@@ -147,12 +148,12 @@ export const AllLeads = ({
       return;
     }
     try {
-      setLoading(true);
       await api.unarchiveLead(leadId, currentUser ? currentUser.name : 'Admin', currentUser ? currentUser.role : 'ADMIN');
-      await fetchLeads();
+      // Same as archive below - drop it from the local (Archived) list
+      // instead of re-fetching every archived lead just to remove one row.
+      setLeads(prev => prev.filter(l => l.leadId !== leadId));
     } catch (err) {
       alert("Failed to restore lead: " + err.message);
-      setLoading(false);
     }
   };
 
@@ -313,24 +314,16 @@ export const AllLeads = ({
         try {
           await api.archiveLead(leadId, currentUser ? currentUser.name : 'Counselor');
           setConfirmConfig(null);
-          await fetchLeads();
+          // Drop it from the local list instead of re-fetching the whole
+          // (unpaginated, thousands-of-rows) leads query for a one-row
+          // change - that full reload is what made this button feel slow.
+          setLeads(prev => prev.filter(l => l.leadId !== leadId));
         } catch (err) {
           setConfirmConfig(null);
           alert("Failed to archive lead: " + err.message);
         }
       }
     });
-  };
-
-  // Facebook's lead-form permission error sometimes lands in a field's raw
-  // value when Meta can't read a custom question. Replace it wherever it
-  // shows up so the table never displays the raw error text.
-  const FB_PERMISSION_ERROR_NEEDLE = "enough permissions";
-  const cleanFbPermissionError = (val) => {
-    if (typeof val === 'string' && val.toLowerCase().includes(FB_PERMISSION_ERROR_NEEDLE)) {
-      return 'No Permission';
-    }
-    return val;
   };
 
   // Normalize lead fields for display (NO FAKE DATA)
@@ -1387,7 +1380,10 @@ export const AllLeads = ({
           darkMode={darkMode}
           onClose={() => setPaymentModalLead(null)}
           onPaymentRecorded={() => {
-            fetchLeads();
+            // Payments aren't shown on the leads table (the Value column is
+            // a separate manual deal-value field), so there's nothing here
+            // that needs a full-list reload - that was pure dead weight.
+            if (onNotify) onNotify('Payment recorded successfully!');
           }}
         />
       )}
@@ -1421,8 +1417,14 @@ export const AllLeads = ({
         darkMode={darkMode}
         onNotify={onNotify}
         onClose={() => setQuickCallLead(null)}
-        onSaved={() => {
-          fetchLeads();
+        onSaved={(payload) => {
+          // CallUpdatePanel already hands back the updated lead - patch it
+          // into the local row instead of re-fetching the entire (large,
+          // unpaginated) leads list for a single-row change.
+          const updated = payload?.lead;
+          if (updated) {
+            setLeads(prev => prev.map(l => l.leadId === updated.leadId ? { ...l, ...updated } : l));
+          }
         }}
         onOpenFullWorkspace={(leadId) => {
           setQuickCallLead(null);

@@ -84,7 +84,7 @@ function sendTestRowToCRM(config, ss, sheet, headers, rowData, rowNumber) {
   // wording/punctuation for this error has changed before. Kept identical to
   // the main folder-wide script so the CRM shows the same "No Permission"
   // text everywhere, regardless of which script ingested the row.
-  var fbErrorNeedle = 'enough permissions';
+  var fbErrorNeedle = 'enough permission';
   for (var key in payload) {
     if (typeof payload[key] === 'string' && payload[key].toLowerCase().indexOf(fbErrorNeedle) !== -1) {
       payload[key] = 'No Permission';

@@ -8,7 +8,7 @@ const replacement = `const seedInitialData = () => {
       { id: 1, username: 'admin', password: 'admin123', name: 'Admin User 1', role: 'ADMIN', email: 'admin@aeero.edu', active: true },
       { id: 2, username: 'indu', password: 'Indu@2026', name: 'MS. INDU', role: 'LEAD_FINDER', email: 'indu@aeero.edu', active: true },
       { id: 3, username: 'ayesha', password: 'Ayesha@2026', name: 'MS. AYESHA', role: 'LEAD_FINDER', email: 'ayesha@aeero.edu', active: true },
-      { id: 4, username: 'priti', password: 'Priti@2026', name: 'MS. PRITI', role: 'LEAD_FINDER', email: 'priti@aeero.edu', active: true }
+      { id: 4, username: 'Preeti Sharma', password: 'Preeti Sharma@2026', name: 'MS. Preeti Sharma', role: 'LEAD_FINDER', email: 'Preeti Sharma@aeero.edu', active: true }
     ],
     courses: [
       { id: 1, code: 'SAFETY', name: 'Diploma in Industrial Safety', description: 'Course', price: 120000, active: true }

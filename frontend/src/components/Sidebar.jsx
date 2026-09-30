@@ -17,9 +17,10 @@ const getRoleDisplayLabel = (user) => {
 };
 
 export const Sidebar = ({ currentRoute, setCurrentRoute, mobileOpen, setMobileOpen, onLogout, leadCount, darkMode, onToggleDarkMode, currentUser }) => {
-  // Same elevated tier as archived-lead restore / task-create: Admin, or
-  // Sr. Counsellor (Indu) - gets the team-wide Follow-up Stage Tracker link.
-  const isElevated = currentUser?.role?.toUpperCase() === 'ADMIN' || currentUser?.name?.toUpperCase()?.includes('INDU');
+  // Admin or Sr. Counsellor (any of them, not just Indu specifically) -
+  // gets the team-wide Follow-up Stage Tracker link.
+  const isElevated = ['ADMIN', 'SR_COUNSELLOR'].includes(currentUser?.role?.toUpperCase());
+  const isAdmin = currentUser?.role?.toUpperCase() === 'ADMIN';
 
   const sections = [
     {
@@ -37,12 +38,13 @@ export const Sidebar = ({ currentRoute, setCurrentRoute, mobileOpen, setMobileOp
     {
       title: 'MANAGEMENT',
       items: [
-        { id: 'users', label: 'Users Management', icon: 'manage_accounts' },
+        ...(isAdmin ? [{ id: 'users', label: 'Users Management', icon: 'manage_accounts' }] : []),
         { id: 'products', label: 'Products & Services', icon: 'inventory_2' },
         { id: 'customers', label: 'Customers', icon: 'group' },
         { id: 'lead-sources', label: 'Lead Sources', icon: 'share' },
         { id: 'email-templates', label: 'Email Templates', icon: 'description' },
         { id: 'email-triggers', label: 'Email Triggers', icon: 'bolt' },
+        ...(isAdmin ? [{ id: 'whatsapp-templates', label: 'WhatsApp Templates', icon: 'forum' }] : []),
       ]
     },
     {

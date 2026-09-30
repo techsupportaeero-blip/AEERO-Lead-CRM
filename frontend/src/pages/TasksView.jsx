@@ -49,7 +49,7 @@ export const TasksView = ({ currentUser, onNotify, darkMode }) => {
 
     try {
       setSubmittingTask(true);
-      await api.addTask({
+      const created = await api.addTask({
         title: taskTitle.trim(),
         description: taskDesc.trim(),
         leadId: leadId.trim(),
@@ -65,7 +65,11 @@ export const TasksView = ({ currentUser, onNotify, darkMode }) => {
       setTaskDesc('');
       setLeadId('');
       if (onNotify) onNotify("Task created successfully!");
-      loadTasks();
+      // Prepend the new task locally instead of re-fetching the whole list -
+      // only show it here if it actually matches the active status filter.
+      if (created && (filterStatus === 'All' || created.status === filterStatus)) {
+        setTasks(prev => [created, ...prev]);
+      }
     } catch (err) {
       alert("Failed to create task: " + err.message);
     } finally {
@@ -82,7 +86,12 @@ export const TasksView = ({ currentUser, onNotify, darkMode }) => {
   const executeTaskCompletion = async (task) => {
     try {
       await api.updateTask(task.taskId, { status: 'Completed' });
-      loadTasks();
+      // Patch it locally instead of re-fetching the whole task list - drop
+      // it from view if the active filter no longer matches "Completed",
+      // otherwise just flip its status in place.
+      setTasks(prev => (filterStatus !== 'All' && filterStatus !== 'Completed')
+        ? prev.filter(t => t.taskId !== task.taskId)
+        : prev.map(t => t.taskId === task.taskId ? { ...t, status: 'Completed' } : t));
     } catch (err) {
       alert("Failed to complete task");
     } finally {

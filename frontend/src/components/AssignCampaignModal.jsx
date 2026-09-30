@@ -51,7 +51,10 @@ export const AssignCampaignModal = ({ isOpen, campaignOptions, currentUser, dark
       );
       setResult(res);
       await loadAssignments();
-      if (onAssigned) onAssigned();
+      // Only the leads table's owners changed if existing leads were
+      // actually swept over - skip the (expensive, full-table) reload
+      // when this override only affects future leads.
+      if (onAssigned && reassignExisting) onAssigned();
     } catch (err) {
       setError(err.message || 'Failed to assign campaign');
     } finally {
