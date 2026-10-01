@@ -139,16 +139,22 @@ export class LeadController {
         ipAddress: req.ip || req.socket.remoteAddress,
         userAgent: req.get('user-agent')
       };
+      const requestingUser = req.user ? { name: req.user.name, role: req.user.role } : undefined;
 
       const updated = await LeadService.updateLead(
         req.params.id,
         req.body,
         req.user?.name || req.body.updatedBy || 'Counselor',
-        userContext
+        userContext,
+        requestingUser
       );
 
       res.json(updated);
     } catch (err: any) {
+      if (err.code === 'FORBIDDEN') {
+        res.status(403).json({ error: err.message });
+        return;
+      }
       if (err.message.includes('not found')) {
         res.status(404).json({ error: err.message });
         return;
@@ -164,16 +170,22 @@ export class LeadController {
         userId: req.user?.userId,
         userName: req.user?.name || updatedBy || 'Counselor'
       };
+      const requestingUser = req.user ? { name: req.user.name, role: req.user.role } : undefined;
 
       const updated = await LeadService.updateLeadStatus(
         req.params.id,
         status,
         req.user?.name || updatedBy || 'Counselor',
-        userContext
+        userContext,
+        requestingUser
       );
 
       res.json(updated);
     } catch (err: any) {
+      if (err.code === 'FORBIDDEN') {
+        res.status(403).json({ error: err.message });
+        return;
+      }
       if (err.message.includes('not found')) {
         res.status(404).json({ error: err.message });
         return;
@@ -185,9 +197,14 @@ export class LeadController {
   static async archiveLead(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const currentUser = req.user?.name || req.body.currentUser || 'System';
-      const archived = await LeadService.archiveLead(req.params.id, currentUser);
+      const requestingUser = req.user ? { name: req.user.name, role: req.user.role } : undefined;
+      const archived = await LeadService.archiveLead(req.params.id, currentUser, requestingUser);
       res.json({ message: 'Lead archived successfully', leadId: archived.leadId });
     } catch (err: any) {
+      if (err.code === 'FORBIDDEN') {
+        res.status(403).json({ error: err.message });
+        return;
+      }
       if (err.message.includes('not found')) {
         res.status(404).json({ error: 'Lead not found for archiving' });
         return;

@@ -30,8 +30,11 @@ leadRouter.get('/leads/count', authMiddleware, LeadController.getLeadsCount);
 leadRouter.get('/leads', authMiddleware, LeadController.getLeads);
 leadRouter.get('/leads/:id', authMiddleware, LeadController.getLeadById);
 leadRouter.post('/leads', optionalAuthMiddleware, validateBody(createLeadSchema), LeadController.createLead);
-leadRouter.put('/leads/:id', optionalAuthMiddleware, validateBody(updateLeadSchema), LeadController.updateLead);
-leadRouter.put('/leads/:id/status', optionalAuthMiddleware, LeadController.updateLeadStatus);
-leadRouter.post('/leads/:id/archive', optionalAuthMiddleware, LeadController.archiveLead);
+// Mandatory auth (not optional) on these 3 - the ownership check (a plain
+// counselor can only write to their own assigned leads) relies on a
+// verified req.user, which optionalAuthMiddleware doesn't guarantee.
+leadRouter.put('/leads/:id', authMiddleware, validateBody(updateLeadSchema), LeadController.updateLead);
+leadRouter.put('/leads/:id/status', authMiddleware, LeadController.updateLeadStatus);
+leadRouter.post('/leads/:id/archive', authMiddleware, LeadController.archiveLead);
 leadRouter.post('/leads/:id/unarchive', optionalAuthMiddleware, LeadController.unarchiveLead);
 leadRouter.delete('/leads/:id', optionalAuthMiddleware, LeadController.deleteLead);

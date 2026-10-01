@@ -465,16 +465,33 @@ export class LeadService {
   /**
    * Update lead
    */
+  // A plain counselor (LEAD_FINDER) can only write to a lead that's actually
+  // assigned to them - mirrors the read-side restriction in getLeads() /
+  // getLeadById(), closing the gap where viewing was locked down but
+  // editing/status-changing/archiving someone else's lead wasn't.
+  static assertOwnership(lead: { ownerId: string | null }, requestingUser?: { name: string; role: string }) {
+    if (
+      requestingUser?.role === 'LEAD_FINDER' &&
+      String(lead.ownerId || '').toLowerCase() !== requestingUser.name.toLowerCase()
+    ) {
+      const err: any = new Error('Access Denied: This lead is not assigned to you.');
+      err.code = 'FORBIDDEN';
+      throw err;
+    }
+  }
+
   static async updateLead(
     identifier: string | number,
     updateData: any,
     updatedBy = 'Counselor',
-    userContext?: { userId?: number; userName?: string; ipAddress?: string; userAgent?: string }
+    userContext?: { userId?: number; userName?: string; ipAddress?: string; userAgent?: string },
+    requestingUser?: { name: string; role: string }
   ) {
     const existing = await this.getLeadById(identifier);
     if (!existing) {
       throw new Error(`Lead ${identifier} not found.`);
     }
+    this.assertOwnership(existing, requestingUser);
 
     const data: Record<string, any> = {};
 
@@ -560,10 +577,12 @@ export class LeadService {
     identifier: string | number,
     statusStr: string,
     updatedBy = 'Counselor',
-    userContext?: { userId?: number; userName?: string }
+    userContext?: { userId?: number; userName?: string },
+    requestingUser?: { name: string; role: string }
   ) {
     const existing = await this.getLeadById(identifier);
     if (!existing) throw new Error(`Lead ${identifier} not found.`);
+    this.assertOwnership(existing, requestingUser);
 
     const newStatus = this.normalizeStatus(statusStr);
 
@@ -607,9 +626,14 @@ export class LeadService {
   /**
    * Archive lead (Soft delete)
    */
-  static async archiveLead(identifier: string | number, currentUser = 'System') {
+  static async archiveLead(
+    identifier: string | number,
+    currentUser = 'System',
+    requestingUser?: { name: string; role: string }
+  ) {
     const existing = await this.getLeadById(identifier);
     if (!existing) throw new Error(`Lead ${identifier} not found.`);
+    this.assertOwnership(existing, requestingUser);
 
     const updated = await prisma.lead.update({
       where: { id: existing.id },
