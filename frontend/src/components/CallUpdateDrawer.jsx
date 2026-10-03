@@ -28,7 +28,7 @@ export const CallUpdateDrawer = ({ lead, currentUser, darkMode, onClose, onSaved
           <div className="min-w-0">
             <p className={`text-[10px] font-bold uppercase tracking-wider ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Quick Call & Update</p>
             <h2 className={`font-extrabold text-base truncate ${darkMode ? 'text-white' : 'text-slate-900'}`}>{lead.name}</h2>
-            <p className={`text-xs font-mono ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{lead.displayId || lead.leadId} · {lead.phone || lead.mobile}</p>
+            <p className={`text-xs font-mono ${darkMode ? 'text-amber-200/90' : 'text-slate-500'}`}>{lead.displayId || lead.leadId} · {lead.phone || lead.mobile}</p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             {onOpenFullWorkspace && (

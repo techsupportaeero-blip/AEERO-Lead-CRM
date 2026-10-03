@@ -1084,8 +1084,8 @@ export const AllLeads = ({
                     )}
 
                     {isColVisible('phone') && (
-                      <td className={`py-2.5 px-3 font-mono text-[11px] whitespace-nowrap ${
-                        darkMode ? 'text-slate-300' : 'text-slate-700'
+                      <td className={`py-2.5 px-3 font-mono text-[11.5px] font-bold whitespace-nowrap ${
+                        darkMode ? 'text-amber-100' : 'text-slate-900'
                       }`}>
                         {lead.phone || lead.mobile || ''}
                       </td>
