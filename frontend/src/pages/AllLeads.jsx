@@ -515,10 +515,6 @@ export const AllLeads = ({
     printWindow.document.close();
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   return (
     <div className={`space-y-4 font-sans transition-colors ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>
 
@@ -895,15 +891,7 @@ export const AllLeads = ({
             <span>PDF</span>
           </button>
 
-          <button
-            onClick={handlePrint}
-            className="px-2.5 py-1 bg-[#b58d16] hover:bg-[#6B540A] text-white rounded text-xs font-semibold flex items-center gap-1 transition-colors"
-          >
-            <span className="material-symbols-outlined text-[14px]">print</span>
-            <span>Print</span>
-          </button>
-
-          {onOpenColumnModal && (
+{onOpenColumnModal && (
             <button
               onClick={onOpenColumnModal}
               title="Choose which columns show in this table"
