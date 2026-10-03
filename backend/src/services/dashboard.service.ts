@@ -1,10 +1,21 @@
 import { prisma } from '../config/database.js';
 import { LeadStatus } from '../types/index.js';
 
+const IST_TZ = 'Asia/Kolkata';
+
+// The server runs in UTC (Render), but every user is in IST - computing
+// "today" and per-lead date buckets in raw UTC shifts the whole trend by a
+// day during the ~5.5h window each night (12:00-05:30 IST) where the UTC
+// calendar date is still "yesterday". Same fix pattern already used in
+// followupReminder.service.ts for the same underlying mismatch.
+function toISTDateKey(date: Date): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: IST_TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
+}
+
 export class DashboardService {
   static async getStats(query: any = {}) {
     const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
+    const todayStr = toISTDateKey(today);
 
     // Build date filter for leads
     const where: any = { isArchived: false };
@@ -108,18 +119,22 @@ export class DashboardService {
       };
     });
 
-    // Lead Trend (Last 7 days)
+    // Lead Trend (Last 7 IST calendar days)
     const trendMap: Record<string, { date: string; leads: number; converted: number }> = {};
     for (let i = 6; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(d.getDate() - i);
-      const dateKey = d.toISOString().split('T')[0];
-      const shortDay = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      // todayStr is already an IST "YYYY-MM-DD" string - anchor it as UTC
+      // midnight purely so date-shifting arithmetic is safe, then read the
+      // calendar components back out with an explicit UTC formatter so the
+      // server's own (UTC) runtime timezone never shifts the label.
+      const base = new Date(`${todayStr}T00:00:00Z`);
+      base.setUTCDate(base.getUTCDate() - i);
+      const dateKey = base.toISOString().split('T')[0];
+      const shortDay = base.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
       trendMap[dateKey] = { date: shortDay, leads: 0, converted: 0 };
     }
 
     leads.forEach((l: any) => {
-      const lDate = l.createdAt.toISOString().split('T')[0];
+      const lDate = toISTDateKey(l.createdAt);
       if (trendMap[lDate]) {
         trendMap[lDate].leads += 1;
         if (l.status === LeadStatus.CONVERTED) {
