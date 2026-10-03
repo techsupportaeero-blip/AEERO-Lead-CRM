@@ -78,18 +78,17 @@ export class LeadController {
       }
 
       // A plain counselor (LEAD_FINDER) can't open a lead that isn't theirs,
-      // even by guessing/typing the URL - mirrors the list-level restriction
-      // in getLeads() so direct access can't bypass it.
-      if (
-        req.user?.role === 'LEAD_FINDER' &&
-        String(lead.ownerId || '').toLowerCase() !== req.user.name.toLowerCase()
-      ) {
-        res.status(403).json({ error: 'Access Denied: This lead is not assigned to you.' });
-        return;
-      }
+      // even by guessing/typing the URL - same campaign-based rule as
+      // getLeads(), so direct access can't bypass the list-level restriction.
+      const requestingUser = req.user ? { name: req.user.name, role: req.user.role } : undefined;
+      await LeadService.assertOwnership(lead, requestingUser);
 
       res.json(lead);
-    } catch (err) {
+    } catch (err: any) {
+      if (err.code === 'FORBIDDEN') {
+        res.status(403).json({ error: err.message });
+        return;
+      }
       next(err);
     }
   }

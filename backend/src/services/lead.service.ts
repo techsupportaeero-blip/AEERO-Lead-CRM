@@ -384,12 +384,24 @@ export class LeadService {
     }
 
     // 11. Mandatory server-side visibility restriction: a plain counselor
-    // (LEAD_FINDER) only ever sees leads assigned to them, no matter what
-    // filters were requested - this overrides the optional `owner` filter
-    // above (which Admin/Manager use to narrow their own unrestricted view)
-    // and can't be bypassed by a query param, unlike that one.
+    // (LEAD_FINDER) only ever sees leads from campaigns formally assigned to
+    // them (Assign Campaign / CampaignAssignment), not just whatever happens
+    // to have their name as owner - two counselors must never see each
+    // other's campaigns, even if an ownerId got set some other way. A lead
+    // with no campaign at all (manual/walk-in entry, never routed through a
+    // campaign) still falls back to direct ownerId assignment so those don't
+    // just vanish. Can't be bypassed by a query param, unlike the optional
+    // `owner` filter above (which Admin/Manager use to narrow their own
+    // unrestricted view).
     if (requestingUser?.role === 'LEAD_FINDER') {
-      where.ownerId = { equals: requestingUser.name, mode: 'insensitive' };
+      const visibility = await this.buildLeadFinderVisibility(requestingUser);
+
+      // Combine with whatever filters were already built above (which may
+      // itself use `where.OR` for the search box) via AND, so the two
+      // OR-conditions can't clobber each other.
+      const priorWhere = { ...where };
+      Object.keys(where).forEach(k => delete where[k]);
+      where.AND = [priorWhere, visibility];
     }
 
     const orderBy: Record<string, any> = {};
@@ -465,15 +477,34 @@ export class LeadService {
   /**
    * Update lead
    */
-  // A plain counselor (LEAD_FINDER) can only write to a lead that's actually
-  // assigned to them - mirrors the read-side restriction in getLeads() /
-  // getLeadById(), closing the gap where viewing was locked down but
-  // editing/status-changing/archiving someone else's lead wasn't.
-  static assertOwnership(lead: { ownerId: string | null }, requestingUser?: { name: string; role: string }) {
-    if (
-      requestingUser?.role === 'LEAD_FINDER' &&
-      String(lead.ownerId || '').toLowerCase() !== requestingUser.name.toLowerCase()
-    ) {
+  // A plain counselor (LEAD_FINDER) can only read/write a lead that's
+  // actually theirs under the same campaign-based rule as getLeads(): if the
+  // lead has a campaign, they must have that campaign formally assigned to
+  // them (CampaignAssignment); if it has no campaign (manual/walk-in entry),
+  // it falls back to a direct ownerId match. Mirrors the list-level
+  // restriction so a counselor can't bypass it by guessing/knowing a lead ID.
+  static async assertOwnership(
+    lead: { ownerId: string | null; campaign?: string | null },
+    requestingUser?: { name: string; role: string }
+  ) {
+    if (requestingUser?.role !== 'LEAD_FINDER') return;
+
+    const campaign = lead.campaign?.trim();
+    let allowed: boolean;
+
+    if (campaign) {
+      const assignment = await prisma.campaignAssignment.findFirst({
+        where: {
+          campaignName: { equals: campaign, mode: 'insensitive' },
+          ownerId: { equals: requestingUser.name, mode: 'insensitive' }
+        }
+      });
+      allowed = Boolean(assignment);
+    } else {
+      allowed = String(lead.ownerId || '').toLowerCase() === requestingUser.name.toLowerCase();
+    }
+
+    if (!allowed) {
       const err: any = new Error('Access Denied: This lead is not assigned to you.');
       err.code = 'FORBIDDEN';
       throw err;
@@ -491,7 +522,7 @@ export class LeadService {
     if (!existing) {
       throw new Error(`Lead ${identifier} not found.`);
     }
-    this.assertOwnership(existing, requestingUser);
+    await this.assertOwnership(existing, requestingUser);
 
     const data: Record<string, any> = {};
 
@@ -582,7 +613,7 @@ export class LeadService {
   ) {
     const existing = await this.getLeadById(identifier);
     if (!existing) throw new Error(`Lead ${identifier} not found.`);
-    this.assertOwnership(existing, requestingUser);
+    await this.assertOwnership(existing, requestingUser);
 
     const newStatus = this.normalizeStatus(statusStr);
 
@@ -633,7 +664,7 @@ export class LeadService {
   ) {
     const existing = await this.getLeadById(identifier);
     if (!existing) throw new Error(`Lead ${identifier} not found.`);
-    this.assertOwnership(existing, requestingUser);
+    await this.assertOwnership(existing, requestingUser);
 
     const updated = await prisma.lead.update({
       where: { id: existing.id },
@@ -700,9 +731,35 @@ export class LeadService {
   static async getLeadsCount(requestingUser?: { name: string; role: string }) {
     const where: Record<string, any> = { isArchived: false };
     if (requestingUser?.role === 'LEAD_FINDER') {
-      where.ownerId = { equals: requestingUser.name, mode: 'insensitive' };
+      const visibility = await this.buildLeadFinderVisibility(requestingUser);
+      where.OR = visibility.OR;
     }
     return prisma.lead.count({ where });
+  }
+
+  // Shared by getLeads()/getLeadsCount(): the campaign-based visibility rule
+  // for a plain counselor (LEAD_FINDER) - leads from campaigns formally
+  // assigned to them (Assign Campaign / CampaignAssignment), plus any
+  // no-campaign lead directly owned by them (manual/walk-in entries that
+  // were never routed through a campaign in the first place).
+  private static async buildLeadFinderVisibility(requestingUser: { name: string; role: string }) {
+    const assignments = await prisma.campaignAssignment.findMany({
+      where: { ownerId: { equals: requestingUser.name, mode: 'insensitive' } },
+      select: { campaignName: true }
+    });
+    const assignedCampaigns = assignments.map(a => a.campaignName);
+
+    return {
+      OR: [
+        ...(assignedCampaigns.length > 0 ? [{ campaign: { in: assignedCampaigns, mode: 'insensitive' } }] : []),
+        {
+          AND: [
+            { OR: [{ campaign: null }, { campaign: '' }] },
+            { ownerId: { equals: requestingUser.name, mode: 'insensitive' } }
+          ]
+        }
+      ]
+    };
   }
 
   /**
