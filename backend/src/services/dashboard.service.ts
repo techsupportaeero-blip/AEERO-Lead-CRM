@@ -35,14 +35,13 @@ export class DashboardService {
     // Fetch every dataset the dashboard needs in parallel instead of one
     // round-trip at a time - these queries don't depend on each other, so
     // sequential awaits were just adding up idle network latency for nothing.
-    const [leads, activities, followups, courses, tasks, counselors] = await Promise.all([
+    const [leads, activities, followups, tasks, counselors] = await Promise.all([
       prisma.lead.findMany({ where, include: { payments: true } }),
       prisma.activity.findMany({ orderBy: { createdAt: 'desc' }, take: 200 }),
       prisma.followUp.findMany({
         where: { status: 'PENDING' },
         include: { lead: { select: { name: true, interestedCourse: true, status: true } } }
       }),
-      prisma.course.findMany({ where: { isActive: true }, select: { name: true, price: true } }),
       prisma.task.findMany({ where: { status: { not: 'COMPLETED' } } }),
       prisma.user.findMany({ where: { isActive: true }, select: { name: true } })
     ]);
@@ -261,27 +260,15 @@ export class DashboardService {
       };
     });
 
-    // Revenue - real recorded payments, auto-estimated from the matched
-    // course price for Converted leads that don't have a payment recorded yet.
-    // A lead with at least one real payment never also adds a course estimate.
-    const courseByName = new Map<string, number>();
-    courses.forEach((c: any) => {
-      if (c.name) courseByName.set(String(c.name).toLowerCase(), Number(c.price) || 0);
-    });
-
+    // Revenue - real recorded payments only. Students pay in EMI
+    // installments over time, not the full course fee at conversion, so this
+    // must reflect money actually collected (Payment rows), never an
+    // estimate of what's eventually owed - see Course.price / Record
+    // Payment's due-balance summary for the "how much is still owed" side.
     let totalCollectedRevenueNum = 0;
     leads.forEach((l: any) => {
       const paid = (l.payments || []).reduce((sum: number, p: any) => sum + (Number(p.amount) || 0), 0);
-      if (paid > 0) {
-        totalCollectedRevenueNum += paid;
-      } else if (l.status === LeadStatus.CONVERTED) {
-        // Match by interested course first; fall back to the lead's campaign
-        // name, since campaign names (Google Sheets / Meta Ads) are often
-        // the only course identity a lead carries.
-        const byCourse = l.interestedCourse ? courseByName.get(String(l.interestedCourse).toLowerCase()) : undefined;
-        const byCampaign = l.campaign ? courseByName.get(String(l.campaign).toLowerCase()) : undefined;
-        totalCollectedRevenueNum += (byCourse !== undefined ? byCourse : byCampaign) || 0;
-      }
+      totalCollectedRevenueNum += paid;
     });
     const totalCollectedRevenue = totalCollectedRevenueNum.toLocaleString('en-IN');
 

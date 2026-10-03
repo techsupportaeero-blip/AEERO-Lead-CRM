@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 
 export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecorded, darkMode }) => {
@@ -10,7 +10,37 @@ export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecord
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Fee summary (total course fee / paid so far / due) + EMI plan - students
+  // almost always pay in installments rather than the full fee at once, so
+  // the counselor needs to see where this payment lands against the total.
+  const [summary, setSummary] = useState(null);
+  const [summaryLoading, setSummaryLoading] = useState(true);
+  const [isEmi, setIsEmi] = useState(false);
+  const [emiTotalInstallments, setEmiTotalInstallments] = useState(2);
+
+  useEffect(() => {
+    if (!lead) return;
+    setSummaryLoading(true);
+    api.getPaymentSummary(lead.leadId || lead.id)
+      .then(s => {
+        setSummary(s);
+        // Total installments can never be fewer than the installment this
+        // payment itself represents (paymentsCount + 1).
+        const minTotal = s.paymentsCount + 1;
+        setEmiTotalInstallments(Math.min(Math.max(2, minTotal), s.maxEmiInstallments) || minTotal);
+      })
+      .catch(() => setSummary(null))
+      .finally(() => setSummaryLoading(false));
+  }, [lead?.leadId, lead?.id]);
+
   if (!lead) return null;
+
+  const emiInstallmentNumber = summary ? summary.paymentsCount + 1 : 1;
+  // How many installments (including this one) are left to cover the due
+  // balance, and what each of those should be - a guide, not a hard rule,
+  // so the "total installments" dropdown actually means something concrete.
+  const remainingInstallments = summary ? Math.max(1, emiTotalInstallments - summary.paymentsCount) : 1;
+  const suggestedInstallmentAmount = summary ? Math.round(summary.dueBalance / remainingInstallments) : 0;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,6 +58,8 @@ export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecord
         referenceNo,
         paymentDate,
         notes,
+        emiInstallmentNumber: isEmi ? emiInstallmentNumber : null,
+        emiTotalInstallments: isEmi ? emiTotalInstallments : null,
         currentUser: currentUser ? currentUser.name : 'Counselor'
       });
 
@@ -80,6 +112,32 @@ export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecord
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
 
+          {/* Fee Summary: Total Course Fee / Paid So Far / Due Balance */}
+          {summaryLoading ? (
+            <div className={`p-3 rounded-lg text-xs font-medium text-center ${darkMode ? 'bg-[#1A1608] text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
+              Loading course fee details...
+            </div>
+          ) : summary && summary.totalFee > 0 ? (
+            <div className={`grid grid-cols-3 gap-2 p-3 rounded-lg border text-center ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-200'}`}>
+              <div>
+                <span className={`block text-[9px] uppercase font-bold ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Total Fee</span>
+                <span className={`block text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>₹{summary.totalFee.toLocaleString('en-IN')}</span>
+              </div>
+              <div>
+                <span className={`block text-[9px] uppercase font-bold ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Paid So Far</span>
+                <span className="block text-sm font-bold text-emerald-500">₹{summary.paidSoFar.toLocaleString('en-IN')}</span>
+              </div>
+              <div>
+                <span className={`block text-[9px] uppercase font-bold ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Due Balance</span>
+                <span className="block text-sm font-bold text-amber-500">₹{summary.dueBalance.toLocaleString('en-IN')}</span>
+              </div>
+            </div>
+          ) : (
+            <div className={`p-3 rounded-lg text-xs font-medium text-center ${darkMode ? 'bg-[#1A1608] text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
+              No course fee found in Products & Services for "{lead.interestedCourse || lead.campaign || 'this course'}" - add it there to see Total Fee / Due Balance here.
+            </div>
+          )}
+
           {error && (
             <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2">
               <span className="material-symbols-outlined text-[18px]">error</span>
@@ -107,6 +165,64 @@ export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecord
               />
             </div>
           </div>
+
+          {/* EMI Plan */}
+          {summary && summary.totalFee > 0 && (
+            <div className={`p-3 rounded-lg border space-y-2 ${darkMode ? 'bg-amber-950/20 border-amber-800/30' : 'bg-amber-50/60 border-amber-200'}`}>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isEmi}
+                  onChange={(e) => setIsEmi(e.target.checked)}
+                  className="w-3.5 h-3.5 rounded cursor-pointer accent-amber-600"
+                />
+                <span className={`text-xs font-bold ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>
+                  This is an EMI installment (student is paying in parts, not full fee at once)
+                </span>
+              </label>
+
+              {isEmi && (
+                <>
+                  <div className="flex items-center gap-2 pl-6 text-xs flex-wrap">
+                    <span className={darkMode ? 'text-slate-300' : 'text-slate-700'}>
+                      Installment {emiInstallmentNumber} of
+                    </span>
+                    <select
+                      value={emiTotalInstallments}
+                      onChange={(e) => setEmiTotalInstallments(Number(e.target.value))}
+                      className={`border rounded px-2 py-1 text-xs font-bold outline-none ${
+                        darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-white border-slate-300 text-slate-900'
+                      }`}
+                    >
+                      {Array.from(
+                        { length: Math.max(1, summary.maxEmiInstallments - emiInstallmentNumber + 1) },
+                        (_, i) => emiInstallmentNumber + i
+                      ).map(n => (
+                        <option key={n} value={n}>{n}</option>
+                      ))}
+                    </select>
+                    <span className={darkMode ? 'text-slate-400' : 'text-slate-500'}>
+                      total (max {summary.maxEmiInstallments} for this course's {summary.durationMonths}-month duration)
+                    </span>
+                  </div>
+
+                  <div className={`flex items-center justify-between gap-2 pl-6 pt-1 text-xs border-t ${darkMode ? 'border-amber-800/30' : 'border-amber-200'}`}>
+                    <span className={darkMode ? 'text-slate-300' : 'text-slate-700'}>
+                      Suggested amount for this installment ({remainingInstallments} left ÷ ₹{summary.dueBalance.toLocaleString('en-IN')} due):{' '}
+                      <strong className={darkMode ? 'text-white' : 'text-slate-900'}>₹{suggestedInstallmentAmount.toLocaleString('en-IN')}</strong>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setAmount(String(suggestedInstallmentAmount))}
+                      className="px-2 py-1 rounded bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold flex-shrink-0"
+                    >
+                      Use This
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             {/* Payment Mode */}

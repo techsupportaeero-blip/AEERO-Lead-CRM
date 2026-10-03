@@ -7,6 +7,7 @@ import { createPaymentSchema } from '../validators/payment.validator.js';
 export const paymentRouter = Router();
 
 paymentRouter.get('/leads/:id/payments', optionalAuthMiddleware, PaymentController.getPayments);
+paymentRouter.get('/leads/:id/payment-summary', optionalAuthMiddleware, PaymentController.getPaymentSummary);
 paymentRouter.post(
   '/leads/:id/payments',
   optionalAuthMiddleware,

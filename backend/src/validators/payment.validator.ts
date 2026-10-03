@@ -6,5 +6,7 @@ export const createPaymentSchema = z.object({
   referenceNo: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   paymentDate: z.string().optional().nullable(),
+  emiInstallmentNumber: z.union([z.number(), z.string().transform(v => parseInt(v, 10))]).optional().nullable(),
+  emiTotalInstallments: z.union([z.number(), z.string().transform(v => parseInt(v, 10))]).optional().nullable(),
   currentUser: z.string().optional()
 });

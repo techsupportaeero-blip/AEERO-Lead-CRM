@@ -344,7 +344,6 @@ export const AllLeads = ({
     return {
       ...sanitizedLead,
       displayId: formattedId,
-      value: sanitizedLead.value || '-',
       followUp: sanitizedLead.followUp || '-',
       createdDate: lead.createdAt ? new Date(lead.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : '-',
       assignedTo: sanitizedLead.ownerId || '-',
@@ -398,7 +397,7 @@ export const AllLeads = ({
   // CSV Export Helper with UTF-8 BOM for perfect Excel column separation
   const handleExportCSV = () => {
     if (processedLeads.length === 0) return alert("No leads to export");
-    const headers = ["S.No.", "Lead ID", "Student Name", "Email Address", "Phone Number", "Status", "Source", "Campaign", "Highest Qualification", "Priority", "Assigned Counselor", "Course Value (INR)", "Follow-up Date", "Created Date"];
+    const headers = ["S.No.", "Lead ID", "Student Name", "Email Address", "Phone Number", "Status", "Source", "Campaign", "Highest Qualification", "Priority", "Assigned Counselor", "Follow-up Date", "Created Date"];
     // Excel auto-detects a plain numeric-looking CSV cell and reformats it
     // (scientific notation like 9.58E+09, or drops a leading 0) - wrapping
     // it as an ="..." formula forces Excel to keep it as literal text.
@@ -415,7 +414,6 @@ export const AllLeads = ({
       l.qualification || '',
       l.priority || '',
       l.assignedTo || l.ownerId || '',
-      l.value || '',
       l.followUp || '',
       l.createdDate || ''
     ]);
@@ -456,7 +454,6 @@ export const AllLeads = ({
         <td style="padding:6px;border:1px solid #CBD5E1;">${l.qualification || ''}</td>
         <td style="padding:6px;border:1px solid #CBD5E1;text-align:center;">${l.priority || ''}</td>
         <td style="padding:6px;border:1px solid #CBD5E1;">${l.assignedTo || l.ownerId || ''}</td>
-        <td style="padding:6px;border:1px solid #CBD5E1;">${l.value || ''}</td>
         <td style="padding:6px;border:1px solid #CBD5E1;">${l.followUp || ''}</td>
         <td style="padding:6px;border:1px solid #CBD5E1;">${l.createdDate || ''}</td>
       </tr>
@@ -495,7 +492,6 @@ export const AllLeads = ({
                 <th>Qualification</th>
                 <th>Priority</th>
                 <th>Assigned To</th>
-                <th>Value (INR)</th>
                 <th>Follow-up</th>
                 <th>Created</th>
               </tr>
@@ -982,7 +978,6 @@ export const AllLeads = ({
                 {isColVisible('qualification') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Qualification</th>}
                 {isColVisible('priority') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-center">Priority</th>}
                 {isColVisible('assignedTo') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Assigned To</th>}
-                {isColVisible('value') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Value</th>}
                 {isColVisible('followUp') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Follow-up</th>}
                 {isColVisible('created') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Created</th>}
                 {isColVisible('remarks') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Remarks</th>}
@@ -1138,14 +1133,6 @@ export const AllLeads = ({
                         darkMode ? 'text-slate-300' : 'text-slate-700'
                       }`}>
                         {lead.assignedTo}
-                      </td>
-                    )}
-
-                    {isColVisible('value') && (
-                      <td className={`py-2.5 px-3 font-medium whitespace-nowrap ${
-                        darkMode ? 'text-slate-200' : 'text-slate-800'
-                      }`}>
-                        {lead.value}
                       </td>
                     )}
 
@@ -1382,9 +1369,9 @@ export const AllLeads = ({
           darkMode={darkMode}
           onClose={() => setPaymentModalLead(null)}
           onPaymentRecorded={() => {
-            // Payments aren't shown on the leads table (the Value column is
-            // a separate manual deal-value field), so there's nothing here
-            // that needs a full-list reload - that was pure dead weight.
+            // Payments aren't shown on the leads table itself, so there's
+            // nothing here that needs a full-list reload - that was pure
+            // dead weight.
             if (onNotify) onNotify('Payment recorded successfully!');
           }}
         />

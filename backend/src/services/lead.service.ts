@@ -474,6 +474,24 @@ export class LeadService {
     return lead;
   }
 
+  // Lightweight existence/ownership-check lookup for the write paths below
+  // (update/status-change/archive/unarchive/delete) - they only ever read
+  // id/leadId/status/ownerId/campaign off the "existing" lead, never the
+  // activities/follow-ups/tasks/payments/notes that getLeadById() eagerly
+  // loads. That full load was making every save noticeably slow for no
+  // benefit, since the response here is never sent back to the client.
+  private static async getLeadLite(identifier: string | number) {
+    const idNum = Number(identifier);
+    const isNumeric = !isNaN(idNum) && String(identifier).trim() === String(idNum);
+
+    return prisma.lead.findFirst({
+      where: isNumeric
+        ? { OR: [{ id: idNum }, { leadId: String(identifier) }] }
+        : { leadId: String(identifier) },
+      select: { id: true, leadId: true, status: true, priority: true, ownerId: true, campaign: true }
+    });
+  }
+
   /**
    * Update lead
    */
@@ -518,7 +536,7 @@ export class LeadService {
     userContext?: { userId?: number; userName?: string; ipAddress?: string; userAgent?: string },
     requestingUser?: { name: string; role: string }
   ) {
-    const existing = await this.getLeadById(identifier);
+    const existing = await this.getLeadLite(identifier);
     if (!existing) {
       throw new Error(`Lead ${identifier} not found.`);
     }
@@ -583,7 +601,6 @@ export class LeadService {
     // Customers page reflects real enrollments instead of staying empty.
     if (data.status === 'CONVERTED' && existing.status !== 'CONVERTED') {
       await CustomerService.createFromLeadIfMissing(updated);
-      await this.autoRegisterCourseFeePayment(updated);
     }
 
     // Audit log
@@ -612,7 +629,7 @@ export class LeadService {
     userContext?: { userId?: number; userName?: string },
     requestingUser?: { name: string; role: string }
   ) {
-    const existing = await this.getLeadById(identifier);
+    const existing = await this.getLeadLite(identifier);
     if (!existing) throw new Error(`Lead ${identifier} not found.`);
     await this.assertOwnership(existing, requestingUser);
 
@@ -650,7 +667,6 @@ export class LeadService {
     // drag-and-drop path), mirroring the same hook in updateLead().
     if (newStatus === 'CONVERTED' && existing.status !== 'CONVERTED') {
       await CustomerService.createFromLeadIfMissing(updated);
-      await this.autoRegisterCourseFeePayment(updated);
     }
 
     return updated;
@@ -664,7 +680,7 @@ export class LeadService {
     currentUser = 'System',
     requestingUser?: { name: string; role: string }
   ) {
-    const existing = await this.getLeadById(identifier);
+    const existing = await this.getLeadLite(identifier);
     if (!existing) throw new Error(`Lead ${identifier} not found.`);
     await this.assertOwnership(existing, requestingUser);
 
@@ -687,7 +703,7 @@ export class LeadService {
    * Unarchive / Restore lead (Admin Only)
    */
   static async unarchiveLead(identifier: string | number, currentUser = 'Admin') {
-    const existing = await this.getLeadById(identifier);
+    const existing = await this.getLeadLite(identifier);
     if (!existing) throw new Error(`Lead ${identifier} not found.`);
 
     const updated = await prisma.lead.update({
@@ -709,7 +725,7 @@ export class LeadService {
    * Permanent Delete lead (Admin Only)
    */
   static async deleteLead(identifier: string | number, currentUser = 'Admin') {
-    const existing = await this.getLeadById(identifier);
+    const existing = await this.getLeadLite(identifier);
     if (!existing) throw new Error(`Lead ${identifier} not found.`);
 
     await prisma.lead.delete({
@@ -737,64 +753,6 @@ export class LeadService {
       where.OR = visibility.OR;
     }
     return prisma.lead.count({ where });
-  }
-
-  // Auto-registers a real Payment record for the matched course fee the
-  // moment a lead converts, so "Total Collected Income" and the Payment
-  // Records drill-down both reflect it immediately without the counselor
-  // re-typing an amount that's already defined in Products & Services.
-  // Matches by interestedCourse first, falling back to campaign name (the
-  // two are treated as the same identity - see CourseService.ensureCourseForCampaign).
-  // Idempotent: skips if this lead already has any payment (manual or auto).
-  private static async autoRegisterCourseFeePayment(lead: any) {
-    try {
-      const existingPayment = await prisma.payment.findFirst({
-        where: { OR: [{ leadId: lead.leadId }, { leadRelId: lead.id }] }
-      });
-      if (existingPayment) return;
-
-      let course = null;
-      if (lead.interestedCourse) {
-        course = await prisma.course.findFirst({
-          where: { name: { equals: String(lead.interestedCourse).trim(), mode: 'insensitive' } }
-        });
-      }
-      if (!course && lead.campaign) {
-        course = await prisma.course.findFirst({
-          where: { name: { equals: String(lead.campaign).trim(), mode: 'insensitive' } }
-        });
-      }
-      if (!course || !course.price || Number(course.price) <= 0) return;
-
-      const amount = Number(course.price);
-      await prisma.payment.create({
-        data: {
-          leadId: lead.leadId,
-          leadRelId: lead.id,
-          amount,
-          paymentMethod: 'Auto (Course Fee)',
-          notes: `Auto-registered on conversion - matched course "${course.name}" fee from Products & Services.`,
-          paymentDate: new Date().toISOString().split('T')[0],
-          createdBy: 'System (Auto)'
-        }
-      });
-
-      await prisma.activity.create({
-        data: {
-          leadId: lead.leadId,
-          leadRelId: lead.id,
-          type: 'NOTE',
-          activityType: 'Payment Received',
-          subject: `Payment Auto-Registered: ₹${amount.toLocaleString('en-IN')}`,
-          description: `Course fee of ₹${amount.toLocaleString('en-IN')} auto-registered on conversion, matched to course "${course.name}".`,
-          outcome: 'Payment Done',
-          createdBy: 'System (Auto)'
-        }
-      });
-    } catch (e) {
-      // Non-critical - a failed auto-payment registration must never block
-      // the lead's status update from completing.
-    }
   }
 
   // Shared by getLeads()/getLeadsCount(): the campaign-based visibility rule

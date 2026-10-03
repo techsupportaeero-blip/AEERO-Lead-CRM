@@ -22,8 +22,6 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
     source: 'Meta Ads',
     status: 'NEW',
     priority: 'Medium',
-    estimatedValue: '185000',
-    currency: 'INR',
     ownerId: currentUser?.name || COUNSELORS[0],
     nextFollowupDate: '',
     lastContactDate: new Date().toISOString().slice(0, 10),
@@ -265,30 +263,6 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                 </select>
               </div>
 
-              <div>
-                <label className={`block font-bold mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Estimated Value (INR ₹)</label>
-                <input
-                  type="number"
-                  placeholder="185000"
-                  value={formData.estimatedValue}
-                  onChange={(e) => handleInputChange('estimatedValue', e.target.value)}
-                  className={`w-full border rounded px-3 py-2 text-xs font-bold outline-none focus:ring-1 focus:ring-[#7D610F] ${
-                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
-                  }`}
-                />
-              </div>
-
-              <div>
-                <label className={`block font-bold mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Currency</label>
-                <input
-                  type="text"
-                  readOnly
-                  value="INR (₹)"
-                  className={`w-full border rounded px-3 py-2 text-xs font-bold ${
-                    darkMode ? 'bg-[#1A1608] border-[#574719] text-slate-400' : 'bg-slate-100 border-slate-300 text-slate-700'
-                  }`}
-                />
-              </div>
             </div>
           </div>
 

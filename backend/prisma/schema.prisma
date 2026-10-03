@@ -240,18 +240,23 @@ model Task {
 }
 
 model Payment {
-  id            Int      @id @default(autoincrement())
-  leadId        String
-  leadRelId     Int?
-  amount        Decimal  @db.Decimal(10, 2)
-  paymentMethod String?  @default("Bank Transfer")
-  referenceNo   String?
-  notes         String?
-  paymentDate   String?
-  createdBy     String?  @default("Counselor")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  lead          Lead?    @relation(fields: [leadRelId], references: [id], onDelete: Cascade)
+  id                   Int      @id @default(autoincrement())
+  leadId               String
+  leadRelId            Int?
+  amount               Decimal  @db.Decimal(10, 2)
+  paymentMethod        String?  @default("Bank Transfer")
+  referenceNo          String?
+  notes                String?
+  paymentDate          String?
+  // EMI tracking - which installment this payment represents (e.g. 1 of 6),
+  // set by the counselor in Record Payment when a student pays in installments
+  // instead of the full course fee at once. Null for a one-time full payment.
+  emiInstallmentNumber Int?
+  emiTotalInstallments Int?
+  createdBy            String?  @default("Counselor")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  lead                 Lead?    @relation(fields: [leadRelId], references: [id], onDelete: Cascade)
 
   @@index([leadId])
   @@map("payments")

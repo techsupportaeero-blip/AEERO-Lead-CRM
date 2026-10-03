@@ -364,6 +364,12 @@ export const api = {
     return res.json();
   },
 
+  async getPaymentSummary(leadId) {
+    const res = await authFetch(`${API_BASE}/leads/${leadId}/payment-summary`);
+    if (!res.ok) throw new Error('Failed to fetch payment summary');
+    return res.json();
+  },
+
   async recordPayment(leadId, paymentData) {
     const res = await authFetch(`${API_BASE}/leads/${leadId}/payments`, {
       method: 'POST',

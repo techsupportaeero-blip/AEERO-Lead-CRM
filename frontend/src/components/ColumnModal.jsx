@@ -17,7 +17,6 @@ export const ALL_COLUMNS = [
   { id: 'qualification', label: 'Qualification', default: true },
   { id: 'priority', label: 'Priority', default: true },
   { id: 'assignedTo', label: 'Assigned To', default: true },
-  { id: 'value', label: 'Value', default: true },
   { id: 'followUp', label: 'Follow-up', default: true },
   { id: 'created', label: 'Created', default: true },
   // Any sheet column that doesn't map to a known field above (name, mobile,

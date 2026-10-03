@@ -11,6 +11,19 @@ export class PaymentController {
     }
   }
 
+  static async getPaymentSummary(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const summary = await PaymentService.getPaymentSummary(req.params.id);
+      res.json(summary);
+    } catch (err: any) {
+      if (err.message.includes('not found')) {
+        res.status(404).json({ error: err.message });
+        return;
+      }
+      next(err);
+    }
+  }
+
   static async recordPayment(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const createdBy = req.user?.name || req.body.currentUser || 'Counselor';
