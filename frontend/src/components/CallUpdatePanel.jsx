@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../api/client';
 import { LEAD_STATUSES, FOLLOWUP_TYPES, getStatusCode } from '../config/constants';
 
@@ -22,9 +22,14 @@ export const CallUpdatePanel = ({ lead, currentUser, darkMode, onSaved, onFollow
   const [followUpType, setFollowUpType] = useState('Call');
   const [updateStatus, setUpdateStatus] = useState(() => getStatusCode(lead?.status || 'NEW'));
   const [savingCall, setSavingCall] = useState(false);
+  const remarksRef = useRef(null);
 
   // Reset the form when a different lead is loaded into this panel (the
-  // drawer variant reuses one mounted instance across multiple leads).
+  // drawer variant reuses one mounted instance across multiple leads, so a
+  // plain `autoFocus` prop would only ever fire once and never again after
+  // switching leads - focus the remarks field imperatively here instead, so
+  // opening a lead from All Leads lets you start typing immediately without
+  // an extra click into the panel).
   useEffect(() => {
     setOutcome('Given Details');
     setRemarks('');
@@ -33,6 +38,7 @@ export const CallUpdatePanel = ({ lead, currentUser, darkMode, onSaved, onFollow
     setFollowUpTime('14:00');
     setFollowUpType('Call');
     setUpdateStatus(getStatusCode(lead?.status || 'NEW'));
+    remarksRef.current?.focus();
   }, [lead?.leadId]);
 
   const handleSaveCallUpdate = async (e) => {
@@ -111,6 +117,7 @@ export const CallUpdatePanel = ({ lead, currentUser, darkMode, onSaved, onFollow
             Counselor Remarks
           </label>
           <textarea
+            ref={remarksRef}
             rows="3"
             placeholder="Enter detailed conversation summary..."
             value={remarks}

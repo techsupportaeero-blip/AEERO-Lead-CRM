@@ -210,13 +210,18 @@ export const AllLeads = ({
       const list = Array.isArray(all) ? all : [];
       if (list.length === 0) return true; // nothing to lose
       const columns = [...new Set(list.flatMap(l => Object.keys(l)))];
-      const esc = (v) => {
+      // Phone-like columns need Excel's ="..." text-force trick too (see
+      // handleExportCSV above) - a plain numeric-looking cell gets reformatted
+      // into scientific notation or loses a leading 0 when opened in Excel.
+      const phoneLikeColumns = new Set(['mobile', 'whatsappNumber']);
+      const esc = (v, col) => {
         const s = v === null || v === undefined ? '' : (typeof v === 'object' ? JSON.stringify(v) : String(v));
-        return `"${s.replace(/"/g, '""')}"`;
+        const text = col && phoneLikeColumns.has(col) && s ? `="${s}"` : s;
+        return `"${text.replace(/"/g, '""')}"`;
       };
       const csv = [
-        columns.map(esc).join(','),
-        ...list.map(l => columns.map(c => esc(l[c])).join(','))
+        columns.map(c => esc(c)).join(','),
+        ...list.map(l => columns.map(c => esc(l[c], c)).join(','))
       ].join('\r\n');
       const blob = new Blob(["﻿" + csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
@@ -394,12 +399,16 @@ export const AllLeads = ({
   const handleExportCSV = () => {
     if (processedLeads.length === 0) return alert("No leads to export");
     const headers = ["S.No.", "Lead ID", "Student Name", "Email Address", "Phone Number", "Status", "Source", "Campaign", "Highest Qualification", "Priority", "Assigned Counselor", "Course Value (INR)", "Follow-up Date", "Created Date"];
+    // Excel auto-detects a plain numeric-looking CSV cell and reformats it
+    // (scientific notation like 9.58E+09, or drops a leading 0) - wrapping
+    // it as an ="..." formula forces Excel to keep it as literal text.
+    const asExcelText = (v) => v ? `="${v}"` : '';
     const rows = processedLeads.map((l, index) => [
       index + 1,
       l.displayId || '',
       l.name || '',
       l.email || '',
-      l.phone || l.mobile || '',
+      asExcelText(l.phone || l.mobile),
       l.status || '',
       l.source || '',
       l.campaign || '',
