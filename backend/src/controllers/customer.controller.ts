@@ -19,4 +19,13 @@ export class CustomerController {
       next(err);
     }
   }
+
+  static async updateCustomer(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const customer = await CustomerService.updateCustomer(Number(req.params.id), req.body);
+      res.json(customer);
+    } catch (err) {
+      next(err);
+    }
+  }
 }

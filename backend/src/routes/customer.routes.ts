@@ -6,3 +6,4 @@ export const customerRouter = Router();
 
 customerRouter.get('/customers', optionalAuthMiddleware, CustomerController.getCustomers);
 customerRouter.post('/customers', optionalAuthMiddleware, CustomerController.createCustomer);
+customerRouter.put('/customers/:id', optionalAuthMiddleware, CustomerController.updateCustomer);

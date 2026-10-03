@@ -19,6 +19,7 @@ export const LeadSourcesView = ({ onNotify, darkMode }) => {
   const [showModal, setShowModal] = useState(false);
   const [editingSource, setEditingSource] = useState(null);
   const [confirmConfig, setConfirmConfig] = useState(null);
+  const [viewingSource, setViewingSource] = useState(null);
 
   // Form Fields
   const [sourceName, setSourceName] = useState('');
@@ -159,8 +160,72 @@ export const LeadSourcesView = ({ onNotify, darkMode }) => {
     document.body.removeChild(link);
   };
 
-  const handlePrint = () => {
-    window.print();
+  const escapeHtml = (v) => String(v ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+
+  const handleExportPDF = () => {
+    if (filteredSources.length === 0) return alert("No sources to export");
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return alert("Please allow popups to export PDF.");
+
+    const todayStr = new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+    const rowsHtml = filteredSources.map(s => `
+      <tr>
+        <td style="padding:6px;border:1px solid #CBD5E1;font-family:monospace;">${s.id ?? '-'}</td>
+        <td style="padding:6px;border:1px solid #CBD5E1;font-weight:bold;">${escapeHtml(s.name)}</td>
+        <td style="padding:6px;border:1px solid #CBD5E1;">${escapeHtml(s.type)}</td>
+        <td style="padding:6px;border:1px solid #CBD5E1;">${escapeHtml(s.category)}</td>
+        <td style="padding:6px;border:1px solid #CBD5E1;text-align:center;">${s.totalLeads ?? 0}</td>
+        <td style="padding:6px;border:1px solid #CBD5E1;text-align:center;">${s.convertedLeads ?? 0}</td>
+        <td style="padding:6px;border:1px solid #CBD5E1;text-align:center;">${s.conversionRate ?? 0}%</td>
+        <td style="padding:6px;border:1px solid #CBD5E1;text-align:center;">${s.isActive === false ? 'Inactive' : 'Active'}</td>
+      </tr>
+    `).join('');
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>AEERO CRM - Lead Sources (${todayStr})</title>
+          <style>
+            body { font-family: sans-serif; padding: 20px; color: #1E293B; }
+            h2 { text-align: center; color: #0c0a01ff; margin-bottom: 4px; }
+            p.sub { text-align: center; font-size: 12px; color: #64748B; margin-top: 0; margin-bottom: 16px; }
+            table { width: 100%; border-collapse: collapse; font-size: 11px; }
+            th { background-color: #0F172A; color: white; padding: 8px; border: 1px solid #3E3100; text-align: left; }
+            @media print {
+              @page { size: landscape; margin: 15mm; }
+            }
+          </style>
+        </head>
+        <body>
+          <h2>AEERO Lead Management CRM - Lead Sources</h2>
+          <p class="sub">Generated on ${todayStr} | Total Records: ${filteredSources.length}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Source Name</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Total Leads</th>
+                <th>Converted</th>
+                <th>Conv. Rate</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+          <script>
+            window.onload = function() {
+              window.print();
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   const filteredSources = (sources || []).filter(s => {
@@ -298,18 +363,11 @@ export const LeadSourcesView = ({ onNotify, darkMode }) => {
               <span>CSV</span>
             </button>
             <button
-              onClick={handleExportCSV}
+              onClick={handleExportPDF}
               className="bg-[#0F172A] hover:bg-[#1E293B] text-white px-3 py-1.5 rounded text-[11px] font-semibold flex items-center gap-1.5 shadow-xs"
             >
               <span className="material-symbols-outlined text-[14px]">picture_as_pdf</span>
               <span>PDF</span>
-            </button>
-            <button
-              onClick={handlePrint}
-              className="bg-[#0F172A] hover:bg-[#1E293B] text-white px-3 py-1.5 rounded text-[11px] font-semibold flex items-center gap-1.5 shadow-xs"
-            >
-              <span className="material-symbols-outlined text-[14px]">print</span>
-              <span>Print</span>
             </button>
 
             <div className={`flex items-center gap-1 font-medium ml-2 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
@@ -422,7 +480,7 @@ export const LeadSourcesView = ({ onNotify, darkMode }) => {
                       ) : (
                       <div className="flex items-center justify-center gap-2">
                         <button
-                          onClick={() => alert(`Source ID: ${s.id}\nName: ${s.name}\nDescription: ${s.description}\nType: ${s.type}\nCategory: ${s.category}\nCost/Lead: ${s.costPerLead}\nTotal Leads: ${s.totalLeads}\nConverted: ${s.convertedLeads} (${s.conversionRate}%)`)}
+                          onClick={() => setViewingSource(s)}
                           className="w-7 h-7 rounded bg-sky-50 text-sky-600 border border-sky-200 flex items-center justify-center hover:bg-sky-100 transition-colors"
                           title="View Details"
                         >
@@ -613,6 +671,40 @@ export const LeadSourcesView = ({ onNotify, darkMode }) => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Details Modal */}
+      {viewingSource && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className={`rounded-xl shadow-2xl border w-full max-w-md p-6 space-y-4 ${
+            darkMode ? 'bg-[#2A220C] border-[#574719] text-white' : 'bg-white border-slate-200 text-slate-900'
+          }`}>
+            <div className={`flex justify-between items-center border-b pb-3 ${darkMode ? 'border-[#574719]' : 'border-slate-100'}`}>
+              <h3 className={`font-bold text-base ${darkMode ? 'text-white' : 'text-slate-900'}`}>Lead Source Details</h3>
+              <button onClick={() => setViewingSource(null)} className="text-slate-400 hover:text-slate-200">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <dl className="space-y-2.5 text-xs">
+              {[
+                ['Source ID', viewingSource.id ?? '-'],
+                ['Name', viewingSource.name],
+                ['Description', viewingSource.description || '-'],
+                ['Type', viewingSource.type || '-'],
+                ['Category', viewingSource.category || '-'],
+                ['Cost per Lead', viewingSource.costPerLead || '-'],
+                ['Total Leads', viewingSource.totalLeads ?? 0],
+                ['Converted', `${viewingSource.convertedLeads ?? 0} (${viewingSource.conversionRate ?? 0}%)`],
+                ['Status', viewingSource.isActive === false ? 'Inactive' : 'Active'],
+              ].map(([label, value]) => (
+                <div key={label} className={`flex justify-between gap-4 pb-2 border-b ${darkMode ? 'border-[#574719]/50' : 'border-slate-100'}`}>
+                  <dt className={`font-semibold uppercase tracking-wider text-[10px] ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{label}</dt>
+                  <dd className={`text-right font-medium ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>{value}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
         </div>
       )}

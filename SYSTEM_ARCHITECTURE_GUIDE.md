@@ -17,8 +17,8 @@
 ### Core Capabilities & Business Rules:
 
 1. **Multi-Channel Ingestion**:
-   - **Meta Ads Webhook**: Real-time webhook (`POST /api/webhook/meta`) for Facebook & Instagram Lead Ads with HMAC-SHA256 signature verification.
-   - **Google Sheets Lead Bridge**: Auto-discovery and batch sync (`POST /api/integrations/google-sheets/*`) from a Google Drive folder (`AEERO LEADS`) with course-specific spreadsheets. Zero hardcoded spreadsheet IDs.
+   - **Meta Ads Webhook**: `GET/POST /api/webhook/meta` (alias `/api/integrations/meta/webhook`) handles the subscription verification handshake. **The POST handler is currently a stub** — it logs the incoming `leadgen_id` but does not yet fetch the lead's field data from Meta's Graph API or create a Lead record. There is no HMAC signature verification implemented. Treat this channel as scaffolded, not production-complete.
+   - **Google Sheets Lead Bridge**: Auto-discovery and batch sync (`POST /api/integrations/google-sheets/*`) from a Google Drive folder, driven by a Google Apps Script bridge (`backend/src/integrations/googleSheets/google-apps-script.js`, deployed inside the actual Google Sheet). Supports multiple tabs/spreadsheets. Zero hardcoded spreadsheet IDs. The Apps Script's time-based sync trigger wraps each run in `LockService.getScriptLock().tryLock(5000)` so overlapping executions skip instead of racing and double-creating leads (fixed after a 248-duplicate incident caused by overlapping 1-minute triggers).
    - **Website / Landing Pages**: Direct REST API endpoint (`POST /api/leads/public`) for web inquiries and UTM campaign attribution.
    - **Manual Inquiries**: Modal-based creation with duplicate detection.
 2. **Multi-Tier Idempotency & Duplicate Protection**:
@@ -26,10 +26,14 @@
    - **Tier 2 (Secondary)**: Normalized Mobile Number (E.164) + Lowercase Email.
    - **Tier 3 (Tertiary)**: Normalized Mobile Number + Source within a 48-hour tolerance window.
 3. **Dynamic Round-Robin Counselor Routing**:
-   - Automatically distributes incoming leads among active eligible counselors (`MS. INDU`, `MS. AYESHA`, `MS. Preeti Sharma`, `Admin User 1`) dynamically retrieved from the database (`role: LEAD_FINDER` or `ADMIN`, `active: true`). Zero hardcoded names in routing logic.
-4. **Complete 360° Lead Lifecycle**:
+   - Automatically distributes incoming leads among active eligible counselors dynamically retrieved from the database (`role: LEAD_FINDER` or `ADMIN`, `active: true`). Zero hardcoded names in routing logic.
+4. **Roles & Lead Visibility** (name-based, not a formal roles table — see `frontend/src/pages/AboutAppView.jsx` for the full live breakdown):
+   - **Admin**: full access, including bulk-archive/permanent-delete ("Clear All").
+   - **Sr. Counsellor**: granted by checking whether the logged-in user's name contains the literal text `"INDU"` — gets every Admin ability except "Clear All".
+   - **Counselor (`LEAD_FINDER`)**: can only see/edit leads that are (a) from a campaign explicitly assigned to them via the `CampaignAssignment` table, or (b) have no campaign and are directly owned by them (manual/walk-in fallback). Enforced server-side in `LeadService.buildLeadFinderVisibility()` / `assertOwnership()`, applied to `getLeads`, `getLeadsCount`, `getLeadById`, `updateLead`, `updateLeadStatus`, and `archiveLead`.
+5. **Complete 360° Lead Lifecycle**:
    - `Inquiry` ➔ `Qualification` ➔ `Call Activity Logs` ➔ `Follow-up Reminders (Calendar & Tasks)` ➔ `Token Advance & Fee Payment Receipts` ➔ `Customer Admission Won`.
-5. **Database Architecture**:
+6. **Database Architecture**:
    - **Primary**: Neon PostgreSQL Cloud via Prisma ORM 5.x.
    - **Offline / Standalone Fallback**: In-memory indexed engine with disk persistence to `backend/aeero_crm_data.json`.
 
@@ -129,8 +133,13 @@
 | `products`     | [`frontend/src/pages/CoursesView.jsx`](file:///frontend/src/pages/CoursesView.jsx)         | Academy course catalog, fees, durations, and active status toggle.                                                                                                                             |
 | `lead-sources` | [`frontend/src/pages/LeadSourcesView.jsx`](file:///frontend/src/pages/LeadSourcesView.jsx) | Multi-channel integration hub for Meta Webhooks, Google Sheets bridge, and UTM builder.                                                                                                        |
 | `activities`   | [`frontend/src/pages/AuditLogsView.jsx`](file:///frontend/src/pages/AuditLogsView.jsx)     | System-wide audit log and counselor activity trail.                                                                                                                                            |
+| `users`        | [`frontend/src/pages/UsersManagementView.jsx`](file:///frontend/src/pages/UsersManagementView.jsx) | Admin-only. Real CRUD for staff accounts (create, edit, reset password, delete) against `/api/users`.                                                                                |
+| `email-templates` | [`frontend/src/pages/EmailTemplatesView.jsx`](file:///frontend/src/pages/EmailTemplatesView.jsx) | Email template library UI. **Frontend-only today** — templates live in local component state (`useState([])`), no backend persistence yet.                                       |
+| `email-triggers` | [`frontend/src/pages/EmailTriggersView.jsx`](file:///frontend/src/pages/EmailTriggersView.jsx) | Email automation trigger configuration UI. Open to all roles (not admin-gated).                                                                                                     |
+| `whatsapp-templates` | [`frontend/src/pages/WhatsAppTemplatesView.jsx`](file:///frontend/src/pages/WhatsAppTemplatesView.jsx) | Admin-only. Real DB-backed CRUD (`WhatsAppTemplate` model) for the templates used by Bulk WhatsApp send — replaced an earlier hardcoded `templates.ts`.                          |
+| `about-app`    | [`frontend/src/pages/AboutAppView.jsx`](file:///frontend/src/pages/AboutAppView.jsx)       | Self-documenting, page-by-page "what actually works vs. what's a mockup" guide — the most up-to-date source of per-feature status, kept current as features ship.                              |
 | `ai-assistant` | [`frontend/src/pages/AiAssistantView.jsx`](file:///frontend/src/pages/AiAssistantView.jsx) | AI counseling assistant (Currently disabled/blocked in UI via `ModuleView.jsx`).                                                                                                               |
-| _(fallback)_   | [`frontend/src/pages/ModuleView.jsx`](file:///frontend/src/pages/ModuleView.jsx)           | Route distributor for secondary pages. Renders SVG loader for in-progress modules.                                                                                                             |
+| _(fallback)_   | [`frontend/src/pages/ModuleView.jsx`](file:///frontend/src/pages/ModuleView.jsx)           | Route distributor for secondary pages (`settings`, `system-settings` — both UI-only mockups, nothing saves yet).                                                                   |
 
 ### 3.3 Reusable Modals & Components (`frontend/src/components/`)
 
@@ -142,6 +151,8 @@
 | [`frontend/src/components/ColumnModal.jsx`](file:///frontend/src/components/ColumnModal.jsx)               | Modal     | Table column selector modal with presets and individual column visibility toggles.                                     |
 | [`frontend/src/components/RecordPaymentModal.jsx`](file:///frontend/src/components/RecordPaymentModal.jsx) | Modal     | Token advance and tuition installment payment collection modal.                                                        |
 | [`frontend/src/components/ConfirmModal.jsx`](file:///frontend/src/components/ConfirmModal.jsx)             | Modal     | Reusable dialog for confirming deletions, archives, and bulk actions.                                                  |
+| [`frontend/src/components/CallUpdatePanel.jsx`](file:///frontend/src/components/CallUpdatePanel.jsx)       | Component | Shared call-log form (outcome, remarks, follow-up scheduling, status change) — embedded in both Lead Workspace's sidebar and `CallUpdateDrawer` so the two never drift out of sync. |
+| [`frontend/src/components/CallUpdateDrawer.jsx`](file:///frontend/src/components/CallUpdateDrawer.jsx)     | Modal     | Half-screen slide-over wrapping `CallUpdatePanel`, opened by clicking a lead's name in All Leads for a quick call-log without leaving the list. |
 | [`frontend/src/components/Header.jsx`](file:///frontend/src/components/Header.jsx)                         | Component | Top bar with global search, Dark/Light mode toggle, notifications bell, and user menu.                                 |
 | [`frontend/src/components/Sidebar.jsx`](file:///frontend/src/components/Sidebar.jsx)                       | Component | Left navigation bar with badge counters and role-aware navigation links.                                               |
 | [`frontend/src/components/DashboardCharts.jsx`](file:///frontend/src/components/DashboardCharts.jsx)       | Component | Funnel chart, Monthly Trend line chart, Lead Source donut chart, Course bar chart.                                     |
@@ -165,25 +176,28 @@
 
 ### 4.2 API Routes Map (`backend/src/routes/`)
 
-| Mount Path                        | Router File              | Key Endpoints & Methods                                                                                                          |
-| :-------------------------------- | :----------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
-| `/api/health`                     | `health.routes.ts`       | `GET /` — Health check & DB connection status.                                                                                   |
-| `/api/auth`                       | `auth.routes.ts`         | `POST /login`, `GET /me`, `POST /logout`.                                                                                        |
-| `/api/leads`                      | `lead.routes.ts`         | `GET /` (filters & pagination), `POST /`, `GET /:id`, `PATCH /:id`, `DELETE /:id`, `POST /check-duplicate`, `POST /bulk-status`. |
-| `/api/leads/public`               | `publicLead.routes.ts`   | `POST /` — Unauthenticated public inquiry endpoint for website landing pages.                                                    |
-| `/api/activities`                 | `activity.routes.ts`     | `GET /` (leadId filter), `POST /` (log call, note, meeting).                                                                     |
-| `/api/followups`                  | `followup.routes.ts`     | `GET /`, `POST /`, `PATCH /:id`, `GET /today`, `GET /overdue`.                                                                   |
-| `/api/tasks`                      | `task.routes.ts`         | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id`.                                                                                  |
-| `/api/notes`                      | `note.routes.ts`         | `GET /`, `POST /`, `DELETE /:id`.                                                                                                |
-| `/api/customers`                  | `customer.routes.ts`     | `GET /`, `POST /`, `GET /:id`.                                                                                                   |
-| `/api/courses`                    | `course.routes.ts`       | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id`.                                                                                  |
-| `/api/lead-sources`               | `leadSource.routes.ts`   | `GET /`, `POST /`, `PATCH /:id`.                                                                                                 |
-| `/api/payments`                   | `payment.routes.ts`      | `GET /`, `POST /`, `GET /receipt/:id`.                                                                                           |
-| `/api/stats`                      | `dashboard.routes.ts`    | `GET /` — Aggregated KPI metrics, conversion rates, and employee performance.                                                    |
-| `/api/audit-logs`                 | `auditLog.routes.ts`     | `GET /` — System audit logs and event history.                                                                                   |
-| `/api/notifications`              | `notification.routes.ts` | `GET /`, `PATCH /:id/read`.                                                                                                      |
-| `/api/webhook/meta`               | `webhook.routes.ts`      | `GET /` (verification challenge), `POST /` (real-time lead ingestion).                                                           |
-| `/api/integrations/google-sheets` | `googleSheets.routes.ts` | `POST /discover`, `POST /sync`, `POST /ingest`, `GET /sources`.                                                                  |
+| Mount Path                        | Router File                     | Key Endpoints & Methods                                                                                                                                  |
+| :-------------------------------- | :------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/api/health`                     | `health.routes.ts`              | `GET /` — Health check & DB connection status.                                                                                                          |
+| `/api/auth`                       | `auth.routes.ts`                | `POST /login`, `GET /me` (authed), `POST /logout`.                                                                                                      |
+| `/api/users`                      | `auth.routes.ts`                | `GET /` (optional auth), `POST /`, `PUT /:id`, `PUT /:id/password` (reset), `DELETE /:id` — all mutating routes require a real admin session.          |
+| `/api/leads`                      | `lead.routes.ts`                | `GET /` (authed, filters & pagination), `GET /count`, `GET /:id` (authed), `POST /`, `PUT /:id` (authed), `PUT /:id/status` (authed), `POST /:id/archive` (authed), `POST /:id/unarchive`, `DELETE /:id`, `POST /check-duplicate`, `POST /bulk-archive`, `POST /bulk-delete-archived`. Mandatory-auth routes enforce the counselor campaign-ownership check server-side. |
+| `/api/leads/public`               | `publicLead.routes.ts`          | `POST /` — Unauthenticated public inquiry endpoint for website landing pages.                                                                           |
+| `/api/activities`                 | `activity.routes.ts`            | `GET /` (leadId filter), `POST /` (log call, note, meeting).                                                                                            |
+| `/api/followups`                  | `followup.routes.ts`            | `GET /`, `POST /`, `PATCH /:id`, `GET /today`, `GET /overdue`.                                                                                          |
+| `/api/tasks`                      | `task.routes.ts`                | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id`.                                                                                                         |
+| `/api/notes`                      | `note.routes.ts`                | `GET /`, `POST /`, `DELETE /:id`.                                                                                                                       |
+| `/api/customers`                  | `customer.routes.ts`            | `GET /`, `POST /` (auto-fired on lead conversion), `PUT /:id` (edit contact details).                                                                   |
+| `/api/courses`                    | `course.routes.ts`              | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id`.                                                                                                         |
+| `/api/lead-sources`               | `leadSource.routes.ts`          | `GET /`, `POST /`, `PATCH /:id`.                                                                                                                        |
+| `/api/campaign-assignments`       | `campaignAssignment.routes.ts`  | `GET /`, `POST /` (set/overwrite a campaign→counselor mapping), `DELETE /:campaignName`.                                                                |
+| `/api/payments`                   | `payment.routes.ts`             | `GET /`, `POST /`, `GET /receipt/:id`.                                                                                                                  |
+| `/api/stats`, `/api/config`       | `dashboard.routes.ts`           | `GET /stats` & `GET /dashboard/summary` (same handler) — KPI metrics, conversion rates, lead trend (IST-bucketed), employee performance. `GET /config`. |
+| `/api/audit-logs`                 | `auditLog.routes.ts`            | `GET /` — System audit logs and event history.                                                                                                          |
+| `/api/notifications`              | `notification.routes.ts`        | `GET /`, `PATCH /:id/read`.                                                                                                                             |
+| `/api/webhook/meta`               | `webhook.routes.ts`             | `GET /` (verification challenge), `POST /` (**stub** — logs `leadgen_id` only, does not yet create a Lead). Also aliased at `/api/integrations/meta/webhook`. `GET /integrations/meta/config`. |
+| `/api/integrations/google-sheets` | `googleSheets.routes.ts`        | `POST /discover`, `POST /backfill`, `POST /sync`, `POST /sync/:spreadsheetId`, `POST /ingest` (called by the Apps Script bridge), `POST /map-course`, `GET /sources`, `GET /status`. All gated by a shared secret or `aeero_session_*` bearer token. |
+| `/api/whatsapp`                   | `whatsapp.routes.ts`            | `GET /templates` (active-only picker list), `POST /bulk-send`. Full admin CRUD at `/api/whatsapp-templates` (`GET /`, `POST /`, `PUT /:id`, `DELETE /:id`). |
 
 ---
 
@@ -205,22 +219,32 @@
 4. **`FollowUp`**: Scheduled callbacks and reminders (`id`, `leadId`, `scheduledAt`, `status`, `notes`, `counselorName`, `createdAt`).
 5. **`Task`**: Counselor tasks (`id`, `title`, `description`, `priority`, `dueDate`, `status`, `assignedToId`, `assignedToName`, `leadId`).
 6. **`Payment`**: Token advances and tuition installments (`id`, `leadId`, `customerId`, `amount`, `paymentMethod`, `receiptNumber`, `notes`, `createdAt`).
-7. **`Customer`**: Converted student directory (`id`, `leadId`, `name`, `email`, `phone`, `course`, `feeAgreed`, `createdAt`).
-8. **`Course`**: Academy course catalog (`id`, `code`, `name`, `fee`, `duration`, `active`).
-9. **`LeadSource`**: Tracking channels (`id`, `name`, `type`, `active`).
-10. **`GoogleSheetSource`**: Spreadsheet sync registry (`id`, `spreadsheetId`, `sheetName`, `status`, `lastProcessedRow`).
-11. **`AuditLog`**: System actions audit trail (`id`, `userId`, `action`, `entity`, `entityId`, `details`, `createdAt`).
-12. **`Notification`**: User alerts (`id`, `userId`, `title`, `message`, `read`, `type`, `createdAt`).
-13. **`LeadCounter`**: Atomic counter for sequential `LD-XXXXXX` IDs.
+7. **`Customer`**: Converted student directory (`id`, `leadId`, `name`, `email`, `phone`, `whatsapp`, `city`, `state`, `notes`, `createdAt`). Auto-created the moment a lead's status transitions to `CONVERTED` (idempotent on `leadId`).
+8. **`Course`**: Academy course catalog (`id`, `code`, `name`, `description`, `category`, `duration`, `price`, `isActive`, `createdAt`).
+9. **`LeadSource`**: Tracking channels (`id`, `name`, `type`, `category`, `costPerLead`, `isActive`). Sources seen on real leads but not yet in this catalog surface in the UI as "Auto-detected".
+10. **`CampaignAssignment`**: Admin/Sr.-Counsellor-set mapping of `campaignName` (unique) → `ownerId` (counselor name). Drives both auto-routing of new leads from that campaign AND a `LEAD_FINDER`'s read/write visibility scope.
+11. **`WhatsAppTemplate`**: DB-backed template catalog for Bulk WhatsApp send (Omtel `template_id`, body text, active flag) — replaced an earlier hardcoded `templates.ts`.
+12. **`Note`**: Pinned/unpinned counselor notes attached to a lead (shown in Lead Workspace).
+13. **`GoogleSheetSource`**: Spreadsheet sync registry (`id`, `spreadsheetId`, `spreadsheetName`, `courseName`, `status`, `lastProcessedRow`, `totalLeadsImported`, `totalDuplicatesSkipped`, `lastSuccessfulSyncAt`, `lastErrorMessage`).
+14. **`AuditLog`**: System actions audit trail (`id`, `userId`, `action`, `entity`, `entityId`, `details`, `createdAt`).
+15. **`Notification`**: User alerts (`id`, `userId`, `title`, `message`, `read`, `type`, `createdAt`). Delivered live over Socket.io (with a client-side chime) in addition to the REST list.
+16. **`LeadCounter`**: Atomic counter for sequential `LD-XXXXXX` IDs.
 
 ---
 
 ## 🔐 6. Credentials, Ports & Network Configuration
 
-### 6.1 Network Ports
+### 6.1 Network Ports (Local Development)
 
 - **Frontend Development Server**: `http://localhost:5173` (or `3000`)
 - **Backend API Server**: `http://localhost:3001`
+
+### 6.1.1 Production Deployment
+
+- **Frontend**: Deployed on **Vercel**, auto-deploys on every push to `main`.
+- **Backend**: Deployed on **Render** (free tier — the instance sleeps after inactivity and cold-starts on the next request, adding a delay to the first call after a quiet period). A GitHub Actions workflow (`.github/workflows/keep-backend-awake.yml`) pings `/api/health` every 10 minutes to reduce sleep time, though GitHub's free-tier scheduler itself is not perfectly reliable (observed multi-hour gaps) — an external uptime monitor (e.g. UptimeRobot) is a more reliable alternative if cold-starts become a problem.
+- **CORS**: The backend's `CORS_ORIGIN` env var on Render must include the live Vercel domain (in addition to localhost) or the deployed frontend gets `Failed to fetch` on every request.
+- **Backend performance**: gzip compression is enabled on API responses, and the relevant `Lead`/`Activity`/`Payment` columns used in dashboard aggregation and filtering have DB indexes.
 
 ### 6.2 Default User Accounts
 

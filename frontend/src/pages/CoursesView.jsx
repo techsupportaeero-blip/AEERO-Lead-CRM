@@ -165,8 +165,70 @@ export const CoursesView = ({ onNotify, darkMode }) => {
     document.body.removeChild(link);
   };
 
-  const handlePrint = () => {
-    window.print();
+  const escapeHtml = (v) => String(v ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+
+  const handleExportPDF = () => {
+    if (filteredCourses.length === 0) return alert("No products to export");
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return alert("Please allow popups to export PDF.");
+
+    const todayStr = new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+    const rowsHtml = filteredCourses.map(c => `
+      <tr>
+        <td style="padding:6px;border:1px solid #CBD5E1;font-family:monospace;">${c.id}</td>
+        <td style="padding:6px;border:1px solid #CBD5E1;font-weight:bold;">${escapeHtml(c.name)}</td>
+        <td style="padding:6px;border:1px solid #CBD5E1;font-family:monospace;">${escapeHtml(c.code)}</td>
+        <td style="padding:6px;border:1px solid #CBD5E1;">${escapeHtml(c.category)}</td>
+        <td style="padding:6px;border:1px solid #CBD5E1;">${escapeHtml(c.duration)}</td>
+        <td style="padding:6px;border:1px solid #CBD5E1;text-align:right;">₹${Number(c.price || 0).toLocaleString()}</td>
+        <td style="padding:6px;border:1px solid #CBD5E1;text-align:center;">${c.isActive === false ? 'Inactive' : 'Active'}</td>
+      </tr>
+    `).join('');
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>AEERO CRM - Products & Services (${todayStr})</title>
+          <style>
+            body { font-family: sans-serif; padding: 20px; color: #1E293B; }
+            h2 { text-align: center; color: #0c0a01ff; margin-bottom: 4px; }
+            p.sub { text-align: center; font-size: 12px; color: #64748B; margin-top: 0; margin-bottom: 16px; }
+            table { width: 100%; border-collapse: collapse; font-size: 11px; }
+            th { background-color: #0F172A; color: white; padding: 8px; border: 1px solid #3E3100; text-align: left; }
+            @media print {
+              @page { size: landscape; margin: 15mm; }
+            }
+          </style>
+        </head>
+        <body>
+          <h2>AEERO Lead Management CRM - Products & Services Catalog</h2>
+          <p class="sub">Generated on ${todayStr} | Total Records: ${filteredCourses.length}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Code</th>
+                <th>Category</th>
+                <th>Duration</th>
+                <th>Tuition Fee</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+          <script>
+            window.onload = function() {
+              window.print();
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   // Category is now free text (counselors type whatever they want in Add
@@ -200,6 +262,16 @@ export const CoursesView = ({ onNotify, darkMode }) => {
   const totalProducts = courses.length;
   const totalPriceSum = courses.reduce((sum, c) => sum + Number(c.price || 0), 0);
   const avgPrice = totalProducts > 0 ? Math.round(totalPriceSum / totalProducts) : 0;
+  const topCategory = (() => {
+    const counts = {};
+    courses.forEach(c => {
+      const cat = (c.category || '').trim();
+      if (cat) counts[cat] = (counts[cat] || 0) + 1;
+    });
+    const entries = Object.entries(counts);
+    if (entries.length === 0) return 'N/A';
+    return entries.sort((a, b) => b[1] - a[1])[0][0];
+  })();
 
   // Pagination
   const indexOfLast = currentPage * entriesPerPage;
@@ -262,8 +334,8 @@ export const CoursesView = ({ onNotify, darkMode }) => {
             <span className="material-symbols-outlined text-[24px]">school</span>
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Top Specialization</span>
-            <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Technical Diploma</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Top Category</span>
+            <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{topCategory}</span>
           </div>
         </div>
 
@@ -369,18 +441,11 @@ export const CoursesView = ({ onNotify, darkMode }) => {
               <span>CSV</span>
             </button>
             <button
-              onClick={handleExportCSV}
+              onClick={handleExportPDF}
               className="bg-[#0F172A] hover:bg-[#1E293B] text-white px-3 py-1.5 rounded text-[11px] font-semibold flex items-center gap-1.5 shadow-xs"
             >
               <span className="material-symbols-outlined text-[14px]">picture_as_pdf</span>
               <span>PDF</span>
-            </button>
-            <button
-              onClick={handlePrint}
-              className="bg-[#0F172A] hover:bg-[#1E293B] text-white px-3 py-1.5 rounded text-[11px] font-semibold flex items-center gap-1.5 shadow-xs"
-            >
-              <span className="material-symbols-outlined text-[14px]">print</span>
-              <span>Print</span>
             </button>
 
             <div className={`flex items-center gap-1 font-medium ml-2 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>

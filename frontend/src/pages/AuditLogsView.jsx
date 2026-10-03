@@ -6,6 +6,7 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
   const [logs, setLogs] = useState([]);
   const [usersList, setUsersList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [lastSyncedAt, setLastSyncedAt] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState('user_pulse'); // 'user_pulse' | 'event_stream'
   const [selectedUser, setSelectedUser] = useState(null); // User object for detail modal
@@ -25,6 +26,7 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
       ]);
       setLogs(Array.isArray(logsData) ? logsData : []);
       setUsersList(Array.isArray(usersData) ? usersData : []);
+      setLastSyncedAt(new Date());
     } catch (err) {
       console.error("Failed to load audit pulse data:", err);
       setLogs([]);
@@ -366,9 +368,9 @@ export const AuditLogsView = ({ onSelectLead, onNotify, darkMode }) => {
           </div>
           <div className="flex items-center gap-1.5 mt-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Real-Time Active</span>
+            <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Last Synced: {formatTimeAgo(lastSyncedAt)}</span>
           </div>
-          <p className="text-[11px] text-slate-400 font-medium mt-0.5">Auto-updates on action</p>
+          <p className="text-[11px] text-slate-400 font-medium mt-0.5">Click Refresh to pull the latest logs</p>
         </div>
 
       </div>

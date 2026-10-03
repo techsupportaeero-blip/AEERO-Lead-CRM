@@ -441,7 +441,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
       percent: s.percent || '0%',
       color: s.color || '#EAB308'
     }))
-    : [{ name: 'Meta Ads', count: stats.totalLeads || 0, percent: '100%', color: '#EAB308' }];
+    : [];
 
   // 4. Real Activity Distribution Donut Data
   const activityDonutData = (stats.activityDistribution && stats.activityDistribution.length > 0)
@@ -451,7 +451,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
       percent: a.percent || '0%',
       color: a.color || '#EAB308'
     }))
-    : [{ name: 'Calls', count: 0, percent: '0%', color: '#EAB308' }];
+    : [];
 
   const totalActivitiesDisplay = stats.totalActivitiesCount ?? activityDonutData.reduce((s, a) => s + (a.count || 0), 0);
 
@@ -982,6 +982,12 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
             </div>
           </div>
 
+          {sourceDonutData.length === 0 ? (
+            <div className="flex flex-col items-center justify-center min-h-[140px] gap-1.5 text-center">
+              <span className="material-symbols-outlined text-slate-400 text-2xl">donut_large</span>
+              <span className={`text-xs font-semibold ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>No lead source data for this period</span>
+            </div>
+          ) : (
           <div className="flex items-center justify-between gap-2 pt-0.5 min-h-[140px]">
             {/* Donut graphic with center text - Compact SVG Size */}
             <div className="w-[110px] h-[110px] relative flex items-center justify-center flex-shrink-0">
@@ -1022,6 +1028,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
               ))}
             </div>
           </div>
+          )}
         </div>
 
         {/* Chart 4: Activity Distribution (Donut Chart with Legend) */}
@@ -1050,6 +1057,12 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
             </div>
           </div>
 
+          {activityDonutData.length === 0 ? (
+            <div className="flex flex-col items-center justify-center min-h-[140px] gap-1.5 text-center">
+              <span className="material-symbols-outlined text-slate-400 text-2xl">donut_large</span>
+              <span className={`text-xs font-semibold ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>No activity data for this period</span>
+            </div>
+          ) : (
           <div className="flex items-center justify-between gap-2 pt-0.5 min-h-[140px]">
             {/* Donut graphic with center text - Compact SVG Size */}
             <div className="w-[110px] h-[110px] relative flex items-center justify-center flex-shrink-0">
@@ -1090,6 +1103,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
               ))}
             </div>
           </div>
+          )}
         </div>
 
       </div>

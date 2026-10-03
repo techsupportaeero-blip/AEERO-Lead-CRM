@@ -78,7 +78,7 @@ export const ModuleView = ({ routeId, onNavigateToLeads, onNavigateRoute, onSele
   }
 
   if (routeId === 'customers') {
-    return <CustomersView onSelectLead={onSelectLead} darkMode={darkMode} />;
+    return <CustomersView onSelectLead={onSelectLead} onNotify={onNotify} darkMode={darkMode} />;
   }
 
   if (routeId === 'products') {

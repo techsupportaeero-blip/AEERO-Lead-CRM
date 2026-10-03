@@ -529,6 +529,16 @@ export const api = {
     return res.json();
   },
 
+  async updateCustomer(id, customerData) {
+    const res = await authFetch(`${API_BASE}/customers/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(customerData),
+    });
+    if (!res.ok) throw new Error('Failed to update customer');
+    return res.json();
+  },
+
   // Courses
   async getCourses() {
     const res = await authFetch(`${API_BASE}/courses`);
