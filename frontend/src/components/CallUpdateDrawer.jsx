@@ -28,7 +28,20 @@ export const CallUpdateDrawer = ({ lead, currentUser, darkMode, onClose, onSaved
           <div className="min-w-0">
             <p className={`text-[10px] font-bold uppercase tracking-wider ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Quick Call & Update</p>
             <h2 className={`font-extrabold text-base truncate ${darkMode ? 'text-white' : 'text-slate-900'}`}>{lead.name}</h2>
-            <p className={`text-xs font-mono ${darkMode ? 'text-amber-200/90' : 'text-slate-500'}`}>{lead.displayId || lead.leadId} · {lead.phone || lead.mobile}</p>
+            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+              <span className={`text-xs font-mono ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{lead.displayId || lead.leadId}</span>
+              {(lead.phone || lead.mobile) && (
+                <a
+                  href={`tel:${lead.phone || lead.mobile}`}
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-mono font-extrabold border ${
+                    darkMode ? 'bg-amber-500/15 border-amber-500/50 text-amber-200' : 'bg-amber-100 border-amber-300 text-amber-800'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[13px]">call</span>
+                  {lead.phone || lead.mobile}
+                </a>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             {onOpenFullWorkspace && (
