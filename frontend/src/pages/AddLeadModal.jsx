@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { api } from '../api/client';
-import { LEAD_STATUSES, COUNSELORS, LEAD_SOURCES, AVIATION_COURSES } from '../config/constants';
+import { LEAD_STATUSES, COUNSELORS, LEAD_SOURCES } from '../config/constants';
+import { useCourseOptions } from '../hooks/useCourseOptions';
 
 export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, currentUser, darkMode }) => {
+  const courseOptions = useCourseOptions('');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -16,7 +18,7 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
     city: '',
     state: '',
     address: '',
-    interestedCourse: AVIATION_COURSES[0],
+    interestedCourse: '',
     website: '',
     linkedin: '',
     source: 'Meta Ads',
@@ -384,7 +386,8 @@ export const AddLeadModal = ({ onClose, onLeadCreated, onDuplicateDetected, curr
                     darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 >
-                  {AVIATION_COURSES.map(c => <option key={c} value={c}>{c}</option>)}
+                  <option value="">Select course…</option>
+                  {courseOptions.map(name => <option key={name} value={name}>{name}</option>)}
                 </select>
               </div>
 

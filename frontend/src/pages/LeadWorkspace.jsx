@@ -273,7 +273,7 @@ export const LeadWorkspace = ({ leadId, onBack, onEditLead, currentUser, onNotif
               </div>
               <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-100'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">Preferred Study Mode</span>
-                <span className={`font-bold ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>{lead.preferredStudyMode || 'Offline'}</span>
+                <span className={`font-bold ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>{lead.preferredStudyMode || 'Not specified'}</span>
               </div>
               <div className={`p-3 rounded-lg border ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-slate-50 border-slate-100'}`}>
                 <span className="text-slate-400 block uppercase font-semibold text-[10px]">Lead Owner / Counselor</span>

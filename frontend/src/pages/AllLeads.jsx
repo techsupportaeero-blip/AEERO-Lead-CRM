@@ -1,5 +1,5 @@
 import Skeleton, { TableSkeleton, CardSkeleton, TableRowSkeleton } from '../components/Skeleton.jsx';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { api } from '../api/client';
 import { StatusBadge, PriorityBadge } from '../components/StatusBadge';
@@ -54,13 +54,25 @@ export const AllLeads = ({
 
   // Search & Pagination State matching screenshot
   const [search, setSearch] = useState(initialFilters.search || '');
+  const [debouncedSearch, setDebouncedSearch] = useState((initialFilters.search || '').trim());
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
+  const latestRequestId = useRef(0);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search.trim()), 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [dateFromFilter, dateToFilter, entriesPerPage]);
 
   useEffect(() => {
     fetchLeads();
     setSelectedLeadIds([]);
-  }, [search, statusFilter, sourceFilter, ownerFilter, priorityFilter, campaignFilter, viewArchived]);
+    setCurrentPage(1);
+  }, [debouncedSearch, statusFilter, sourceFilter, ownerFilter, priorityFilter, campaignFilter, viewArchived]);
 
   useEffect(() => {
     loadCampaignOptions();
@@ -93,11 +105,12 @@ export const AllLeads = ({
   }, [viewArchived]);
 
   const fetchLeads = async () => {
+    const requestId = ++latestRequestId.current;
     try {
       setLoading(true);
       setError(null);
       const data = await api.getLeads({
-        search,
+        search: debouncedSearch,
         status: statusFilter,
         source: sourceFilter,
         owner: ownerFilter,
@@ -105,6 +118,7 @@ export const AllLeads = ({
         campaign: campaignFilter,
         onlyArchived: viewArchived
       });
+      if (requestId !== latestRequestId.current) return;
       let resultList = Array.isArray(data) ? data : [];
       if (viewArchived) {
         resultList = resultList.filter(l => Boolean(l.isArchived) || Number(l.isArchived) === 1);
@@ -113,11 +127,12 @@ export const AllLeads = ({
       }
       setLeads(resultList);
     } catch (err) {
+      if (requestId !== latestRequestId.current) return;
       console.error("Failed to fetch leads:", err);
       setLeads([]);
       setError(err.message || 'Failed to load leads from persistent database');
     } finally {
-      setLoading(false);
+      if (requestId === latestRequestId.current) setLoading(false);
     }
   };
 
@@ -378,7 +393,8 @@ export const AllLeads = ({
 
   const totalEntries = processedLeads.length;
   const totalPages = Math.ceil(totalEntries / entriesPerPage) || 1;
-  const startIndex = (currentPage - 1) * entriesPerPage;
+  const safePage = Math.min(currentPage, totalPages);
+  const startIndex = (safePage - 1) * entriesPerPage;
   const visibleLeads = processedLeads.slice(startIndex, startIndex + entriesPerPage);
 
   // Sliding window of page-number buttons, centered on currentPage (clamped

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { api } from '../api/client';
-import { LEAD_STATUSES, COUNSELORS, LEAD_SOURCES, AVIATION_COURSES, getStatusCode } from '../config/constants';
+import { LEAD_STATUSES, COUNSELORS, LEAD_SOURCES, getStatusCode } from '../config/constants';
+import { useCourseOptions, cleanFormValue } from '../hooks/useCourseOptions';
 
 export const EditLeadModal = ({ lead, onClose, onLeadUpdated, darkMode }) => {
   const [activeTab, setActiveTab] = useState('basic');
@@ -10,35 +11,37 @@ export const EditLeadModal = ({ lead, onClose, onLeadUpdated, darkMode }) => {
     parsedTags = typeof lead.tags === 'string' ? JSON.parse(lead.tags || '[]') : (lead.tags || []);
   } catch(e) {}
 
+  const c = cleanFormValue;
   const [formData, setFormData] = useState({
-    name: lead.name || '',
-    mobile: lead.mobile || '',
-    whatsappNumber: lead.whatsappNumber || '',
-    email: lead.email || '',
-    city: lead.city || '',
-    state: lead.state || '',
-    age: lead.age || '',
-    qualification: lead.qualification || '',
-    interestedCourse: lead.interestedCourse || AVIATION_COURSES[0],
-    preferredStudyMode: lead.preferredStudyMode || 'Offline',
-    source: lead.source || 'Meta Ads',
-    campaign: lead.campaign || '',
-    campaignId: lead.campaignId || '',
-    adSet: lead.adSet || '',
-    adSetId: lead.adSetId || '',
-    ad: lead.ad || '',
-    adId: lead.adId || '',
-    utmSource: lead.utmSource || '',
-    utmMedium: lead.utmMedium || '',
-    utmCampaign: lead.utmCampaign || '',
-    utmContent: lead.utmContent || '',
-    utmTerm: lead.utmTerm || '',
-    ownerId: lead.ownerId || COUNSELORS[0],
+    name: c(lead.name),
+    mobile: c(lead.mobile),
+    whatsappNumber: c(lead.whatsappNumber),
+    email: c(lead.email),
+    city: c(lead.city),
+    state: c(lead.state),
+    age: c(lead.age),
+    qualification: c(lead.qualification),
+    interestedCourse: c(lead.interestedCourse),
+    preferredStudyMode: c(lead.preferredStudyMode) || 'Not Specified',
+    source: c(lead.source) || 'Meta Ads',
+    campaign: c(lead.campaign),
+    campaignId: c(lead.campaignId),
+    adSet: c(lead.adSet),
+    adSetId: c(lead.adSetId),
+    ad: c(lead.ad),
+    adId: c(lead.adId),
+    utmSource: c(lead.utmSource),
+    utmMedium: c(lead.utmMedium),
+    utmCampaign: c(lead.utmCampaign),
+    utmContent: c(lead.utmContent),
+    utmTerm: c(lead.utmTerm),
+    ownerId: c(lead.ownerId) || COUNSELORS[0],
     status: getStatusCode(lead.status),
     priority: lead.priority || 'Medium',
     tags: parsedTags
   });
 
+  const courseOptions = useCourseOptions(c(lead.interestedCourse));
   const [tagInput, setTagInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
@@ -226,7 +229,8 @@ export const EditLeadModal = ({ lead, onClose, onLeadUpdated, darkMode }) => {
                 <select value={formData.interestedCourse} onChange={(e) => handleInputChange('interestedCourse', e.target.value)} className={`w-full border rounded-lg py-2.5 px-3 text-xs font-medium outline-none focus:ring-2 focus:ring-[#9A7310] ${
                   darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                 }`}>
-                  {AVIATION_COURSES.map(c => <option key={c} value={c}>{c}</option>)}
+                  <option value="">Not specified</option>
+                  {courseOptions.map(name => <option key={name} value={name}>{name}</option>)}
                 </select>
               </div>
               <div>
