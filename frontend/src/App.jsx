@@ -17,7 +17,7 @@ const EditLeadModal = lazy(() => import('./pages/EditLeadModal').then(m => ({ de
 const LeadWorkspace = lazy(() => import('./pages/LeadWorkspace').then(m => ({ default: m.LeadWorkspace })));
 const ModuleView = lazy(() => import('./pages/ModuleView').then(m => ({ default: m.ModuleView })));
 
-import { api } from './api/client';
+import { api, SOCKET_URL } from './api/client';
 
 export default function App() {
   // Session Persistence on Reload (User stays logged in until explicit Logout button click)
@@ -158,7 +158,7 @@ export default function App() {
   useEffect(() => {
     if (!currentUser?.id) return;
 
-    const socket = io();
+    const socket = io(SOCKET_URL);
     let debounceTimer = null;
 
     socket.on('newLead', () => {

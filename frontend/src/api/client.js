@@ -12,6 +12,15 @@ const getApiBaseUrl = () => {
 
 const API_BASE = getApiBaseUrl();
 
+// Where socket.io must connect: the BACKEND. On the live site the frontend
+// (Vercel) and the backend (Render) are different domains, so a bare io()
+// would connect back to Vercel, which has no socket server - real-time events
+// (the notification toast, live new-lead updates) would then silently never
+// arrive, while everything fetched over REST still looked fine. When the API
+// base is relative (local dev) this is undefined and io() uses the same host,
+// which the Vite proxy forwards to the backend.
+export const SOCKET_URL = /^https?:\/\//.test(API_BASE) ? API_BASE.replace(/\/api$/, '') : undefined;
+
 // Every API call goes through this instead of bare fetch() so the JWT issued
 // at login rides along automatically - without it, req.user is never
 // populated server-side, and every "admin only" / "your leads only" check

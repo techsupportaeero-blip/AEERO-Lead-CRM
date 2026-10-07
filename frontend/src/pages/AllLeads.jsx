@@ -1,7 +1,7 @@
 import Skeleton, { TableSkeleton, CardSkeleton, TableRowSkeleton } from '../components/Skeleton.jsx';
 import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
-import { api } from '../api/client';
+import { api, SOCKET_URL } from '../api/client';
 import { StatusBadge, PriorityBadge } from '../components/StatusBadge';
 import { LEAD_STATUSES, COUNSELORS, LEAD_SOURCES } from '../config/constants';
 import { ConfirmModal } from '../components/ConfirmModal';
@@ -97,7 +97,7 @@ export const AllLeads = ({
   }, []);
 
   useEffect(() => {
-    const socket = io(); // Connects to same host, Vite proxy will route /socket.io
+    const socket = io(SOCKET_URL); // the backend (see api/client.js); undefined = same host via the Vite proxy
 
     socket.on('connect', () => {
       console.log('Connected to real-time lead updates');
