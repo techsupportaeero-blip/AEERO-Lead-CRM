@@ -10,6 +10,7 @@ import { BulkWhatsAppModal } from '../components/BulkWhatsAppModal';
 import { AssignCampaignModal } from '../components/AssignCampaignModal';
 import { CallUpdateDrawer } from '../components/CallUpdateDrawer';
 import { cleanFbPermissionError } from '../utils/cleanFbPermissionError';
+import { toISTDateKey } from '../utils/istDate';
 
 export const AllLeads = ({
   onSelectLead,
@@ -21,6 +22,7 @@ export const AllLeads = ({
   currentUser,
   visibleColumns,
   initialFilters = {},
+  onGlobalSearchChange,
   darkMode
 }) => {
   // No visibleColumns prop provided (or feature not wired up by a parent) ->
@@ -60,9 +62,25 @@ export const AllLeads = ({
   const latestRequestId = useRef(0);
 
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(search.trim()), 300);
+    const t = setTimeout(() => {
+      const trimmed = search.trim();
+      setDebouncedSearch(trimmed);
+      // Keep the header's global search box in sync with whatever was just
+      // typed into the table's own search box.
+      if (onGlobalSearchChange) onGlobalSearchChange(trimmed);
+    }, 300);
     return () => clearTimeout(t);
   }, [search]);
+
+  // The header search box feeds this page via initialFilters.search, but
+  // that prop is normally only read once on mount - typing into the header
+  // box while already on this page silently did nothing. Re-sync whenever
+  // it changes so both search boxes always agree, no matter which one you
+  // actually typed into.
+  useEffect(() => {
+    const headerValue = initialFilters.search || '';
+    setSearch(prev => (prev === headerValue ? prev : headerValue));
+  }, [initialFilters.search]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -369,24 +387,21 @@ export const AllLeads = ({
     };
   };
 
-  // Client-side Date Range & Pagination Filtering
+  // Client-side Date Range & Pagination Filtering. Comparing raw Date
+  // objects/instants is a timezone trap here: `new Date('2026-10-04')`
+  // always parses as UTC midnight (never IST), so a lead created at, say,
+  // 02:00 AM IST on Oct 4 (= 20:30 UTC Oct 3) could fall on the wrong side
+  // of the boundary depending on the browser's own timezone. Comparing the
+  // IST *calendar date string* instead sidesteps all of that - it matches
+  // what a counselor actually means by "Oct 04", regardless of where the
+  // browser or server happens to be.
   const processedLeads = leads
     .map(enrichLead)
     .filter(lead => {
-      if (dateFromFilter) {
-        const from = new Date(dateFromFilter);
-        const leadDate = new Date(lead.createdAt || '2026-01-01');
-        if (leadDate < from) return false;
-      }
-      if (dateToFilter) {
-        // A date-only string parses to midnight, so comparing against that
-        // excluded every lead created later that same day - push the
-        // boundary to the end of the selected day so "To" actually
-        // includes it.
-        const to = new Date(dateToFilter);
-        to.setHours(23, 59, 59, 999);
-        const leadDate = new Date(lead.createdAt || '2026-12-31');
-        if (leadDate > to) return false;
+      if (dateFromFilter || dateToFilter) {
+        const leadDateKey = toISTDateKey(lead.createdAt);
+        if (dateFromFilter && leadDateKey < dateFromFilter) return false;
+        if (dateToFilter && leadDateKey > dateToFilter) return false;
       }
       return true;
     });
@@ -737,6 +752,7 @@ export const AllLeads = ({
             <input
               type="date"
               value={dateFromFilter}
+              max={dateToFilter || undefined}
               onChange={(e) => setDateFromFilter(e.target.value)}
               className={`w-full px-2.5 py-1.5 rounded text-xs outline-none transition-colors border ${
                 darkMode
@@ -755,6 +771,7 @@ export const AllLeads = ({
             <input
               type="date"
               value={dateToFilter}
+              min={dateFromFilter || undefined}
               onChange={(e) => setDateToFilter(e.target.value)}
               className={`w-full px-2.5 py-1.5 rounded text-xs outline-none transition-colors border ${
                 darkMode

@@ -2,6 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import { FOLLOWUP_TYPES } from '../config/constants';
 
+// Pre-fills with the current clock time instead of a fixed default, so the
+// field already reflects "now" and only needs changing when a different
+// time is actually wanted.
+const getCurrentTimeHHMM = () => {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+};
+
 // Self-contained follow-up history/scheduling card - fetches its own data,
 // same as CallUpdatePanel, so it can be dropped into both the full Lead
 // Workspace and the quick-access slide-over drawer without either needing
@@ -12,7 +20,7 @@ export const FollowUpStagesPanel = ({ lead, currentUser, darkMode, onNotify, ref
 
   const [addingStage, setAddingStage] = useState(false);
   const [newStageDate, setNewStageDate] = useState('');
-  const [newStageTime, setNewStageTime] = useState('10:00');
+  const [newStageTime, setNewStageTime] = useState(getCurrentTimeHHMM);
   const [newStageType, setNewStageType] = useState('Call');
   const [newStageNotes, setNewStageNotes] = useState('');
   const [savingStage, setSavingStage] = useState(false);
@@ -60,7 +68,7 @@ export const FollowUpStagesPanel = ({ lead, currentUser, darkMode, onNotify, ref
       });
       await loadFollowups();
       setNewStageDate('');
-      setNewStageTime('10:00');
+      setNewStageTime(getCurrentTimeHHMM());
       setNewStageType('Call');
       setNewStageNotes('');
       setAddingStage(false);

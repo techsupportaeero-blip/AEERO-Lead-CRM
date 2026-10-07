@@ -2,6 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../api/client';
 import { LEAD_STATUSES, FOLLOWUP_TYPES, getStatusCode } from '../config/constants';
 
+// Pre-fills the follow-up time with the current clock time, so the
+// counselor doesn't have to manually set it on every call - it already
+// reflects "now" and they only need to change it if they actually want a
+// different time.
+const getCurrentTimeHHMM = () => {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+};
+
 const CALL_OUTCOMES = [
   'No Answer', 'Busy', 'Call Declined', 'Switched Off',
   'Out of Network', 'Wrong Number', 'Call Back', 'Given Details',
@@ -18,7 +27,7 @@ export const CallUpdatePanel = ({ lead, currentUser, darkMode, onSaved, onFollow
   const [remarks, setRemarks] = useState('');
   const [additionalInformation, setAdditionalInformation] = useState('');
   const [followUpDate, setFollowUpDate] = useState('');
-  const [followUpTime, setFollowUpTime] = useState('14:00');
+  const [followUpTime, setFollowUpTime] = useState(getCurrentTimeHHMM);
   const [followUpType, setFollowUpType] = useState('Call');
   const [updateStatus, setUpdateStatus] = useState(() => getStatusCode(lead?.status || 'NEW'));
   const [savingCall, setSavingCall] = useState(false);
@@ -35,7 +44,7 @@ export const CallUpdatePanel = ({ lead, currentUser, darkMode, onSaved, onFollow
     setRemarks('');
     setAdditionalInformation('');
     setFollowUpDate('');
-    setFollowUpTime('14:00');
+    setFollowUpTime(getCurrentTimeHHMM());
     setFollowUpType('Call');
     setUpdateStatus(getStatusCode(lead?.status || 'NEW'));
     remarksRef.current?.focus();

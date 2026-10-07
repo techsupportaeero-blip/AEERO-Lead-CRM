@@ -7,6 +7,7 @@ import { getAllSources, getSourceBySpreadsheetId, updateSourceSyncState } from '
 import { readSpreadsheetRows } from './reader.js';
 import { buildHeaderMapping, mapRowToLead, normalizeMobile, normalizeEmail } from './mapper.js';
 import { generateNextLeadId } from '../../utils/generateLeadId.js';
+import { logger } from '../../utils/logger.js';
 import { getCounselorForCampaign } from '../../utils/campaignAssignment.js';
 import { discoverFolderSpreadsheets } from './discovery.js';
 import { CampaignAssignmentService } from '../../services/campaignAssignment.service.js';
@@ -259,7 +260,16 @@ export async function generateLeadId(dbData = null) {
   try {
     return await generateNextLeadId();
   } catch (e) {
-    return `LD-${String(Date.now()).slice(-6)}`;
+    // generateNextLeadId() already retries transient failures internally -
+    // reaching here means the atomic counter is genuinely unavailable.
+    // The old fallback (`Date.now()` last 6 digits) wasn't sequential and
+    // could collide if two leads landed in the same ~1s window (a real risk
+    // during a concurrent bulk Google Sheets sync). Use the full timestamp
+    // in base36 plus a random suffix instead, and log it loudly so a
+    // human notices this ever happened rather than it passing silently.
+    logger.error('generateNextLeadId failed, falling back to a non-sequential Lead ID', e);
+    const fallback = `LD-F${Date.now().toString(36).toUpperCase()}${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+    return fallback;
   }
 }
 

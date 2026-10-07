@@ -1,16 +1,6 @@
 import { prisma } from '../config/database.js';
 import { LeadStatus } from '../types/index.js';
-
-const IST_TZ = 'Asia/Kolkata';
-
-// The server runs in UTC (Render), but every user is in IST - computing
-// "today" and per-lead date buckets in raw UTC shifts the whole trend by a
-// day during the ~5.5h window each night (12:00-05:30 IST) where the UTC
-// calendar date is still "yesterday". Same fix pattern already used in
-// followupReminder.service.ts for the same underlying mismatch.
-function toISTDateKey(date: Date): string {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: IST_TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
-}
+import { toISTDateKey, istDayStartUTC, istDayEndUTC } from '../utils/istDate.js';
 
 export class DashboardService {
   static async getStats(query: any = {}) {
@@ -19,17 +9,13 @@ export class DashboardService {
 
     // Build date filter for leads
     const where: any = { isArchived: false };
+    const filterFrom = query.dateFrom || query.startDate || null;
+    const filterTo = query.dateTo || query.endDate || null;
 
-    if (query.dateFrom || query.dateTo || query.startDate || query.endDate) {
-      const from = query.dateFrom || query.startDate;
-      const to = query.dateTo || query.endDate;
+    if (filterFrom || filterTo) {
       where.createdAt = {};
-      if (from) where.createdAt.gte = new Date(from);
-      if (to) {
-        const endDate = new Date(to);
-        endDate.setHours(23, 59, 59, 999);
-        where.createdAt.lte = endDate;
-      }
+      if (filterFrom) where.createdAt.gte = istDayStartUTC(filterFrom);
+      if (filterTo) where.createdAt.lte = istDayEndUTC(filterTo);
     }
 
     // Fetch every dataset the dashboard needs in parallel instead of one
@@ -118,18 +104,42 @@ export class DashboardService {
       };
     });
 
-    // Lead Trend (Last 7 IST calendar days)
+    // Lead Trend - spans the same range as the applied date filter, so the
+    // chart matches what "This Month" / "Last 7 Days" / a custom range
+    // actually selected. Previously this always showed a fixed trailing
+    // 7-day window regardless of the filter, which could start before the
+    // filtered leads even began (e.g. "This Month" on day 6 still showed 7
+    // days back, with the extra leading days stuck at 0). Falls back to the
+    // last 7 IST days when no filter is applied at all. Capped so a huge
+    // range (e.g. "This Year") doesn't return hundreds of daily buckets.
+    const MAX_TREND_DAYS = 60;
+    const trendEndKey = filterTo ? toISTDateKey(istDayEndUTC(filterTo)) : todayStr;
+    const anchorEnd = new Date(`${trendEndKey}T00:00:00Z`);
+    let trendStartKey: string;
+    if (filterFrom) {
+      trendStartKey = toISTDateKey(istDayStartUTC(filterFrom));
+    } else {
+      const d = new Date(anchorEnd);
+      d.setUTCDate(d.getUTCDate() - 6);
+      trendStartKey = d.toISOString().split('T')[0];
+    }
+    const anchorStart = new Date(`${trendStartKey}T00:00:00Z`);
+    if (Math.round((anchorEnd.getTime() - anchorStart.getTime()) / 86400000) + 1 > MAX_TREND_DAYS) {
+      const capped = new Date(anchorEnd);
+      capped.setUTCDate(capped.getUTCDate() - (MAX_TREND_DAYS - 1));
+      trendStartKey = capped.toISOString().split('T')[0];
+    }
+
     const trendMap: Record<string, { date: string; leads: number; converted: number }> = {};
-    for (let i = 6; i >= 0; i--) {
-      // todayStr is already an IST "YYYY-MM-DD" string - anchor it as UTC
-      // midnight purely so date-shifting arithmetic is safe, then read the
-      // calendar components back out with an explicit UTC formatter so the
-      // server's own (UTC) runtime timezone never shifts the label.
-      const base = new Date(`${todayStr}T00:00:00Z`);
-      base.setUTCDate(base.getUTCDate() - i);
-      const dateKey = base.toISOString().split('T')[0];
-      const shortDay = base.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
-      trendMap[dateKey] = { date: shortDay, leads: 0, converted: 0 };
+    {
+      const cursor = new Date(`${trendStartKey}T00:00:00Z`);
+      const end = new Date(`${trendEndKey}T00:00:00Z`);
+      while (cursor.getTime() <= end.getTime()) {
+        const dateKey = cursor.toISOString().split('T')[0];
+        const shortDay = cursor.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
+        trendMap[dateKey] = { date: shortDay, leads: 0, converted: 0 };
+        cursor.setUTCDate(cursor.getUTCDate() + 1);
+      }
     }
 
     leads.forEach((l: any) => {

@@ -58,6 +58,11 @@ export default function App() {
   const [globalSearch, setGlobalSearch] = useState('');
   const [toast, setToast] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  // Separate from refreshKey - bumping refreshKey after every lead edit was
+  // remounting AllLeads too (same counter in its key), which silently wiped
+  // the counselor's search box, filters and page position. Only
+  // LeadWorkspace needs a forced remount after a save.
+  const [workspaceRefreshKey, setWorkspaceRefreshKey] = useState(0);
 
   // Modals
   const [showAddLeadModal, setShowAddLeadModal] = useState(false);
@@ -233,10 +238,10 @@ export default function App() {
     // Editing the lead currently open in the workspace re-sets selectedLeadId
     // to the SAME value it already had, which React treats as a no-op and
     // never remounts LeadWorkspace - so the screen kept showing stale
-    // pre-edit data even though the save succeeded. Bumping refreshKey forces
+    // pre-edit data even though the save succeeded. Bumping this key forces
     // LeadWorkspace's key to change regardless, so it always remounts and
     // re-fetches fresh data after a save.
-    setRefreshKey(prev => prev + 1);
+    setWorkspaceRefreshKey(prev => prev + 1);
     if (currentRoute === 'lead-details' && selectedLeadId) {
       setSelectedLeadId(updatedLead.leadId);
     }
@@ -340,13 +345,14 @@ export default function App() {
               currentUser={currentUser}
               visibleColumns={visibleColumns}
               initialFilters={{ search: globalSearch }}
+              onGlobalSearchChange={setGlobalSearch}
               darkMode={darkMode}
             />
           )}
 
           {currentRoute === 'lead-details' && (
             <LeadWorkspace
-              key={`workspace-${selectedLeadId}-${refreshKey}`}
+              key={`workspace-${selectedLeadId}-${workspaceRefreshKey}`}
               leadId={selectedLeadId}
               onBack={() => setCurrentRoute('leads')}
               onEditLead={handleEditLead}

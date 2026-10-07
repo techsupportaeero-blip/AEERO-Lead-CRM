@@ -5,6 +5,7 @@ import { AuditLogService } from './auditLog.service.js';
 import { CustomerService } from './customer.service.js';
 import { CampaignAssignmentService } from './campaignAssignment.service.js';
 import { CourseService } from './course.service.js';
+import { istDayStartUTC, istDayEndUTC } from '../utils/istDate.js';
 import { LeadStatus, Priority } from '../types/index.js';
 
 export interface LeadFilterParams {
@@ -361,16 +362,14 @@ export class LeadService {
       ];
     }
 
-    // 10. Date range filter
+    // 10. Date range filter (IST calendar days, not UTC - see utils/istDate.ts)
     if (params.dateFrom || params.dateTo) {
       where.createdAt = {};
       if (params.dateFrom) {
-        where.createdAt.gte = new Date(params.dateFrom);
+        where.createdAt.gte = istDayStartUTC(params.dateFrom);
       }
       if (params.dateTo) {
-        const endDate = new Date(params.dateTo);
-        endDate.setHours(23, 59, 59, 999);
-        where.createdAt.lte = endDate;
+        where.createdAt.lte = istDayEndUTC(params.dateTo);
       }
     }
 

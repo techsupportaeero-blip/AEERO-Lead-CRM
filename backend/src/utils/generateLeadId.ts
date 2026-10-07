@@ -3,8 +3,27 @@ import { prisma } from '../config/database.js';
 /**
  * Generates the next sequential Lead ID (e.g. LD-000001, LD-000002).
  * Uses atomic transaction on LeadCounter model to guarantee uniqueness in high-concurrency environments.
+ * Retries a few times on transient failures (e.g. a transaction conflict
+ * during a concurrent Google Sheets bulk sync) before giving up, so a
+ * passing hiccup doesn't immediately fall back to a non-sequential ID.
  */
 export async function generateNextLeadId(): Promise<string> {
+  const MAX_ATTEMPTS = 3;
+  let lastErr: unknown;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      return await generateNextLeadIdOnce();
+    } catch (err) {
+      lastErr = err;
+      if (attempt < MAX_ATTEMPTS) {
+        await new Promise(resolve => setTimeout(resolve, 150 * attempt));
+      }
+    }
+  }
+  throw lastErr;
+}
+
+async function generateNextLeadIdOnce(): Promise<string> {
   return await prisma.$transaction(async (tx: any) => {
     // 1. Ensure counter record exists
     let counter = await tx.leadCounter.findUnique({

@@ -1,5 +1,19 @@
 import Skeleton, { TableSkeleton, CardSkeleton } from '../components/Skeleton.jsx';
 import React, { useState, useEffect, useMemo } from 'react';
+import { toISTDateKey } from '../utils/istDate';
+
+// `new Date().toISOString()` always converts to UTC, which shifts "today"
+// to yesterday's date during the 00:00-05:30 IST window - every date-range
+// default/preset on this page needs IST's calendar day, not UTC's. Returns
+// a local Date built from the correct IST Y-M-D, so ordinary local getters
+// (getFullYear/getMonth/getDate/setDate/...) keep working for calendar math.
+const getISTToday = () => {
+  const [y, m, d] = toISTDateKey(new Date()).split('-').map(Number);
+  return new Date(y, m - 1, d);
+};
+// Formats a Date's LOCAL calendar components (never toISOString, which
+// would convert back to UTC and risk shifting the date again).
+const formatYMD = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 import { api } from '../api/client';
 import {
   ResponsiveContainer,
@@ -52,11 +66,12 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
   const [detailData, setDetailData] = useState([]);
   const [detailLoading, setDetailLoading] = useState(false);
 
-  // Dynamic Real-Time Date & Range Calculations
-  const now = new Date();
+  // Dynamic Real-Time Date & Range Calculations (IST calendar day - see
+  // getISTToday() above)
+  const now = getISTToday();
   const currentYear = now.getFullYear();
   const currentMonthNum = String(now.getMonth() + 1).padStart(2, '0');
-  const todayDateStr = now.toISOString().split('T')[0];
+  const todayDateStr = formatYMD(now);
   const firstDayOfMonthStr = `${currentYear}-${currentMonthNum}-01`;
 
   const [dateFrom, setDateFrom] = useState(firstDayOfMonthStr);
@@ -124,35 +139,35 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
 
   const applyPreset = (preset) => {
     setSelectedPeriod(preset);
-    const n = new Date();
+    const n = getISTToday();
     let s = '';
-    let e = n.toISOString().split('T')[0];
+    let e = formatYMD(n);
 
     if (preset === 'Today') {
       s = e;
     } else if (preset === 'Yesterday') {
       const y = new Date(n);
       y.setDate(y.getDate() - 1);
-      s = y.toISOString().split('T')[0];
+      s = formatYMD(y);
       e = s;
     } else if (preset === 'Last 7 Days') {
       const d = new Date(n);
       d.setDate(d.getDate() - 7);
-      s = d.toISOString().split('T')[0];
+      s = formatYMD(d);
     } else if (preset === 'Last 30 Days') {
       const d = new Date(n);
       d.setDate(d.getDate() - 30);
-      s = d.toISOString().split('T')[0];
+      s = formatYMD(d);
     } else if (preset === 'This Month') {
       s = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-01`;
     } else if (preset === 'Last Month') {
       const prev = new Date(n.getFullYear(), n.getMonth() - 1, 1);
       const lastDay = new Date(n.getFullYear(), n.getMonth(), 0);
-      s = prev.toISOString().split('T')[0];
-      e = lastDay.toISOString().split('T')[0];
+      s = formatYMD(prev);
+      e = formatYMD(lastDay);
     } else if (preset === 'This Quarter') {
       const q = Math.floor(n.getMonth() / 3);
-      s = new Date(n.getFullYear(), q * 3, 1).toISOString().split('T')[0];
+      s = formatYMD(new Date(n.getFullYear(), q * 3, 1));
     } else if (preset.startsWith('Year')) {
       s = `${n.getFullYear()}-01-01`;
     }
@@ -180,9 +195,9 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
   };
 
   const handleResetDateFilter = () => {
-    const freshNow = new Date();
+    const freshNow = getISTToday();
     const s = `${freshNow.getFullYear()}-${String(freshNow.getMonth() + 1).padStart(2, '0')}-01`;
-    const e = freshNow.toISOString().split('T')[0];
+    const e = formatYMD(freshNow);
     setDateFrom(s);
     setDateTo(e);
     setIsCustomRangeActive(false);
@@ -191,8 +206,15 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
     loadStats({});
   };
 
+  // The selector shows "This Month" by default, but loadStats() only
+  // applies dateFrom/dateTo when isCustomRangeActive is true - calling it
+  // bare here fetched all-time stats on first load while the UI still
+  // claimed "This Month", until the user re-picked a range. Pass the
+  // already-initialized default range explicitly so the first fetch
+  // actually matches what's displayed.
   useEffect(() => {
-    loadStats();
+    loadStats({ startDate: dateFrom, endDate: dateTo });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Detailed Metric & Chart Explanation Dictionary for the (i) Info Icons
@@ -356,7 +378,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
         // Matches the "Follow-ups Today" KPI card, which counts FollowUp
         // records (not Tasks) due today - fetch the same data source so the
         // drill-down shows the same records the card's count is based on.
-        const today = new Date().toISOString().split('T')[0];
+        const today = formatYMD(getISTToday());
         const followups = await api.getAllFollowups({ date: today });
         setDetailData(Array.isArray(followups) ? followups : []);
       } else if (type === 'payments') {
