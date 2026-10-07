@@ -57,6 +57,9 @@ export default function App() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState('');
   const [toast, setToast] = useState(null);
+  // Single source of truth for the Header bell - see the socket effect
+  // below for why this replaced Header.jsx's own separate fetch+socket.
+  const [notifications, setNotifications] = useState([]);
   const [refreshKey, setRefreshKey] = useState(0);
   // Separate from refreshKey - bumping refreshKey after every lead edit was
   // remounting AllLeads too (same counter in its key), which silently wiped
@@ -131,11 +134,29 @@ export default function App() {
     } catch (e) { }
   };
 
+  // Initial notification list for the Header bell - was previously fetched
+  // inside Header.jsx itself (see notifications state below).
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    api.getNotifications(currentUser.id)
+      .then(list => setNotifications(Array.isArray(list) ? list : []))
+      .catch(() => {});
+  }, [currentUser?.id]);
+
   // Live updates: keep the sidebar badge and Dashboard in sync when leads
   // arrive from Google Sheets / Meta webhooks, without touching pages
   // (like AllLeads or LeadWorkspace) that already handle 'newLead' themselves.
+  //
+  // This is also the ONLY socket connection for the 'notification' event -
+  // Header.jsx used to open its own separate socket.io connection for the
+  // bell dropdown, which meant every notification was delivered over two
+  // independent connections from the same tab. The bell reliably stayed in
+  // sync but the toast popup below sometimes silently never fired, with no
+  // error - exactly the kind of inconsistency two redundant connections
+  // produce. Header now gets its notification list via props from this one
+  // connection instead of opening its own.
   useEffect(() => {
-    if (!currentUser) return;
+    if (!currentUser?.id) return;
 
     const socket = io();
     let debounceTimer = null;
@@ -150,18 +171,15 @@ export default function App() {
       }, 800);
     });
 
-    // Live popup for THIS counselor's own notifications (new lead assigned,
-    // new task assigned) - the Header bell already tracks these too (badge
-    // count + dropdown list), but a bell nobody's looking at doesn't get
-    // noticed; a popup does. Clicking it deep-links straight to the lead/
-    // task and marks it read, same convention as the bell dropdown.
     socket.on('notification', (notif) => {
       if (notif.userId !== currentUser.id) return;
 
+      setNotifications(prev => [notif, ...prev]);
       playNotificationSound();
 
       const goToNotification = () => {
         api.markNotificationRead(notif.id).catch(() => {});
+        setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n));
         if (notif.type === 'task') {
           setCurrentRoute('tasks');
         } else if ((notif.type === 'lead' || String(notif.type || '').startsWith('followup'))) {
@@ -178,7 +196,7 @@ export default function App() {
       clearTimeout(debounceTimer);
       socket.disconnect();
     };
-  }, [currentUser]);
+  }, [currentUser?.id]);
 
   const handleRefreshData = async () => {
     try {
@@ -291,6 +309,8 @@ export default function App() {
         onRefreshData={handleRefreshData}
         onNavigateRoute={setCurrentRoute}
         onSelectLead={handleSelectLead}
+        notifications={notifications}
+        setNotifications={setNotifications}
       />
 
       {/* Left Fixed Sidebar matching exact AEERO screenshot design */}

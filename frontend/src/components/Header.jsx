@@ -1,38 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { io } from 'socket.io-client';
 import { api } from '../api/client';
 import aeeroLogo from '../assets/logo/aeero-logo.png';
 
-export const Header = ({ onOpenAddLead, onToggleMobileSidebar, globalSearch, setGlobalSearch, currentUser, currentRoute, darkMode, onToggleDarkMode, onRefreshData, onNavigateRoute, onSelectLead }) => {
+export const Header = ({ onOpenAddLead, onToggleMobileSidebar, globalSearch, setGlobalSearch, currentUser, currentRoute, darkMode, onToggleDarkMode, onRefreshData, onNavigateRoute, onSelectLead, notifications, setNotifications }) => {
   const [showPageInfoModal, setShowPageInfoModal] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Notification Bell - self-contained: fetches this user's notifications on
-  // login, then listens on the same socket.io channel the rest of the app
-  // already uses for live lead updates so new-lead/new-task notifications
-  // for THIS user show up instantly instead of on next refresh.
-  const [notifications, setNotifications] = useState([]);
+  // Notification Bell - the list and its live updates are owned by App.jsx
+  // (a single socket connection shared with the toast popup; this component
+  // used to open its own separate connection, which meant the same event
+  // was delivered over two independent sockets and could go out of sync).
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
   const notifDropdownRef = useRef(null);
   const unreadCount = notifications.filter(n => !n.isRead).length;
-
-  useEffect(() => {
-    if (!currentUser?.id) return;
-    api.getNotifications(currentUser.id)
-      .then(list => setNotifications(Array.isArray(list) ? list : []))
-      .catch(() => {});
-  }, [currentUser?.id]);
-
-  useEffect(() => {
-    if (!currentUser?.id) return;
-    const socket = io();
-    socket.on('notification', (notif) => {
-      if (notif.userId === currentUser.id) {
-        setNotifications(prev => [notif, ...prev]);
-      }
-    });
-    return () => socket.disconnect();
-  }, [currentUser?.id]);
 
   // Close the dropdown on an outside click
   useEffect(() => {
