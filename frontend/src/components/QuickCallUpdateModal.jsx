@@ -10,7 +10,7 @@ import { LEAD_STATUSES, FOLLOWUP_TYPES, getStatusCode } from '../config/constant
 // picture.
 const callOutcomes = [
   'No Answer', 'Busy', 'Call Declined', 'Switched Off',
-  'Out of Network', 'Wrong Number', 'Call Back', 'Given Details',
+  'Out of Network', 'No Incoming', 'Wrong Number', 'Call Back', 'Given Details',
   'Interested', 'Not Interested', 'Other'
 ];
 
