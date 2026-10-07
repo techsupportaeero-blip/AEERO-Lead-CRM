@@ -9,7 +9,6 @@ import { buildHeaderMapping, mapRowToLead, normalizeMobile, normalizeEmail } fro
 import { generateNextLeadId } from '../../utils/generateLeadId.js';
 import { getCounselorForCampaign } from '../../utils/campaignAssignment.js';
 import { discoverFolderSpreadsheets } from './discovery.js';
-import { NotificationService } from '../../services/notification.service.js';
 import { CampaignAssignmentService } from '../../services/campaignAssignment.service.js';
 import { CourseService } from '../../services/course.service.js';
 
@@ -574,13 +573,6 @@ export async function ingestLeadRecord(leadPayload, options = {}, dbData = null)
       if (global.io) {
         global.io.emit('newLead', created);
       }
-
-      await NotificationService.notifyUserByName(
-        assignedCounselor,
-        'New Lead Assigned',
-        `${created.name || 'A new lead'} (${created.leadId}) has been assigned to you.`,
-        'lead'
-      );
 
       return {
         success: true,

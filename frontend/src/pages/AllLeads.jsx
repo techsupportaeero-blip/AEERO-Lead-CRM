@@ -996,7 +996,7 @@ export const AllLeads = ({
                 {isColVisible('assignedTo') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Assigned To</th>}
                 {isColVisible('followUp') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Follow-up</th>}
                 {isColVisible('created') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Created</th>}
-                {isColVisible('remarks') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Remarks</th>}
+                {isColVisible('remarks') && <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Counselor Remarks</th>}
                 <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-center">Actions</th>
               </tr>
             </thead>
@@ -1173,9 +1173,9 @@ export const AllLeads = ({
                         className={`py-2.5 px-3 text-[11px] max-w-[220px] truncate ${
                           darkMode ? 'text-slate-400' : 'text-slate-500'
                         }`}
-                        title={lead.remarks || ''}
+                        title={lead.counselorRemarks || lead.remarks || ''}
                       >
-                        {lead.remarks || '-'}
+                        {lead.counselorRemarks || lead.remarks || '-'}
                       </td>
                     )}
 

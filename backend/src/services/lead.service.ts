@@ -2,7 +2,6 @@ import { prisma } from '../config/database.js';
 import { generateNextLeadId } from '../utils/generateLeadId.js';
 import { getCounselorForCampaign } from '../utils/campaignAssignment.js';
 import { AuditLogService } from './auditLog.service.js';
-import { NotificationService } from './notification.service.js';
 import { CustomerService } from './customer.service.js';
 import { CampaignAssignmentService } from './campaignAssignment.service.js';
 import { CourseService } from './course.service.js';
@@ -286,14 +285,6 @@ export class LeadService {
       userAgent: userContext?.userAgent
     });
 
-    // 9. Notify whoever this lead just got assigned to
-    await NotificationService.notifyUserByName(
-      newLead.ownerId,
-      'New Lead Assigned',
-      `${newLead.name || 'A new lead'} (${newLead.leadId}) has been assigned to you.`,
-      'lead'
-    );
-
     return newLead;
   }
 
@@ -423,6 +414,18 @@ export class LeadService {
           where: { status: 'PENDING' },
           orderBy: [{ date: 'asc' }, { time: 'asc' }],
           take: 1
+        },
+        // Most recent Call & Update remark only, for the All Leads table's
+        // Counselor Remarks column. Deliberately NOT written into the
+        // lead's own `remarks` field, which already holds unmapped Google
+        // Sheets columns for that lead (see googleSheets/mapper.js) -
+        // overwriting it would destroy that data the first time a call is
+        // logged.
+        activities: {
+          where: { remarks: { not: null } },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: { remarks: true }
         }
       }
     });
@@ -433,10 +436,12 @@ export class LeadService {
     // read.
     return leads.map((l: any) => {
       const next = l.followUps[0];
-      const { followUps, ...rest } = l;
+      const latestRemark = l.activities[0]?.remarks || null;
+      const { followUps, activities, ...rest } = l;
       return {
         ...rest,
-        followUp: next ? `${next.date}${next.time ? ' ' + next.time : ''}` : null
+        followUp: next ? `${next.date}${next.time ? ' ' + next.time : ''}` : null,
+        counselorRemarks: latestRemark
       };
     });
   }

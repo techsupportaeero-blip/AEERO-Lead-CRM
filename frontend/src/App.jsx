@@ -66,10 +66,21 @@ export default function App() {
   const [pendingLeadData, setPendingLeadData] = useState(null);
   const [showColumnModal, setShowColumnModal] = useState(false);
 
-  // Visible Table Columns State
-  const [visibleColumns, setVisibleColumns] = useState(
-    ALL_COLUMNS.filter(c => c.default).map(c => c.id)
-  );
+  // Visible Table Columns State - persisted so a page reload doesn't
+  // silently reset a counselor's column picks back to the defaults.
+  const [visibleColumns, setVisibleColumns] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('aeero_visible_columns'));
+      if (Array.isArray(saved) && saved.length > 0) return saved;
+    } catch (e) {}
+    return ALL_COLUMNS.filter(c => c.default).map(c => c.id);
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('aeero_visible_columns', JSON.stringify(visibleColumns));
+    } catch (e) {}
+  }, [visibleColumns]);
 
   // Total Leads Counter for Sidebar Badge
   const [totalLeadsCount, setTotalLeadsCount] = useState(0);

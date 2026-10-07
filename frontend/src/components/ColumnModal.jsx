@@ -19,11 +19,10 @@ export const ALL_COLUMNS = [
   { id: 'assignedTo', label: 'Assigned To', default: true },
   { id: 'followUp', label: 'Follow-up', default: true },
   { id: 'created', label: 'Created', default: true },
-  // Any sheet column that doesn't map to a known field above (name, mobile,
-  // campaign, etc.) gets folded into Remarks as "[column_name]: value" by
-  // the Google Sheets bridge - this is how a brand-new sheet column shows
-  // up here without a code change every time a sheet adds a field.
-  { id: 'remarks', label: 'Remarks (extra sheet fields)', default: false },
+  // Shows the counselor's most recent Call & Update remark; falls back to
+  // any unmapped Google Sheets columns folded in at ingestion time (see
+  // googleSheets/mapper.js) for leads that have never had a call logged yet.
+  { id: 'remarks', label: 'Counselor Remarks', default: false },
   { id: 'actions', label: 'Actions', default: true },
 ];
 

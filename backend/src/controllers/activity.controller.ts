@@ -36,11 +36,18 @@ export class ActivityController {
         LeadService.getLeadById(req.params.id)
       ]);
 
+      // allActivities is already ordered newest-first, so the first entry
+      // with a remark is the current latest - mirrors what getLeads()
+      // computes for the All Leads table, so a freshly-saved call shows up
+      // in the Counselor Remarks column immediately instead of only after
+      // the next full list refetch.
+      const counselorRemarks = allActivities.find((a: any) => a.remarks)?.remarks || null;
+
       res.status(201).json({
         message: 'Call activity saved successfully',
         activity,
         activities: allActivities,
-        lead: updatedLead
+        lead: { ...updatedLead, counselorRemarks }
       });
     } catch (err: any) {
       if (err.message.includes('not found')) {

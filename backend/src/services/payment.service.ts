@@ -143,6 +143,14 @@ export class PaymentService {
       paidSoFar,
       dueBalance,
       paymentsCount: payments.length,
+      payments: payments.map(p => ({
+        id: p.id,
+        amount: Number(p.amount),
+        paymentDate: p.paymentDate,
+        paymentMethod: p.paymentMethod,
+        emiInstallmentNumber: p.emiInstallmentNumber,
+        emiTotalInstallments: p.emiTotalInstallments
+      })),
       maxEmiInstallments,
       durationMonths
     };

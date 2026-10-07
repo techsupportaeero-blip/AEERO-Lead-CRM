@@ -366,13 +366,13 @@ export const Header = ({ onOpenAddLead, onToggleMobileSidebar, globalSearch, set
             </button>
 
             {showNotifDropdown && (
-              <div className={`absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto rounded-xl border shadow-2xl z-50 ${darkMode ? 'bg-[#1A1608] border-[#574719]' : 'bg-white border-slate-200'}`}>
-                <div className={`px-4 py-2.5 border-b font-bold text-xs flex items-center justify-between ${darkMode ? 'border-[#574719] text-white' : 'border-slate-100 text-slate-900'}`}>
+              <div className={`absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto rounded-xl border shadow-2xl z-50 ${darkMode ? 'bg-white border-slate-200' : 'bg-[#1A1608] border-[#574719]'}`}>
+                <div className={`px-4 py-2.5 border-b font-bold text-xs flex items-center justify-between ${darkMode ? 'border-slate-100 text-slate-900' : 'border-[#574719] text-white'}`}>
                   <span>Notifications</span>
                   {unreadCount > 0 && <span className="text-[10px] font-semibold text-rose-500">{unreadCount} unread</span>}
                 </div>
                 {notifications.length === 0 ? (
-                  <div className={`py-8 text-center text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                  <div className={`py-8 text-center text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                     <span className="material-symbols-outlined text-2xl mb-1 block">notifications_off</span>
                     No notifications yet
                   </div>
@@ -381,14 +381,14 @@ export const Header = ({ onOpenAddLead, onToggleMobileSidebar, globalSearch, set
                     <button
                       key={notif.id}
                       onClick={() => handleNotifClick(notif)}
-                      className={`w-full text-left px-4 py-2.5 border-b last:border-b-0 transition-colors ${darkMode ? 'border-[#3D3212] hover:bg-[#2A220C]' : 'border-slate-50 hover:bg-slate-50'} ${!notif.isRead ? (darkMode ? 'bg-[#2A220C]/60' : 'bg-amber-50/60') : ''}`}
+                      className={`w-full text-left px-4 py-2.5 border-b last:border-b-0 transition-colors ${darkMode ? 'border-slate-50 hover:bg-slate-50' : 'border-[#3D3212] hover:bg-[#2A220C]'} ${!notif.isRead ? (darkMode ? 'bg-amber-50/60' : 'bg-[#2A220C]/60') : ''}`}
                     >
                       <div className="flex items-start gap-2">
                         {!notif.isRead && <span className="w-1.5 h-1.5 rounded-full bg-[#E5A812] mt-1.5 flex-shrink-0" />}
                         <div className="min-w-0 flex-1">
-                          <p className={`text-xs font-bold truncate ${darkMode ? 'text-white' : 'text-slate-900'}`}>{notif.title}</p>
-                          <p className={`text-[11px] mt-0.5 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>{notif.message}</p>
-                          <p className={`text-[10px] mt-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{timeAgo(notif.createdAt)}</p>
+                          <p className={`text-xs font-bold truncate ${darkMode ? 'text-slate-900' : 'text-white'}`}>{notif.title}</p>
+                          <p className={`text-[11px] mt-0.5 ${darkMode ? 'text-slate-600' : 'text-slate-400'}`}>{notif.message}</p>
+                          <p className={`text-[10px] mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{timeAgo(notif.createdAt)}</p>
                         </div>
                       </div>
                     </button>

@@ -138,6 +138,28 @@ export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecord
             </div>
           )}
 
+          {summary && summary.payments && summary.payments.length > 0 && (
+            <div className={`rounded-lg border overflow-hidden ${darkMode ? 'border-[#574719]' : 'border-slate-200'}`}>
+              <div className={`px-3 py-1.5 text-[10px] font-bold uppercase ${darkMode ? 'bg-[#1A1608] text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
+                Previous Payments ({summary.payments.length})
+              </div>
+              <table className="w-full text-xs">
+                <tbody className={`divide-y ${darkMode ? 'divide-[#574719] text-slate-200' : 'divide-slate-100 text-slate-700'}`}>
+                  {summary.payments.map((p, i) => (
+                    <tr key={p.id || i}>
+                      <td className="px-3 py-1.5 font-semibold">{p.paymentDate || '-'}</td>
+                      <td className="px-3 py-1.5 font-bold text-emerald-500 text-right">₹{p.amount.toLocaleString('en-IN')}</td>
+                      <td className="px-3 py-1.5">{p.paymentMethod || '-'}</td>
+                      <td className="px-3 py-1.5 text-right text-[11px] text-slate-400">
+                        {p.emiTotalInstallments ? `EMI ${p.emiInstallmentNumber}/${p.emiTotalInstallments}` : 'Full'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
           {error && (
             <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2">
               <span className="material-symbols-outlined text-[18px]">error</span>

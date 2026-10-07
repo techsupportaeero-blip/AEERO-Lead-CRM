@@ -33,16 +33,16 @@ export const NotificationToast = ({ message, title, type = 'success', onClose, o
       onClick={onClick}
       className={`fixed bottom-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-lg shadow-xl border animate-slide-up transition-all max-w-sm ${
         onClick ? 'cursor-pointer hover:shadow-2xl' : ''
-      } ${darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'}`}
+      } ${darkMode ? 'bg-white border-slate-200' : 'bg-[#2A220C] border-[#574719]'}`}
     >
       <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${iconStyle}`}>
         <span className="material-symbols-outlined text-[20px]">{iconName}</span>
       </div>
       <div className="min-w-0">
-        <h4 className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-slate-800'}`}>
+        <h4 className={`text-sm font-semibold ${darkMode ? 'text-slate-800' : 'text-white'}`}>
           {title || defaultTitle}
         </h4>
-        <p className={`text-xs ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>{message}</p>
+        <p className={`text-xs ${darkMode ? 'text-slate-600' : 'text-slate-300'}`}>{message}</p>
       </div>
       <button
         onClick={(e) => { e.stopPropagation(); onClose(); }}
