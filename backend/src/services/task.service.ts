@@ -120,6 +120,7 @@ export class TaskService {
     if (data.dueDate !== undefined) updateData.dueDate = data.dueDate;
     if (data.dueTime !== undefined) updateData.dueTime = data.dueTime;
     if (data.status !== undefined) updateData.status = this.normalizeStatus(data.status);
+    if (data.completionRemarks !== undefined) updateData.completionRemarks = data.completionRemarks;
 
     // Only notify on a genuine re-assignment (new assignee differs from the
     // old one) - not on every unrelated edit (status change, due date, etc.)

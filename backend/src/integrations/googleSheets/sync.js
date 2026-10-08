@@ -421,6 +421,40 @@ export async function ingestLeadRecord(leadPayload, options = {}, dbData = null)
             });
           }
 
+          // A duplicate match silently merging into the existing row was
+          // losing the signal that this person showed fresh interest again
+          // today - updatedAt changes, but createdAt (what the All Leads
+          // table displays) stays the original date, so a genuine re-
+          // application looked like an untouched old lead. Log it as an
+          // Activity whenever the campaign or course actually changed, so
+          // "applied for a 2nd course" / re-registration is visible on the
+          // lead's own timeline instead of disappearing into a silent merge.
+          const campaignChanged = leadPayload.campaign &&
+            String(leadPayload.campaign).trim().toLowerCase() !== String(existing.campaign || '').trim().toLowerCase();
+          const courseChanged = leadPayload.interestedCourse &&
+            String(leadPayload.interestedCourse).trim().toLowerCase() !== String(existing.interestedCourse || '').trim().toLowerCase();
+          if (campaignChanged || courseChanged) {
+            try {
+              await prisma.activity.create({
+                data: {
+                  leadId: existing.leadId,
+                  leadRelId: existing.id,
+                  type: 'NOTE',
+                  activityType: 'Re-applied',
+                  subject: 'Lead re-submitted via a different campaign/course',
+                  description: [
+                    campaignChanged ? `Campaign: "${existing.campaign || '(none)'}" -> "${leadPayload.campaign}"` : null,
+                    courseChanged ? `Course: "${existing.interestedCourse || '(none)'}" -> "${leadPayload.interestedCourse}"` : null
+                  ].filter(Boolean).join(' | '),
+                  outcome: 'Duplicate Re-Application',
+                  createdBy: 'Google Sheets Bridge'
+                }
+              });
+            } catch (e) {
+              // Non-critical - never let the activity log block the sync itself
+            }
+          }
+
           return {
             success: true,
             action: 'updated',

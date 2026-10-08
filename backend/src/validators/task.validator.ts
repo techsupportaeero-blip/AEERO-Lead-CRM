@@ -51,5 +51,6 @@ export const updateTaskSchema = z.object({
   priority: priorityEnum.optional(),
   dueDate: z.string().optional().nullable(),
   dueTime: z.string().optional().nullable(),
-  status: taskStatusEnum.optional()
+  status: taskStatusEnum.optional(),
+  completionRemarks: z.string().optional().nullable()
 });

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
-import { ConfirmModal } from '../components/ConfirmModal';
 import { COUNSELORS } from '../config/constants';
 
 export const TasksView = ({ currentUser, onNotify, darkMode }) => {
@@ -77,26 +76,30 @@ export const TasksView = ({ currentUser, onNotify, darkMode }) => {
     }
   };
 
+  const [completionRemarks, setCompletionRemarks] = useState('');
+  const [completingTask, setCompletingTask] = useState(false);
+
   const handleToggleStatus = async (task) => {
     // Once completed, task cannot be unchecked
     if (task.status === 'Completed') return;
+    setCompletionRemarks('');
     setConfirmTask(task);
   };
 
   const executeTaskCompletion = async (task) => {
     try {
-      await api.updateTask(task.taskId, { status: 'Completed' });
+      setCompletingTask(true);
+      await api.updateTask(task.taskId, { status: 'Completed', completionRemarks: completionRemarks.trim() || null });
       // Patch it locally instead of re-fetching the whole task list - drop
       // it from view if the active filter no longer matches "Completed",
       // otherwise just flip its status in place.
       setTasks(prev => (filterStatus !== 'All' && filterStatus !== 'Completed')
         ? prev.filter(t => t.taskId !== task.taskId)
-        : prev.map(t => t.taskId === task.taskId ? { ...t, status: 'Completed' } : t));
+        : prev.map(t => t.taskId === task.taskId ? { ...t, status: 'Completed', completionRemarks: completionRemarks.trim() || null } : t));
     } catch (err) {
       alert("Failed to complete task");
     } finally {
-      // onConfirm never closed the modal - only Cancel's onClose did, so
-      // clicking "Yes, I'm Done" left it stuck open until you hit Cancel.
+      setCompletingTask(false);
       setConfirmTask(null);
     }
   };
@@ -189,6 +192,12 @@ export const TasksView = ({ currentUser, onNotify, darkMode }) => {
                         {t.title}
                       </p>
                       {t.description && <p className={`text-[11px] ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{t.description}</p>}
+                      {t.status === 'Completed' && t.completionRemarks && (
+                        <p className={`text-[11px] mt-0.5 flex items-start gap-1 ${darkMode ? 'text-emerald-400' : 'text-emerald-700'}`}>
+                          <span className="material-symbols-outlined text-[13px] mt-0.5">comment</span>
+                          <span>{t.completionRemarks}</span>
+                        </p>
+                      )}
                     </td>
                     <td className="py-3 px-4 font-mono font-bold text-[#7D610F]">
                       {t.leadId || 'N/A'}
@@ -354,17 +363,65 @@ export const TasksView = ({ currentUser, onNotify, darkMode }) => {
         </div>
       )}
 
-      {/* Confirmation Modal */}
-      <ConfirmModal
-        isOpen={!!confirmTask}
-        title="Confirm Task Completion"
-        message="Are you really done your task bcoz it shown directly on dashboard changes may not be retrive"
-        confirmText="Yes, I'm Done"
-        type="warning"
-        darkMode={darkMode}
-        onConfirm={() => executeTaskCompletion(confirmTask)}
-        onClose={() => setConfirmTask(null)}
-      />
+      {/* Mark Complete Modal - with an optional remark on how it went,
+          since "done" alone doesn't say what happened. */}
+      {confirmTask && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className={`rounded-xl shadow-2xl border w-full max-w-md p-6 space-y-4 ${
+            darkMode ? 'bg-[#181D26] border-[#262F3D] text-white' : 'bg-white border-slate-200 text-slate-900'
+          }`}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0">
+                <span className="material-symbols-outlined text-[22px]">task_alt</span>
+              </div>
+              <div>
+                <h3 className={`font-bold text-sm ${darkMode ? 'text-white' : 'text-slate-900'}`}>Mark Task Complete</h3>
+                <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>"{confirmTask.title}"</p>
+              </div>
+            </div>
+
+            <p className={`text-xs ${darkMode ? 'text-amber-300' : 'text-amber-700'}`}>
+              This shows up directly on the Dashboard. Once marked complete, it can't be undone from here.
+            </p>
+
+            <div>
+              <label className={`block text-xs font-semibold mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                Remarks (optional) - what happened / outcome
+              </label>
+              <textarea
+                rows={3}
+                autoFocus
+                value={completionRemarks}
+                onChange={(e) => setCompletionRemarks(e.target.value)}
+                placeholder="e.g. Called student, confirmed admission, fee due next week..."
+                className={`w-full border rounded-lg p-2 text-xs outline-none focus:ring-2 focus:ring-[#7D610F] ${
+                  darkMode ? 'bg-[#12161F] border-[#262F3D] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
+                }`}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setConfirmTask(null)}
+                className={`px-4 py-2 rounded-lg text-xs font-semibold transition-colors ${
+                  darkMode ? 'bg-[#12161F] hover:bg-[#1C2230] text-slate-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                }`}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={completingTask}
+                onClick={() => executeTaskCompletion(confirmTask)}
+                className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-md disabled:opacity-60"
+              >
+                {completingTask ? 'Saving...' : "Yes, I'm Done"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

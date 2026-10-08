@@ -228,6 +228,10 @@ model Task {
   dueDate     String?
   dueTime     String?    @default("11:00 AM")
   status      TaskStatus @default(PENDING)
+  // Remark the counselor leaves when checking a task off as done (e.g. what
+  // the outcome was) - separate from `description`, which is the task's own
+  // instructions set at creation and shouldn't be overwritten by this.
+  completionRemarks String?
   createdBy   String?    @default("System")
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
