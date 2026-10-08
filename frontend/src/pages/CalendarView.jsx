@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../api/client';
+import { io } from 'socket.io-client';
+import { api, SOCKET_URL } from '../api/client';
 import { COUNSELORS } from '../config/constants';
 
 export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) => {
@@ -25,6 +26,28 @@ export const CalendarView = ({ onSelectLead, currentUser, onNotify, darkMode }) 
 
   useEffect(() => {
     loadTasks();
+  }, []);
+
+  // Live sync - a task created/updated/deleted anywhere now reflects here
+  // instantly instead of needing a manual page reload.
+  useEffect(() => {
+    const socket = io(SOCKET_URL);
+
+    socket.on('taskCreated', (task) => {
+      setTasks(prev => prev.some(t => t.taskId === task.taskId) ? prev : [task, ...prev]);
+    });
+
+    socket.on('taskUpdated', (task) => {
+      setTasks(prev => prev.some(t => t.taskId === task.taskId)
+        ? prev.map(t => t.taskId === task.taskId ? task : t)
+        : [task, ...prev]);
+    });
+
+    socket.on('taskDeleted', ({ taskId }) => {
+      setTasks(prev => prev.filter(t => t.taskId !== taskId));
+    });
+
+    return () => socket.disconnect();
   }, []);
 
   const loadTasks = async () => {

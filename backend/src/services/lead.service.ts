@@ -398,7 +398,12 @@ export class LeadService {
     if (params.sortBy) {
       orderBy[params.sortBy] = params.sortOrder || 'desc';
     } else {
-      orderBy.id = 'desc';
+      // Sort by createdAt, not id - they're normally the same order, but a
+      // manually-corrected createdAt (e.g. backfilling a lead whose real
+      // signup date got fixed) wouldn't move the row in the list if sorted
+      // by the DB's internal insertion-order id instead of the date that's
+      // actually shown in the "Created" column.
+      orderBy.createdAt = 'desc';
     }
 
     const leads = await prisma.lead.findMany({
@@ -620,6 +625,7 @@ export class LeadService {
       userAgent: userContext?.userAgent
     });
 
+    (global as any).io?.emit('leadUpdated', updated);
     return updated;
   }
 
@@ -673,6 +679,7 @@ export class LeadService {
       await CustomerService.createFromLeadIfMissing(updated);
     }
 
+    (global as any).io?.emit('leadUpdated', updated);
     return updated;
   }
 
@@ -700,6 +707,7 @@ export class LeadService {
       details: `Lead ${existing.leadId} archived by ${currentUser}`
     });
 
+    (global as any).io?.emit('leadUpdated', updated);
     return updated;
   }
 
@@ -722,6 +730,7 @@ export class LeadService {
       details: `Lead ${existing.leadId} restored by ${currentUser}`
     });
 
+    (global as any).io?.emit('leadUpdated', updated);
     return updated;
   }
 

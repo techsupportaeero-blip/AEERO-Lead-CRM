@@ -117,6 +117,23 @@ export const AllLeads = ({
       }
     });
 
+    // Live sync - another counselor/admin editing, converting or archiving a
+    // lead now reflects here instantly instead of needing a manual reload.
+    socket.on('leadUpdated', (updatedLead) => {
+      setLeads((prevLeads) => {
+        const isArchived = Boolean(updatedLead.isArchived);
+        if (isArchived !== viewArchived) {
+          // It moved between the Active/Archived views - drop it from
+          // whichever list no longer matches.
+          return prevLeads.filter(l => l.leadId !== updatedLead.leadId);
+        }
+        const exists = prevLeads.some(l => l.leadId === updatedLead.leadId);
+        return exists
+          ? prevLeads.map(l => l.leadId === updatedLead.leadId ? { ...l, ...updatedLead } : l)
+          : prevLeads;
+      });
+    });
+
     return () => {
       socket.disconnect();
     };

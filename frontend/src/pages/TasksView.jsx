@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../api/client';
+import { io } from 'socket.io-client';
+import { api, SOCKET_URL } from '../api/client';
 import { COUNSELORS } from '../config/constants';
 
 export const TasksView = ({ currentUser, onNotify, darkMode }) => {
@@ -24,6 +25,40 @@ export const TasksView = ({ currentUser, onNotify, darkMode }) => {
 
   useEffect(() => {
     loadTasks();
+  }, [filterStatus]);
+
+  // Live sync - a task created/updated/deleted by anyone (e.g. a counselor
+  // checking one off with a remark) now shows up here instantly instead of
+  // needing a manual page reload to see it.
+  useEffect(() => {
+    const socket = io(SOCKET_URL);
+
+    const matchesFilter = (status) => filterStatus === 'All' || status === filterStatus;
+
+    socket.on('taskCreated', (task) => {
+      setTasks(prev => {
+        if (prev.some(t => t.taskId === task.taskId)) return prev;
+        return matchesFilter(task.status) ? [task, ...prev] : prev;
+      });
+    });
+
+    socket.on('taskUpdated', (task) => {
+      setTasks(prev => {
+        const exists = prev.some(t => t.taskId === task.taskId);
+        if (!matchesFilter(task.status)) {
+          return prev.filter(t => t.taskId !== task.taskId);
+        }
+        return exists
+          ? prev.map(t => t.taskId === task.taskId ? task : t)
+          : [task, ...prev];
+      });
+    });
+
+    socket.on('taskDeleted', ({ taskId }) => {
+      setTasks(prev => prev.filter(t => t.taskId !== taskId));
+    });
+
+    return () => socket.disconnect();
   }, [filterStatus]);
 
   const loadTasks = async () => {

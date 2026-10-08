@@ -104,7 +104,9 @@ export class TaskService {
       'task'
     );
 
-    return this.formatTask(created);
+    const formatted = this.formatTask(created);
+    (global as any).io?.emit('taskCreated', formatted);
+    return formatted;
   }
 
   static async updateTask(id: number, data: any) {
@@ -144,12 +146,16 @@ export class TaskService {
       );
     }
 
-    return this.formatTask(updated);
+    const formatted = this.formatTask(updated);
+    (global as any).io?.emit('taskUpdated', formatted);
+    return formatted;
   }
 
   static async deleteTask(id: number) {
-    return prisma.task.delete({
+    const deleted = await prisma.task.delete({
       where: { id }
     });
+    (global as any).io?.emit('taskDeleted', { taskId: deleted.id });
+    return deleted;
   }
 }

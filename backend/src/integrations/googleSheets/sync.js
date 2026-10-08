@@ -426,33 +426,35 @@ export async function ingestLeadRecord(leadPayload, options = {}, dbData = null)
           // today - updatedAt changes, but createdAt (what the All Leads
           // table displays) stays the original date, so a genuine re-
           // application looked like an untouched old lead. Log it as an
-          // Activity whenever the campaign or course actually changed, so
-          // "applied for a 2nd course" / re-registration is visible on the
-          // lead's own timeline instead of disappearing into a silent merge.
+          // Activity on EVERY duplicate resubmission, not only when the
+          // campaign/course changed - submitting again for the SAME
+          // campaign is itself a real signal (the existing priority-bump
+          // logic above already treats it that way) and must show up on the
+          // timeline too, not just silently bump priority.
           const campaignChanged = leadPayload.campaign &&
             String(leadPayload.campaign).trim().toLowerCase() !== String(existing.campaign || '').trim().toLowerCase();
           const courseChanged = leadPayload.interestedCourse &&
             String(leadPayload.interestedCourse).trim().toLowerCase() !== String(existing.interestedCourse || '').trim().toLowerCase();
-          if (campaignChanged || courseChanged) {
-            try {
-              await prisma.activity.create({
-                data: {
-                  leadId: existing.leadId,
-                  leadRelId: existing.id,
-                  type: 'NOTE',
-                  activityType: 'Re-applied',
-                  subject: 'Lead re-submitted via a different campaign/course',
-                  description: [
-                    campaignChanged ? `Campaign: "${existing.campaign || '(none)'}" -> "${leadPayload.campaign}"` : null,
-                    courseChanged ? `Course: "${existing.interestedCourse || '(none)'}" -> "${leadPayload.interestedCourse}"` : null
-                  ].filter(Boolean).join(' | '),
-                  outcome: 'Duplicate Re-Application',
-                  createdBy: 'Google Sheets Bridge'
-                }
-              });
-            } catch (e) {
-              // Non-critical - never let the activity log block the sync itself
-            }
+          try {
+            await prisma.activity.create({
+              data: {
+                leadId: existing.leadId,
+                leadRelId: existing.id,
+                type: 'NOTE',
+                activityType: 'Re-applied',
+                subject: (campaignChanged || courseChanged)
+                  ? 'Lead re-submitted via a different campaign/course'
+                  : 'Lead re-submitted (same campaign) - repeat interest',
+                description: [
+                  campaignChanged ? `Campaign: "${existing.campaign || '(none)'}" -> "${leadPayload.campaign}"` : `Campaign: "${existing.campaign || leadPayload.campaign || '(none)'}" (unchanged)`,
+                  courseChanged ? `Course: "${existing.interestedCourse || '(none)'}" -> "${leadPayload.interestedCourse}"` : null
+                ].filter(Boolean).join(' | '),
+                outcome: 'Duplicate Re-Application',
+                createdBy: 'Google Sheets Bridge'
+              }
+            });
+          } catch (e) {
+            // Non-critical - never let the activity log block the sync itself
           }
 
           return {
