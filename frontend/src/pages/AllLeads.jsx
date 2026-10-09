@@ -48,6 +48,10 @@ export const AllLeads = ({
   const [sourceFilter, setSourceFilter] = useState(initialFilters.source || 'All');
   const [ownerFilter, setOwnerFilter] = useState(initialFilters.owner || 'All');
   const [campaignFilter, setCampaignFilter] = useState(initialFilters.campaign || 'All');
+  // 'All' | 'none' | '1' | '2' | '3+' - lets a counselor isolate "leads whose
+  // Nth follow-up is already done" so they can find who needs the NEXT one
+  // (e.g. filter "1" to find everyone due for their 2nd follow-up call).
+  const [followUpStageFilter, setFollowUpStageFilter] = useState('All');
 
   // Campaign names aren't a fixed enum (they come from Meta Ads / Google
   // Sheets), so the dropdown is built from whatever campaigns actually exist
@@ -214,6 +218,7 @@ export const AllLeads = ({
       setSourceFilter('All');
       setOwnerFilter('All');
       setCampaignFilter('All');
+      setFollowUpStageFilter('All');
       setSearch('');
       setCurrentPage(1);
       return !prev;
@@ -228,6 +233,7 @@ export const AllLeads = ({
     setSourceFilter('All');
     setOwnerFilter('All');
     setCampaignFilter('All');
+    setFollowUpStageFilter('All');
     setSearch('');
     setCurrentPage(1);
   };
@@ -419,6 +425,13 @@ export const AllLeads = ({
         const leadDateKey = toISTDateKey(lead.createdAt);
         if (dateFromFilter && leadDateKey < dateFromFilter) return false;
         if (dateToFilter && leadDateKey > dateToFilter) return false;
+      }
+      if (followUpStageFilter !== 'All') {
+        const count = lead.followUpCount || 0;
+        if (followUpStageFilter === 'none' && count !== 0) return false;
+        if (followUpStageFilter === '1' && count !== 1) return false;
+        if (followUpStageFilter === '2' && count !== 2) return false;
+        if (followUpStageFilter === '3+' && count < 3) return false;
       }
       return true;
     });
@@ -910,6 +923,30 @@ export const AllLeads = ({
             </select>
           </div>
 
+          {/* Follow-up Stage Filter - "1" finds leads whose 1st follow-up is
+              done (due for the 2nd), "2" finds leads due for the 3rd, etc. */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold uppercase flex items-center gap-1 text-slate-400">
+              <span className="material-symbols-outlined text-[13px]">event_repeat</span>
+              <span>FOLLOW-UP STAGE</span>
+            </label>
+            <select
+              value={followUpStageFilter}
+              onChange={(e) => { setFollowUpStageFilter(e.target.value); setCurrentPage(1); }}
+              className={`w-full px-2.5 py-1.5 rounded text-xs outline-none font-medium transition-colors border ${
+                darkMode
+                  ? 'bg-[#161412ff] border-[#080706] text-slate-200 focus:ring-2 focus:ring-[#E5A812]'
+                  : 'bg-white border-slate-300 text-slate-800 focus:ring-2 focus:ring-[#9A7310]'
+              }`}
+            >
+              <option value="All">All Stages</option>
+              <option value="none">No Follow-up Yet</option>
+              <option value="1">1st Done (needs 2nd)</option>
+              <option value="2">2nd Done (needs 3rd)</option>
+              <option value="3+">3rd+ Done</option>
+            </select>
+          </div>
+
         </div>
 
       </div>
@@ -1064,8 +1101,13 @@ export const AllLeads = ({
                 visibleLeads.map((lead, index) => (
                   <tr
                     key={lead.id || lead.displayId || index}
+                    title={lead.isMultiCampaignLead
+                      ? `Also applied via: ${lead.appliedCampaigns.map(c => `${c.campaign}${c.owner ? ` (${c.owner})` : ''}`).join(', ')}`
+                      : undefined}
                     className={`transition-colors ${
-                      darkMode ? 'hover:bg-[#413000]' : 'hover:bg-slate-50'
+                      lead.isMultiCampaignLead
+                        ? (darkMode ? 'bg-violet-950/30 hover:bg-violet-900/40' : 'bg-violet-50 hover:bg-violet-100')
+                        : (darkMode ? 'hover:bg-[#413000]' : 'hover:bg-slate-50')
                     }`}
                   >
                     <td className="py-2.5 px-3">
@@ -1160,7 +1202,20 @@ export const AllLeads = ({
                       <td className={`py-2.5 px-3 whitespace-nowrap ${
                         darkMode ? 'text-slate-400' : 'text-slate-600'
                       }`}>
-                        {lead.campaign}
+                        <span className="inline-flex items-center gap-1.5">
+                          <span>{lead.campaign}</span>
+                          {lead.isMultiCampaignLead && (
+                            <span
+                              title={`Also applied via: ${lead.appliedCampaigns.map(c => `${c.campaign}${c.owner ? ` (${c.owner})` : ''}`).join(', ')}`}
+                              className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide cursor-help border ${
+                                darkMode ? 'bg-violet-600 text-white border-violet-400' : 'bg-violet-600 text-white border-violet-700'
+                              }`}
+                            >
+                              <span className="material-symbols-outlined text-[12px]">call_split</span>
+                              Multi
+                            </span>
+                          )}
+                        </span>
                       </td>
                     )}
 
@@ -1182,7 +1237,25 @@ export const AllLeads = ({
                       <td className={`py-2.5 px-3 font-medium whitespace-nowrap ${
                         darkMode ? 'text-slate-300' : 'text-slate-700'
                       }`}>
-                        {lead.assignedTo}
+                        {(() => {
+                          // Whoever's "own leads" context we're effectively
+                          // viewing right now: an explicit Assigned To filter
+                          // wins (admin narrowing the list), otherwise fall
+                          // back to the logged-in counselor's own name - so a
+                          // counselor sees THEMSELVES here even without ever
+                          // touching the filter dropdown. A multi-campaign
+                          // lead should show up as theirs in that context,
+                          // even though the lead's single stored owner field
+                          // belongs to whoever got it first.
+                          const viewerContext = ownerFilter !== 'All' ? ownerFilter : currentUser?.name;
+                          if (viewerContext && lead.isMultiCampaignLead) {
+                            const match = (lead.appliedCampaigns || []).find(
+                              c => (c.owner || '').toLowerCase() === viewerContext.toLowerCase()
+                            );
+                            if (match) return match.owner;
+                          }
+                          return lead.assignedTo;
+                        })()}
                       </td>
                     )}
 
@@ -1190,7 +1263,19 @@ export const AllLeads = ({
                       <td className={`py-2.5 px-3 whitespace-nowrap ${
                         darkMode ? 'text-slate-400' : 'text-slate-600'
                       }`}>
-                        {lead.followUp}
+                        <div className="flex items-center gap-1.5">
+                          <span>{lead.followUp}</span>
+                          {lead.followUpCount > 0 && (
+                            <span
+                              title={`${lead.followUpCount} follow-up${lead.followUpCount > 1 ? 's' : ''} completed so far`}
+                              className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-black ${
+                                darkMode ? 'bg-[#574719] text-[#E2B134]' : 'bg-[#7D610F] text-white'
+                              }`}
+                            >
+                              {lead.followUpCount}
+                            </span>
+                          )}
+                        </div>
                       </td>
                     )}
 
@@ -1207,9 +1292,9 @@ export const AllLeads = ({
                         className={`py-2.5 px-3 text-[11px] max-w-[220px] truncate ${
                           darkMode ? 'text-slate-400' : 'text-slate-500'
                         }`}
-                        title={lead.counselorRemarks || lead.remarks || ''}
+                        title={lead.counselorRemarks || ''}
                       >
-                        {lead.counselorRemarks || lead.remarks || '-'}
+                        {lead.counselorRemarks || '-'}
                       </td>
                     )}
 

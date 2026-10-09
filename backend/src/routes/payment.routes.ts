@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { PaymentController } from '../controllers/payment.controller.js';
 import { optionalAuthMiddleware } from '../middleware/auth.middleware.js';
 import { validateBody } from '../middleware/validate.middleware.js';
-import { createPaymentSchema } from '../validators/payment.validator.js';
+import { createPaymentSchema, updatePaymentSchema } from '../validators/payment.validator.js';
 
 export const paymentRouter = Router();
 
@@ -13,4 +13,10 @@ paymentRouter.post(
   optionalAuthMiddleware,
   validateBody(createPaymentSchema),
   PaymentController.recordPayment
+);
+paymentRouter.patch(
+  '/payments/:paymentId',
+  optionalAuthMiddleware,
+  validateBody(updatePaymentSchema),
+  PaymentController.updatePayment
 );

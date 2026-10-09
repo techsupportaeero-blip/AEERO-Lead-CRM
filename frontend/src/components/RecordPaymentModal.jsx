@@ -17,30 +17,71 @@ export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecord
   const [summaryLoading, setSummaryLoading] = useState(true);
   const [isEmi, setIsEmi] = useState(false);
   const [emiTotalInstallments, setEmiTotalInstallments] = useState(2);
+  const [emiInstallmentNumber, setEmiInstallmentNumber] = useState(1);
 
-  useEffect(() => {
+  // When set, the form is correcting an existing payment (wrong amount,
+  // wrong EMI numbering, etc.) instead of adding a new one - the counselor
+  // picked this row via the pencil icon in "Previous Payments" below.
+  const [editingPaymentId, setEditingPaymentId] = useState(null);
+
+  const loadSummary = () => {
     if (!lead) return;
     setSummaryLoading(true);
-    api.getPaymentSummary(lead.leadId || lead.id)
+    return api.getPaymentSummary(lead.leadId || lead.id)
       .then(s => {
         setSummary(s);
-        // Total installments can never be fewer than the installment this
-        // payment itself represents (paymentsCount + 1).
-        const minTotal = s.paymentsCount + 1;
-        setEmiTotalInstallments(Math.min(Math.max(2, minTotal), s.maxEmiInstallments) || minTotal);
+        return s;
       })
-      .catch(() => setSummary(null))
+      .catch(() => { setSummary(null); return null; })
       .finally(() => setSummaryLoading(false));
+  };
+
+  useEffect(() => {
+    loadSummary().then(s => {
+      if (!s) return;
+      // Total installments can never be fewer than the installment this
+      // payment itself represents (paymentsCount + 1).
+      const nextNumber = s.paymentsCount + 1;
+      setEmiInstallmentNumber(nextNumber);
+      setEmiTotalInstallments(Math.min(Math.max(2, nextNumber), s.maxEmiInstallments) || nextNumber);
+    });
   }, [lead?.leadId, lead?.id]);
 
   if (!lead) return null;
 
-  const emiInstallmentNumber = summary ? summary.paymentsCount + 1 : 1;
   // How many installments (including this one) are left to cover the due
   // balance, and what each of those should be - a guide, not a hard rule,
   // so the "total installments" dropdown actually means something concrete.
   const remainingInstallments = summary ? Math.max(1, emiTotalInstallments - summary.paymentsCount) : 1;
   const suggestedInstallmentAmount = summary ? Math.round(summary.dueBalance / remainingInstallments) : 0;
+
+  const resetFormToNewPayment = () => {
+    setEditingPaymentId(null);
+    setAmount('');
+    setPaymentMethod('UPI');
+    setReferenceNo(`TXN-${Math.floor(100000 + Math.random() * 900000)}`);
+    setPaymentDate(new Date().toISOString().slice(0, 10));
+    setNotes('');
+    setIsEmi(false);
+    if (summary) {
+      const nextNumber = summary.paymentsCount + 1;
+      setEmiInstallmentNumber(nextNumber);
+      setEmiTotalInstallments(Math.min(Math.max(2, nextNumber), summary.maxEmiInstallments) || nextNumber);
+    }
+  };
+
+  const handleEditClick = (payment) => {
+    setEditingPaymentId(payment.id);
+    setAmount(String(payment.amount));
+    setPaymentMethod(payment.paymentMethod || 'UPI');
+    setReferenceNo(payment.referenceNo || '');
+    setPaymentDate(payment.paymentDate || new Date().toISOString().slice(0, 10));
+    setNotes(payment.notes || '');
+    setIsEmi(Boolean(payment.emiTotalInstallments));
+    setEmiInstallmentNumber(payment.emiInstallmentNumber || 1);
+    setEmiTotalInstallments(payment.emiTotalInstallments || 2);
+    setError(null);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,32 +90,42 @@ export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecord
       return;
     }
 
+    const payload = {
+      amount: Number(amount),
+      paymentMethod,
+      referenceNo,
+      paymentDate,
+      notes,
+      emiInstallmentNumber: isEmi ? emiInstallmentNumber : null,
+      emiTotalInstallments: isEmi ? emiTotalInstallments : null,
+      currentUser: currentUser ? currentUser.name : 'Counselor'
+    };
+
     try {
       setLoading(true);
       setError(null);
-      const res = await api.recordPayment(lead.leadId || lead.id, {
-        amount: Number(amount),
-        paymentMethod,
-        referenceNo,
-        paymentDate,
-        notes,
-        emiInstallmentNumber: isEmi ? emiInstallmentNumber : null,
-        emiTotalInstallments: isEmi ? emiTotalInstallments : null,
-        currentUser: currentUser ? currentUser.name : 'Counselor'
-      });
 
-      setLoading(false);
-      if (onPaymentRecorded) onPaymentRecorded(res);
-      onClose();
+      if (editingPaymentId) {
+        const res = await api.updatePayment(editingPaymentId, payload);
+        await loadSummary();
+        resetFormToNewPayment();
+        setLoading(false);
+        if (onPaymentRecorded) onPaymentRecorded(res);
+      } else {
+        const res = await api.recordPayment(lead.leadId || lead.id, payload);
+        setLoading(false);
+        if (onPaymentRecorded) onPaymentRecorded(res);
+        onClose();
+      }
     } catch (err) {
       setLoading(false);
-      setError(err.message || "Failed to record payment.");
+      setError(err.message || (editingPaymentId ? "Failed to update payment." : "Failed to record payment."));
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-xs p-4 animate-fadeIn">
-      <div className={`rounded-2xl shadow-2xl border w-full max-w-lg overflow-hidden ${
+      <div className={`rounded-2xl shadow-2xl border w-full max-w-lg max-h-[90vh] overflow-y-auto custom-scrollbar ${
         darkMode ? 'bg-[#2A220C] border-[#574719]' : 'bg-white border-slate-200'
       }`}>
         
@@ -85,8 +136,10 @@ export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecord
               <span className="material-symbols-outlined text-[20px]">payments</span>
             </div>
             <div>
-              <h3 className="font-bold text-base leading-tight">Record Course Fee Payment</h3>
-              <p className="text-xs text-slate-300">Update paid status & reflect income on dashboard</p>
+              <h3 className="font-bold text-base leading-tight">{editingPaymentId ? 'Edit Payment' : 'Record Course Fee Payment'}</h3>
+              <p className="text-xs text-slate-300">
+                {editingPaymentId ? 'Correct a wrongly entered payment' : 'Update paid status & reflect income on dashboard'}
+              </p>
             </div>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
@@ -146,12 +199,24 @@ export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecord
               <table className="w-full text-xs">
                 <tbody className={`divide-y ${darkMode ? 'divide-[#574719] text-slate-200' : 'divide-slate-100 text-slate-700'}`}>
                   {summary.payments.map((p, i) => (
-                    <tr key={p.id || i}>
+                    <tr key={p.id || i} className={editingPaymentId === p.id ? (darkMode ? 'bg-amber-950/30' : 'bg-amber-50') : ''}>
                       <td className="px-3 py-1.5 font-semibold">{p.paymentDate || '-'}</td>
                       <td className="px-3 py-1.5 font-bold text-emerald-500 text-right">₹{p.amount.toLocaleString('en-IN')}</td>
                       <td className="px-3 py-1.5">{p.paymentMethod || '-'}</td>
                       <td className="px-3 py-1.5 text-right text-[11px] text-slate-400">
                         {p.emiTotalInstallments ? `EMI ${p.emiInstallmentNumber}/${p.emiTotalInstallments}` : 'Full'}
+                      </td>
+                      <td className="px-2 py-1.5 text-right">
+                        {p.id && (
+                          <button
+                            type="button"
+                            title="Edit this payment"
+                            onClick={() => handleEditClick(p)}
+                            className={`p-1 rounded hover:bg-amber-500/20 ${darkMode ? 'text-amber-300' : 'text-[#7D610F]'}`}
+                          >
+                            <span className="material-symbols-outlined text-[15px]">edit</span>
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -320,27 +385,29 @@ export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecord
           <div className={`pt-3 border-t flex justify-end gap-3 ${darkMode ? 'border-[#574719]' : 'border-slate-200'}`}>
             <button
               type="button"
-              onClick={onClose}
+              onClick={editingPaymentId ? resetFormToNewPayment : onClose}
               className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${
                 darkMode ? 'bg-[#1A1608] hover:bg-[#3D3212] text-slate-300' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
               }`}
             >
-              Cancel
+              {editingPaymentId ? 'Cancel Edit' : 'Cancel'}
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-extrabold transition-all shadow-md flex items-center gap-2"
+              className={`px-5 py-2 text-white rounded-lg text-xs font-extrabold transition-all shadow-md flex items-center gap-2 ${
+                editingPaymentId ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'
+              }`}
             >
               {loading ? (
                 <>
                   <span className="material-symbols-outlined text-sm animate-spin">sync</span>
-                  <span>Saving Payment...</span>
+                  <span>{editingPaymentId ? 'Updating Payment...' : 'Saving Payment...'}</span>
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined text-sm">check_circle</span>
-                  <span>Confirm Payment</span>
+                  <span className="material-symbols-outlined text-sm">{editingPaymentId ? 'save' : 'check_circle'}</span>
+                  <span>{editingPaymentId ? 'Update Payment' : 'Confirm Payment'}</span>
                 </>
               )}
             </button>

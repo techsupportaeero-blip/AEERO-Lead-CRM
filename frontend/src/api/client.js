@@ -392,6 +392,19 @@ export const api = {
     return res.json();
   },
 
+  async updatePayment(paymentId, paymentData) {
+    const res = await authFetch(`${API_BASE}/payments/${paymentId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(paymentData),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to update payment');
+    }
+    return res.json();
+  },
+
   // Activities
   async getActivities(leadId) {
     const res = await authFetch(`${API_BASE}/leads/${leadId}/activities`);

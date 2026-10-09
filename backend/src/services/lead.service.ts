@@ -328,10 +328,15 @@ export class LeadService {
 
     // 5. Owner / Counselor filter (case-insensitive: counselor names come from
     // multiple places - Users table, sheet ingestion, manual entry - and must
-    // still match even if casing/spacing drifts between them)
-    if (params.owner && params.owner !== 'All' && params.owner !== 'all') {
-      where.ownerId = { equals: params.owner, mode: 'insensitive' };
-    }
+    // still match even if casing/spacing drifts between them). Deliberately
+    // NOT applied at the DB level here - a lead that re-applied under a
+    // DIFFERENT counselor's campaign (see the multi-campaign block below)
+    // must still show up when THAT counselor filters by their own name, even
+    // though `ownerId` itself only ever holds one (the original) owner. The
+    // actual filtering happens after `appliedCampaigns` is computed below.
+    const ownerFilterValue = (params.owner && params.owner !== 'All' && params.owner !== 'all')
+      ? params.owner.trim().toLowerCase()
+      : null;
 
     // 6. Course filter
     if (params.course && params.course !== 'All' && params.course !== 'all') {
@@ -430,24 +435,87 @@ export class LeadService {
           orderBy: { createdAt: 'desc' },
           take: 1,
           select: { remarks: true }
+        },
+        // Follow-ups actually COMPLETED for this lead (not just scheduled -
+        // a PENDING follow-up hasn't happened yet), so the All Leads table's
+        // "which stage is this lead at" filter only counts calls that really
+        // took place, matching what "1st done, needs 2nd" is meant to mean.
+        _count: {
+          select: { followUps: { where: { status: 'COMPLETED' } } }
         }
       }
     });
+
+    // Cross-campaign re-application signal: a lead that resubmits under a
+    // DIFFERENT campaign (see googleSheets/sync.js's "Re-applied" Activity
+    // logging) deliberately keeps its original owner - ownership must not
+    // silently flip counselors just because a new submission came in - but
+    // every counselor whose campaign this lead ever touched still needs to
+    // see, right on the row, that it's a shared/multi-apply lead rather than
+    // "someone else's lead" with a confusing owner name attached.
+    const leadIds = leads.map((l: any) => l.id);
+    const [reAppliedActivities, campaignAssignments] = await Promise.all([
+      leadIds.length > 0
+        ? prisma.activity.findMany({
+            where: { activityType: 'Re-applied', leadRelId: { in: leadIds } },
+            select: { leadRelId: true, description: true }
+          })
+        : Promise.resolve([] as { leadRelId: number | null; description: string | null }[]),
+      prisma.campaignAssignment.findMany({ select: { campaignName: true, ownerId: true } })
+    ]);
+
+    const ownerByCampaign = new Map(
+      campaignAssignments.map((a) => [a.campaignName.trim().toLowerCase(), a.ownerId])
+    );
+
+    // Parses sync.js's exact log format: `Campaign: "OLD" -> "NEW"` when it
+    // changed, or `Campaign: "X" (unchanged)` when it didn't.
+    const campaignHistoryByLead = new Map<number, Set<string>>();
+    for (const act of reAppliedActivities) {
+      if (!act.leadRelId || !act.description) continue;
+      const match = act.description.match(/Campaign: "(.*?)"(?: -> "(.*?)")?/);
+      if (!match) continue;
+      const set = campaignHistoryByLead.get(act.leadRelId) || new Set<string>();
+      [match[1], match[2]].forEach((c) => {
+        if (c && c !== '(none)') set.add(c);
+      });
+      campaignHistoryByLead.set(act.leadRelId, set);
+    }
 
     // Flatten to a single display-ready string so the All Leads table's
     // "Follow-up" column (which was never wired to real data before - it
     // always showed "-" regardless of what was scheduled) has something to
     // read.
-    return leads.map((l: any) => {
+    const enriched = leads.map((l: any) => {
       const next = l.followUps[0];
       const latestRemark = l.activities[0]?.remarks || null;
-      const { followUps, activities, ...rest } = l;
+      const { followUps, activities, _count, ...rest } = l;
+
+      const campaignSet = campaignHistoryByLead.get(l.id) || new Set<string>();
+      if (l.campaign) campaignSet.add(l.campaign);
+      const isMultiCampaignLead = campaignSet.size > 1;
+      const appliedCampaigns = isMultiCampaignLead
+        ? [...campaignSet].map((c) => ({ campaign: c, owner: ownerByCampaign.get(c.trim().toLowerCase()) || null }))
+        : [];
+
       return {
         ...rest,
         followUp: next ? `${next.date}${next.time ? ' ' + next.time : ''}` : null,
-        counselorRemarks: latestRemark
+        counselorRemarks: latestRemark,
+        followUpCount: _count?.followUps || 0,
+        isMultiCampaignLead,
+        appliedCampaigns
       };
     });
+
+    // Apply the owner filter here (see the comment above where it's parsed):
+    // a multi-campaign lead must show up for EVERY counselor whose campaign
+    // it touched, not just the one holding the single `ownerId` field.
+    if (!ownerFilterValue) return enriched;
+    return enriched.filter((l: any) =>
+      (l.ownerId || '').trim().toLowerCase() === ownerFilterValue ||
+      (l.appliedCampaigns || []).some((c: any) => (c.owner || '').trim().toLowerCase() === ownerFilterValue)
+    );
   }
 
   /**

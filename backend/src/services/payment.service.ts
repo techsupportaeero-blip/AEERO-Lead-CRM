@@ -100,6 +100,68 @@ export class PaymentService {
     return payment;
   }
 
+  // Lets a counselor correct a payment they entered wrong (wrong amount,
+  // wrong EMI numbering, etc.) instead of leaving bad data to throw off the
+  // Dashboard's revenue/due figures permanently - those are computed fresh
+  // from this table on every read, so a corrected row here fixes them
+  // immediately, with no separate cache to invalidate.
+  static async updatePayment(
+    paymentId: number,
+    data: any,
+    userContext?: { userId?: number; userName?: string }
+  ) {
+    const existing = await prisma.payment.findUnique({ where: { id: paymentId } });
+    if (!existing) throw new Error(`Payment ${paymentId} not found.`);
+
+    const updateData: any = {};
+    if (data.amount !== undefined) {
+      const amount = parseFloat(data.amount);
+      if (isNaN(amount) || amount <= 0) {
+        throw new Error('Valid payment amount is required.');
+      }
+      updateData.amount = amount;
+    }
+    if (data.paymentMethod !== undefined) updateData.paymentMethod = data.paymentMethod;
+    if (data.referenceNo !== undefined) updateData.referenceNo = data.referenceNo;
+    if (data.notes !== undefined) updateData.notes = data.notes;
+    if (data.paymentDate !== undefined) updateData.paymentDate = data.paymentDate;
+    if (data.emiInstallmentNumber !== undefined) {
+      updateData.emiInstallmentNumber = data.emiInstallmentNumber === null ? null : Number(data.emiInstallmentNumber);
+    }
+    if (data.emiTotalInstallments !== undefined) {
+      updateData.emiTotalInstallments = data.emiTotalInstallments === null ? null : Number(data.emiTotalInstallments);
+    }
+
+    const updated = await prisma.payment.update({
+      where: { id: paymentId },
+      data: updateData
+    });
+
+    await AuditLogService.log({
+      userId: userContext?.userId,
+      userName: userContext?.userName || 'Counselor',
+      leadId: existing.leadId,
+      action: 'PAYMENT_UPDATED',
+      oldValue: JSON.stringify({
+        amount: Number(existing.amount),
+        paymentMethod: existing.paymentMethod,
+        referenceNo: existing.referenceNo,
+        emiInstallmentNumber: existing.emiInstallmentNumber,
+        emiTotalInstallments: existing.emiTotalInstallments
+      }),
+      newValue: JSON.stringify({
+        amount: Number(updated.amount),
+        paymentMethod: updated.paymentMethod,
+        referenceNo: updated.referenceNo,
+        emiInstallmentNumber: updated.emiInstallmentNumber,
+        emiTotalInstallments: updated.emiTotalInstallments
+      }),
+      details: `Payment #${paymentId} corrected for lead ${existing.leadId}`
+    });
+
+    return updated;
+  }
+
   // Powers the Record Payment modal's course-fee / paid-so-far / due summary
   // and EMI cap. Matches the lead's course the same way the Dashboard's
   // revenue estimate used to (interestedCourse first, campaign as fallback) -
@@ -148,6 +210,8 @@ export class PaymentService {
         amount: Number(p.amount),
         paymentDate: p.paymentDate,
         paymentMethod: p.paymentMethod,
+        referenceNo: p.referenceNo,
+        notes: p.notes,
         emiInstallmentNumber: p.emiInstallmentNumber,
         emiTotalInstallments: p.emiTotalInstallments
       })),

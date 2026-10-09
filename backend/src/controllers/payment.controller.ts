@@ -48,4 +48,33 @@ export class PaymentController {
       next(err);
     }
   }
+
+  static async updatePayment(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const paymentId = Number(req.params.paymentId);
+      if (!Number.isInteger(paymentId)) {
+        res.status(400).json({ error: 'Invalid payment ID.' });
+        return;
+      }
+
+      const userContext = {
+        userId: req.user?.userId,
+        userName: req.user?.name || req.body.currentUser || 'Counselor'
+      };
+
+      const payment = await PaymentService.updatePayment(
+        paymentId,
+        req.body,
+        userContext
+      );
+
+      res.json(payment);
+    } catch (err: any) {
+      if (err.message.includes('not found')) {
+        res.status(404).json({ error: err.message });
+        return;
+      }
+      next(err);
+    }
+  }
 }
