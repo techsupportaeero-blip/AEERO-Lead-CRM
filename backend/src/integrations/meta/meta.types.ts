@@ -36,6 +36,8 @@ export interface NormalizedIntegrationLead {
   email?: string;
   city?: string;
   state?: string;
+  qualification?: string;
+  requirement?: string;
   interestedCourse?: string;
   source: string;
   platform: string;

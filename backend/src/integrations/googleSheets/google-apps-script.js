@@ -176,6 +176,11 @@ function sendRowToCRM(config, ss, sheet, headers, rowData, rowNumber) {
 // 2. IMPORT / SYNC: Process all sheets in Folder
 // ─────────────────────────────────────────────
 
+// A row that fails to reach the CRM gets retried this many times (once per
+// run - 1-minute poll or onChange trigger) before we give up on it and move
+// on, so one bad row can't silently block every lead behind it forever.
+var MAX_ROW_RETRIES = 5;
+
 // Scans ONE already-open spreadsheet from its saved cursor onward and pushes
 // any unsynced rows to the CRM. Shared by the 1-minute folder poll AND the
 // instant onChange trigger, so both paths stay in sync (same de-dupe cursor,
@@ -188,7 +193,7 @@ function syncOneSpreadsheet(config, props, ss, deadline) {
   var sheet = ss.getSheets()[0]; // Process the first sheet tab
   var data = sheet.getDataRange().getValues();
 
-  var result = { imported: 0, updated: 0, failed: 0, timeLimited: false };
+  var result = { imported: 0, updated: 0, failed: 0, timeLimited: false, retryPending: false };
   if (data.length < 2) return result;
 
   var headers = data[0];
@@ -219,16 +224,41 @@ function syncOneSpreadsheet(config, props, ss, deadline) {
     }
 
     var sendResult = sendRowToCRM(config, ss, sheet, headers, rowData, i + 1);
+    var failCountKey = 'FAILCOUNT_' + ssId + '_' + (i + 1);
 
     if (sendResult && sendResult.success) {
       if (sendResult.data.action === 'created') result.imported++;
       else result.updated++;
+      // Clear any earlier failure streak for this row now that it's through.
+      props.deleteProperty(failCountKey);
+      props.setProperty('CURSOR_' + ssId, String(i + 1));
     } else {
       result.failed++;
       if (sendResult && sendResult.status === 429) Utilities.sleep(5000);
+
+      var failCount = parseInt(props.getProperty(failCountKey) || '0', 10) + 1;
+
+      if (failCount < MAX_ROW_RETRIES) {
+        // Do NOT advance the cursor - leave it pointing at this row so the
+        // next run (poll or onChange) retries it instead of permanently
+        // skipping a lead over what's usually a transient blip. Stop this
+        // file here for this run; rows after it will wait their turn rather
+        // than get reprocessed every run while this one is still pending.
+        props.setProperty(failCountKey, String(failCount));
+        Logger.log('⚠️ Row ' + (i + 1) + ' in [' + ss.getName() + '] failed (attempt ' + failCount + '/' + MAX_ROW_RETRIES + '). Will retry next run instead of skipping it.');
+        result.retryPending = true;
+        break;
+      }
+
+      // Given up after repeated failures - advance past it so one
+      // permanently-bad row can't block every lead behind it forever.
+      // Logged clearly so it can be found and re-synced manually
+      // (resetCursorForFile) once the underlying issue is understood.
+      Logger.log('❌ Row ' + (i + 1) + ' in [' + ss.getName() + '] failed ' + MAX_ROW_RETRIES + ' times in a row - giving up and moving on. Check this row manually: ' + JSON.stringify(rowData));
+      props.deleteProperty(failCountKey);
+      props.setProperty('CURSOR_' + ssId, String(i + 1));
     }
 
-    props.setProperty('CURSOR_' + ssId, String(i + 1));
     Utilities.sleep(250);
   }
 
@@ -262,6 +292,7 @@ function syncAllFolderLeads() {
   var totalUpdated = 0;
   var totalFailed = 0;
   var triggersInstalled = 0;
+  var filesWithRetryPending = 0;
 
   Logger.log('📁 Scanning Folder: ' + folder.getName());
 
@@ -281,7 +312,11 @@ function syncAllFolderLeads() {
     totalImported += fileResult.imported;
     totalUpdated += fileResult.updated;
     totalFailed += fileResult.failed;
+    // Only a genuine execution-time deadline stops the WHOLE folder scan.
+    // A row still mid-retry in one file must not block every other file -
+    // it just quietly waits its turn next run.
     if (fileResult.timeLimited) limitReached = true;
+    if (fileResult.retryPending) filesWithRetryPending++;
   }
 
   Logger.log('═══════════════════════════════════');
@@ -292,6 +327,9 @@ function syncAllFolderLeads() {
     Logger.log('✅ FOLDER SYNC COMPLETE (All files are up to date)');
   }
   Logger.log('Imported: ' + totalImported + ' | Updated: ' + totalUpdated + ' | Failed: ' + totalFailed);
+  if (filesWithRetryPending > 0) {
+    Logger.log('🔁 ' + filesWithRetryPending + ' file(s) have a row waiting to retry (will auto-retry on the next run) - see ⚠️ lines above for which row.');
+  }
   if (triggersInstalled > 0) {
     Logger.log('⚡ Instant (onChange) trigger auto-installed for ' + triggersInstalled + ' new sheet(s).');
   }

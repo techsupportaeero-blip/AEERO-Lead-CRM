@@ -54,7 +54,11 @@ export class TaskService {
 
     const tasks = await prisma.task.findMany({
       where,
-      orderBy: [{ dueDate: 'asc' }, { createdAt: 'desc' }],
+      // Newest-assigned task first, not soonest-due - a task Admin just
+      // handed out should appear at the top of the list immediately,
+      // matching what the live `taskCreated` socket update already does by
+      // prepending (this just makes a fresh page load agree with that).
+      orderBy: { createdAt: 'desc' },
       include: {
         lead: {
           select: {

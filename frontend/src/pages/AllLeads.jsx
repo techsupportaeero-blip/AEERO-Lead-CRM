@@ -52,6 +52,10 @@ export const AllLeads = ({
   // Nth follow-up is already done" so they can find who needs the NEXT one
   // (e.g. filter "1" to find everyone due for their 2nd follow-up call).
   const [followUpStageFilter, setFollowUpStageFilter] = useState('All');
+  // One-shot: true when arriving here via the Dashboard's Overdue
+  // Follow-ups "View All" button - shows only leads with a PENDING
+  // follow-up whose date has already passed.
+  const [overdueOnlyFilter, setOverdueOnlyFilter] = useState(Boolean(initialFilters.overdueOnly));
 
   // Campaign names aren't a fixed enum (they come from Meta Ads / Google
   // Sheets), so the dropdown is built from whatever campaigns actually exist
@@ -219,6 +223,7 @@ export const AllLeads = ({
       setOwnerFilter('All');
       setCampaignFilter('All');
       setFollowUpStageFilter('All');
+      setOverdueOnlyFilter(false);
       setSearch('');
       setCurrentPage(1);
       return !prev;
@@ -234,6 +239,7 @@ export const AllLeads = ({
     setOwnerFilter('All');
     setCampaignFilter('All');
     setFollowUpStageFilter('All');
+    setOverdueOnlyFilter(false);
     setSearch('');
     setCurrentPage(1);
   };
@@ -433,6 +439,7 @@ export const AllLeads = ({
         if (followUpStageFilter === '2' && count !== 2) return false;
         if (followUpStageFilter === '3+' && count < 3) return false;
       }
+      if (overdueOnlyFilter && !lead.isFollowUpOverdue) return false;
       return true;
     });
 
@@ -680,6 +687,28 @@ export const AllLeads = ({
           >
             <span className="material-symbols-outlined text-sm">arrow_back</span>
             <span>Back to Active Leads</span>
+          </button>
+        </div>
+      )}
+
+      {/* Overdue Follow-ups Only Banner - from the Dashboard's "View All" */}
+      {overdueOnlyFilter && (
+        <div className="p-3 bg-rose-900 text-white rounded-xl font-semibold text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md border border-rose-700 animate-fadeIn">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-rose-500/20 text-rose-200 flex items-center justify-center flex-shrink-0 border border-rose-400/30">
+              <span className="material-symbols-outlined text-[18px]">warning</span>
+            </div>
+            <div>
+              <p className="font-bold text-rose-100 text-xs">Showing Only Leads With an Overdue Follow-up</p>
+              <p className="text-[11px] text-rose-200 font-normal">Their scheduled follow-up date has already passed and is still pending.</p>
+            </div>
+          </div>
+          <button
+            onClick={() => { setOverdueOnlyFilter(false); setCurrentPage(1); }}
+            className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-lg text-xs transition-colors flex items-center gap-1 cursor-pointer flex-shrink-0"
+          >
+            <span className="material-symbols-outlined text-sm">close</span>
+            <span>Clear & Show All Leads</span>
           </button>
         </div>
       )}
@@ -1106,7 +1135,7 @@ export const AllLeads = ({
                       : undefined}
                     className={`transition-colors ${
                       lead.isMultiCampaignLead
-                        ? (darkMode ? 'bg-violet-950/30 hover:bg-violet-900/40' : 'bg-violet-50 hover:bg-violet-100')
+                        ? (darkMode ? 'bg-violet-600/25 hover:bg-violet-600/35' : 'bg-violet-50 hover:bg-violet-100')
                         : (darkMode ? 'hover:bg-[#413000]' : 'hover:bg-slate-50')
                     }`}
                   >
@@ -1264,7 +1293,7 @@ export const AllLeads = ({
                         darkMode ? 'text-slate-400' : 'text-slate-600'
                       }`}>
                         <div className="flex items-center gap-1.5">
-                          <span>{lead.followUp}</span>
+                          <span>{lead.followUp || '-'}</span>
                           {lead.followUpCount > 0 && (
                             <span
                               title={`${lead.followUpCount} follow-up${lead.followUpCount > 1 ? 's' : ''} completed so far`}
@@ -1276,6 +1305,14 @@ export const AllLeads = ({
                             </span>
                           )}
                         </div>
+                        {lead.lastFollowUp && (
+                          <div
+                            className={`text-[10px] mt-0.5 max-w-[160px] truncate ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}
+                            title={lead.lastFollowUpNotes ? `${lead.lastFollowUp} - ${lead.lastFollowUpNotes}` : lead.lastFollowUp}
+                          >
+                            Last: {lead.lastFollowUp}{lead.lastFollowUpNotes ? ` - ${lead.lastFollowUpNotes}` : ''}
+                          </div>
+                        )}
                       </td>
                     )}
 

@@ -1,39 +1,43 @@
 /**
  * ============================================================================
- * AEERO CRM - SINGLE SHEET TEST SCRIPT (for testing only, not the folder-wide sync)
+ * AEERO CRM - SINGLE SHEET SYNC SCRIPT (testing phase, e.g. "Solar leads")
  * ============================================================================
  *
- * Use this when you want to test the CRM ingestion pipeline against just ONE
- * Google Sheet, instead of scanning the whole Drive folder.
+ * Use this when testing the CRM ingestion pipeline against just ONE Google
+ * Sheet, before switching to the folder-wide script (google-apps-script.js)
+ * once multiple sheets are ready to go in a Drive folder together.
+ *
+ * Syncs EVERY tab in the sheet (not a hardcoded list) - add a new tab to the
+ * spreadsheet and it gets picked up automatically on the next run.
  *
  * Instructions:
- * 1. Open https://script.google.com and create a new standalone project
- *    (or open the sheet you want to test, then Extensions > Apps Script,
- *    which binds the script to that sheet automatically).
+ * 1. Open the test sheet (e.g. "Solar leads") -> Extensions > Apps Script.
+ *    This binds the script directly to that sheet - no SPREADSHEET_ID
+ *    needed. (You can still set SPREADSHEET_ID in Script Properties instead
+ *    if you'd rather run this as a standalone project pointed at one sheet.)
  * 2. Paste this entire code into `Code.gs`.
  * 3. In Project Settings > Script Properties, add:
  *      CRM_BACKEND_URL   -> https://aeero-lead-crm.onrender.com/api/integrations/google-sheets
  *      CRM_INGEST_SECRET -> aeero_sheets_secret_2026
- *      SPREADSHEET_ID    -> <ID of the ONE test sheet>  (skip this if you bound
- *                            the script directly to the sheet via Extensions > Apps Script)
  *
- *    (To get the Spreadsheet ID, open the sheet, the ID is in the URL:
- *     e.g., https://docs.google.com/spreadsheets/d/1aBcDeFgHiJkLmNoPqRsTuVwXyZ/edit)
+ * 4. Run `syncSingleSheet()` ONCE to backfill every row already in the sheet.
+ * 5. Run `setupSingleSheetTrigger()` ONCE for a 1-minute polling safety net.
+ * 6. Run `installSingleSheetInstantTrigger()` ONCE for INSTANT (few-second)
+ *    sync on top of the poll - same onChange approach as the folder-wide
+ *    script. Not required, but recommended.
+ * 7. Run `checkStatus()` any time to confirm the CRM backend is reachable.
+ * 8. Run `resetSingleSheetCursors()` to re-import every tab from row 1 again.
+ * 9. Run `removeSingleSheetTrigger()` / `removeSingleSheetInstantTrigger()`
+ *    to stop automatic sync.
  *
- * 4. RULE 1 — OLD LEADS: Run `syncSingleSheetTest()` ONCE to backfill all existing
- *    rows already in the sheet into the CRM.
- * 5. RULE 2 — NEW LEADS: Run `setupSingleSheetTrigger()` ONCE to start an automatic
- *    time-based sync (every 1 minute) so any new row added to the sheet later
- *    is picked up and shows up in the CRM on its own, with no manual run needed.
- * 6. Run `checkStatus()` any time to confirm the CRM backend is reachable.
- * 7. Run `resetTestCursor()` if you want to re-import everything from row 1 again.
- * 8. Run `removeSingleSheetTrigger()` to stop the automatic sync.
+ * When you're ready to move this sheet into the folder-wide pipeline: run
+ * `removeSingleSheetTrigger()` and `removeSingleSheetInstantTrigger()` here
+ * first, so this script and the folder-wide one never process the same
+ * sheet at the same time (that's what caused duplicate leads before).
  * ============================================================================
  */
 
-// Only these tabs get synced - add a name here when you want another tab
-// included later (e.g. a new month or campaign tab), leave others alone.
-var TAB_NAMES_TO_SYNC = ['August', 'Solar webinar'];
+var MAX_ROW_RETRIES = 5;
 
 function getTestConfig() {
   var props = PropertiesService.getScriptProperties();
@@ -178,18 +182,98 @@ function sendTestRowToCRM(config, ss, sheet, headers, rowData, rowNumber) {
 }
 
 // ─────────────────────────────────────────────
-// 2. TEST: Sync just this ONE sheet
+// 2. Sync ONE tab from its saved cursor onward
 // ─────────────────────────────────────────────
 
-function syncSingleSheetTest() {
-  // Guard against overlapping runs: if a backfill takes longer than the
-  // 1-minute trigger interval, the next scheduled run would otherwise start
-  // while the previous one is still mid-row, and both would race the CRM's
-  // duplicate check on the same rows at nearly the same instant - creating
-  // 2-3 real duplicate leads per person (this happened once already; see
-  // the dedupe cleanup). If another run already holds the lock, skip this
-  // one entirely rather than waiting/queuing, so it never processes stale
-  // (not-yet-advanced) cursor rows twice.
+// Shared by the 1-minute poll AND the instant onChange trigger, same
+// bounded-retry behavior as the folder-wide script: a row that fails to
+// reach the CRM gets retried on later runs instead of being silently and
+// permanently skipped, but gives up after MAX_ROW_RETRIES so one bad row
+// can't block every lead behind it in the same tab forever.
+function syncOneTab(config, props, ss, sheet, deadline) {
+  var cursorKey = 'CURSOR_TEST_' + ss.getId() + '_' + sheet.getName();
+  var data = sheet.getDataRange().getValues();
+
+  var result = { imported: 0, updated: 0, failed: 0, timeLimited: false, retryPending: false };
+  if (data.length < 2) return result;
+
+  var headers = data[0];
+  var startRow = parseInt(props.getProperty(cursorKey) || '1', 10);
+  if (startRow >= data.length) return result; // already fully synced
+
+  for (var i = startRow; i < data.length; i++) {
+    if (deadline && Date.now() > deadline) {
+      Logger.log('⏳ Time limit approaching. Pausing gracefully...');
+      result.timeLimited = true;
+      break;
+    }
+
+    var rowData = data[i];
+    var hasData = false;
+    for (var j = 0; j < rowData.length; j++) {
+      if (rowData[j] !== null && rowData[j] !== undefined && String(rowData[j]).trim() !== '') {
+        hasData = true;
+        break;
+      }
+    }
+
+    if (!hasData) {
+      props.setProperty(cursorKey, String(i + 1));
+      continue;
+    }
+
+    var sendResult = sendTestRowToCRM(config, ss, sheet, headers, rowData, i + 1);
+    var failCountKey = 'FAILCOUNT_TEST_' + ss.getId() + '_' + sheet.getName() + '_' + (i + 1);
+
+    if (sendResult && sendResult.success) {
+      if (sendResult.data.action === 'created') result.imported++;
+      else result.updated++;
+      props.deleteProperty(failCountKey);
+      props.setProperty(cursorKey, String(i + 1));
+    } else {
+      result.failed++;
+      if (sendResult && sendResult.status === 429) Utilities.sleep(5000);
+
+      var failCount = parseInt(props.getProperty(failCountKey) || '0', 10) + 1;
+
+      if (failCount < MAX_ROW_RETRIES) {
+        props.setProperty(failCountKey, String(failCount));
+        Logger.log('⚠️ Row ' + (i + 1) + ' in tab [' + sheet.getName() + '] failed (attempt ' + failCount + '/' + MAX_ROW_RETRIES + '). Will retry next run instead of skipping it.');
+        result.retryPending = true;
+        break;
+      }
+
+      Logger.log('❌ Row ' + (i + 1) + ' in tab [' + sheet.getName() + '] failed ' + MAX_ROW_RETRIES + ' times in a row - giving up and moving on. Check this row manually: ' + JSON.stringify(rowData));
+      props.deleteProperty(failCountKey);
+      props.setProperty(cursorKey, String(i + 1));
+    }
+
+    Utilities.sleep(250);
+  }
+
+  return result;
+}
+
+function openTestSpreadsheet(config) {
+  try {
+    return config.spreadsheetId ? SpreadsheetApp.openById(config.spreadsheetId) : SpreadsheetApp.getActiveSpreadsheet();
+  } catch (e) {
+    Logger.log('❌ ERROR: Could not open spreadsheet. Check SPREADSHEET_ID script property.');
+    return null;
+  }
+}
+
+// ─────────────────────────────────────────────
+// 3. Sync every tab in this one sheet (1-minute poll entry point)
+// ─────────────────────────────────────────────
+
+function syncSingleSheet() {
+  // Guard against overlapping runs (the 1-minute poll and the instant
+  // onChange trigger both call into this file): if one is still mid-row
+  // when the other fires, both would race the CRM's duplicate check on the
+  // same row at nearly the same instant and create duplicate leads (this
+  // happened once already - see the dedupe cleanup in project memory). If
+  // another run already holds the lock, skip this one entirely.
   var lock = LockService.getScriptLock();
   var gotLock = lock.tryLock(5000);
   if (!gotLock) {
@@ -198,23 +282,16 @@ function syncSingleSheetTest() {
   }
 
   try {
-    syncSingleSheetTestBody();
+    syncSingleSheetBody();
   } finally {
     lock.releaseLock();
   }
 }
 
-function syncSingleSheetTestBody() {
+function syncSingleSheetBody() {
   var config = getTestConfig();
   var props = PropertiesService.getScriptProperties();
-
-  var ss;
-  try {
-    ss = config.spreadsheetId ? SpreadsheetApp.openById(config.spreadsheetId) : SpreadsheetApp.getActiveSpreadsheet();
-  } catch (e) {
-    Logger.log('❌ ERROR: Could not open spreadsheet. Check SPREADSHEET_ID script property.');
-    return;
-  }
+  var ss = openTestSpreadsheet(config);
 
   if (!ss) {
     Logger.log('❌ ERROR: No spreadsheet found. Either set SPREADSHEET_ID in Script Properties,');
@@ -222,143 +299,178 @@ function syncSingleSheetTestBody() {
     return;
   }
 
-  // Only the tabs named in TAB_NAMES_TO_SYNC - not every tab in the
-  // spreadsheet, so unrelated tabs (Sheet4, WPA S_1, etc.) never get sent
-  // to the CRM as if they were leads.
+  var deadline = Date.now() + 4.5 * 60 * 1000; // 4.5 mins, same safety margin as the folder-wide script
+  var sheets = ss.getSheets(); // every tab - no hardcoded tab list to maintain
+
   var grandImported = 0;
   var grandUpdated = 0;
   var grandFailed = 0;
+  var tabsWithRetryPending = 0;
+  var limitReached = false;
 
-  for (var s = 0; s < TAB_NAMES_TO_SYNC.length; s++) {
-    var sheet = ss.getSheetByName(TAB_NAMES_TO_SYNC[s]);
-    if (!sheet) {
-      Logger.log('⚠️ Tab "' + TAB_NAMES_TO_SYNC[s] + '" not found in this spreadsheet. Skipping.');
-      continue;
-    }
-    var data = sheet.getDataRange().getValues();
+  for (var s = 0; s < sheets.length; s++) {
+    if (limitReached) break;
 
-    if (data.length < 2) {
-      Logger.log('ℹ️ Tab "' + sheet.getName() + '" has no data rows to sync. Skipping.');
-      continue;
-    }
+    var sheet = sheets[s];
+    var result = syncOneTab(config, props, ss, sheet, deadline);
 
-    var headers = data[0];
-    // Cursor is per-tab, not just per-spreadsheet, so each tab tracks its
-    // own "synced up to row N" independently.
-    var cursorKey = 'CURSOR_TEST_' + ss.getId() + '_' + sheet.getName();
-    var startRow = parseInt(props.getProperty(cursorKey) || '1', 10);
-
-    if (startRow >= data.length) {
-      Logger.log('✅ Tab "' + sheet.getName() + '" is already fully synced (up to row ' + startRow + ').');
-      continue;
+    if (result.imported || result.updated || result.failed) {
+      Logger.log('🧪 Tab "' + sheet.getName() + '" → Imported: ' + result.imported + ' | Updated: ' + result.updated + ' | Failed: ' + result.failed);
     }
 
-    Logger.log('🧪 TEST SYNC → Tab: ' + sheet.getName() + ' (Starting from row ' + (startRow + 1) + ')');
-
-    var totalImported = 0;
-    var totalUpdated = 0;
-    var totalFailed = 0;
-
-    for (var i = startRow; i < data.length; i++) {
-      var rowData = data[i];
-      var hasData = false;
-      for (var j = 0; j < rowData.length; j++) {
-        if (rowData[j] !== null && rowData[j] !== undefined && String(rowData[j]).trim() !== '') {
-          hasData = true;
-          break;
-        }
-      }
-
-      if (!hasData) {
-        props.setProperty(cursorKey, String(i + 1));
-        continue;
-      }
-
-      var result = sendTestRowToCRM(config, ss, sheet, headers, rowData, i + 1);
-
-      if (result && result.success) {
-        if (result.data.action === 'created') totalImported++;
-        else totalUpdated++;
-      } else {
-        totalFailed++;
-        if (result && result.status === 429) Utilities.sleep(5000);
-      }
-
-      props.setProperty(cursorKey, String(i + 1));
-      Utilities.sleep(250);
-    }
-
-    Logger.log('   Tab "' + sheet.getName() + '" done → Imported: ' + totalImported + ' | Updated: ' + totalUpdated + ' | Failed: ' + totalFailed);
-    grandImported += totalImported;
-    grandUpdated += totalUpdated;
-    grandFailed += totalFailed;
+    grandImported += result.imported;
+    grandUpdated += result.updated;
+    grandFailed += result.failed;
+    if (result.timeLimited) limitReached = true;
+    if (result.retryPending) tabsWithRetryPending++;
   }
 
   Logger.log('═══════════════════════════════════');
-  Logger.log('✅ TEST SYNC COMPLETE for "' + ss.getName() + '" (all tabs)');
+  Logger.log('✅ SYNC COMPLETE for "' + ss.getName() + '" (' + sheets.length + ' tab(s) checked)');
   Logger.log('Imported: ' + grandImported + ' | Updated: ' + grandUpdated + ' | Failed: ' + grandFailed);
+  if (tabsWithRetryPending > 0) {
+    Logger.log('🔁 ' + tabsWithRetryPending + ' tab(s) have a row waiting to retry (will auto-retry on the next run).');
+  }
+  if (limitReached) {
+    Logger.log('⏸️ Stopped early - execution time limit approaching. Will resume the rest on the next run.');
+  }
   Logger.log('═══════════════════════════════════');
 }
 
 // ─────────────────────────────────────────────
-// 3. RULE 2: Auto-sync new leads as they're added to the sheet
+// 4. INSTANT SYNC: fire on every edit to this sheet, any tab
+// ─────────────────────────────────────────────
+
+function onSingleSheetChange(e) {
+  if (!e || !e.source) return;
+
+  // Same overlap guard as syncSingleSheet() - this and the 1-minute poll
+  // must never process the same row at the same time.
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(5000)) {
+    Logger.log('⏭️ Instant sync skipped - a sync is already running.');
+    return;
+  }
+
+  try {
+    var config = getTestConfig();
+    var props = PropertiesService.getScriptProperties();
+    var ss = e.source;
+    var sheets = ss.getSheets();
+
+    for (var s = 0; s < sheets.length; s++) {
+      var result = syncOneTab(config, props, ss, sheets[s]);
+      if (result.imported > 0 || result.updated > 0) {
+        Logger.log('⚡ Instant sync [' + sheets[s].getName() + ']: +' + result.imported + ' new, ' + result.updated + ' updated');
+      }
+    }
+  } catch (err) {
+    Logger.log('❌ onSingleSheetChange error: ' + err.message);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// ─────────────────────────────────────────────
+// 5. SETUP / TEARDOWN: triggers
 // ─────────────────────────────────────────────
 
 function setupSingleSheetTrigger() {
   var triggers = ScriptApp.getProjectTriggers();
   for (var i = 0; i < triggers.length; i++) {
-    if (triggers[i].getHandlerFunction() === 'syncSingleSheetTest') {
+    if (triggers[i].getHandlerFunction() === 'syncSingleSheet') {
       ScriptApp.deleteTrigger(triggers[i]);
     }
   }
 
-  ScriptApp.newTrigger('syncSingleSheetTest')
+  ScriptApp.newTrigger('syncSingleSheet')
     .timeBased()
     .everyMinutes(1)
     .create();
 
   Logger.log('✅ Automated trigger set: this sheet will be checked for new rows every 1 minute.');
-  Logger.log('   Any new lead added to the sheet will now show up in the CRM automatically.');
 }
 
 function removeSingleSheetTrigger() {
   var triggers = ScriptApp.getProjectTriggers();
   var removed = 0;
   for (var i = 0; i < triggers.length; i++) {
-    if (triggers[i].getHandlerFunction() === 'syncSingleSheetTest') {
+    if (triggers[i].getHandlerFunction() === 'syncSingleSheet') {
       ScriptApp.deleteTrigger(triggers[i]);
       removed++;
     }
   }
-  Logger.log('✅ Removed ' + removed + ' trigger(s). Automatic sync stopped.');
+  Logger.log('✅ Removed ' + removed + ' trigger(s). 1-minute polling stopped.');
+}
+
+function installSingleSheetInstantTrigger() {
+  var config = getTestConfig();
+  var ss = openTestSpreadsheet(config);
+  if (!ss) return;
+
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === 'onSingleSheetChange' && triggers[i].getTriggerSourceId() === ss.getId()) {
+      Logger.log('ℹ️ Instant trigger already installed for "' + ss.getName() + '".');
+      return;
+    }
+  }
+
+  ScriptApp.newTrigger('onSingleSheetChange').forSpreadsheet(ss).onChange().create();
+  Logger.log('⚡ Instant trigger installed for "' + ss.getName() + '". New rows now reach the CRM within a few seconds.');
+}
+
+function removeSingleSheetInstantTrigger() {
+  var triggers = ScriptApp.getProjectTriggers();
+  var removed = 0;
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === 'onSingleSheetChange') {
+      ScriptApp.deleteTrigger(triggers[i]);
+      removed++;
+    }
+  }
+  Logger.log('✅ Removed ' + removed + ' instant trigger(s).');
 }
 
 // ─────────────────────────────────────────────
-// 4. UTILITY: Reset the test cursor (start fresh on this sheet)
+// 6. UTILITY: Reset cursors (start fresh on this sheet)
 // ─────────────────────────────────────────────
 
-function resetTestCursor() {
+function resetSingleSheetCursors() {
   var config = getTestConfig();
   var props = PropertiesService.getScriptProperties();
+  var ss = openTestSpreadsheet(config);
+  if (!ss) return;
 
-  var ss;
-  try {
-    ss = config.spreadsheetId ? SpreadsheetApp.openById(config.spreadsheetId) : SpreadsheetApp.getActiveSpreadsheet();
-  } catch (e) {
-    Logger.log('❌ ERROR: Could not open spreadsheet. Check SPREADSHEET_ID script property.');
-    return;
+  var sheets = ss.getSheets();
+  var deletedCursors = 0;
+  var deletedFailCounts = 0;
+  var allKeys = props.getKeys();
+
+  for (var s = 0; s < sheets.length; s++) {
+    var cursorKey = 'CURSOR_TEST_' + ss.getId() + '_' + sheets[s].getName();
+    if (props.getProperty(cursorKey) !== null) {
+      props.deleteProperty(cursorKey);
+      deletedCursors++;
+    }
   }
 
-  // Reset the cursor for each synced tab (TAB_NAMES_TO_SYNC), not every tab.
-  for (var s = 0; s < TAB_NAMES_TO_SYNC.length; s++) {
-    var cursorKey = 'CURSOR_TEST_' + ss.getId() + '_' + TAB_NAMES_TO_SYNC[s];
-    props.deleteProperty(cursorKey);
+  // Also clear any leftover per-row failure counters for this spreadsheet,
+  // so a row that was mid-retry doesn't start with a stale fail count.
+  var failPrefix = 'FAILCOUNT_TEST_' + ss.getId() + '_';
+  for (var k = 0; k < allKeys.length; k++) {
+    if (allKeys[k].indexOf(failPrefix) === 0) {
+      props.deleteProperty(allKeys[k]);
+      deletedFailCounts++;
+    }
   }
-  Logger.log('✅ Reset complete for synced tabs! Next run of syncSingleSheetTest() will re-import everything from row 1.');
+
+  Logger.log('✅ Reset complete! Cleared ' + deletedCursors + ' tab cursor(s) and ' + deletedFailCounts + ' retry counter(s).');
+  Logger.log('Next run of syncSingleSheet() will re-import every tab from row 1 again.');
 }
 
 // ─────────────────────────────────────────────
-// 5. STATUS: Check CRM integration status
+// 7. STATUS: Check CRM integration status
 // ─────────────────────────────────────────────
 
 function checkStatus() {

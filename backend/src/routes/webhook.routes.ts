@@ -35,19 +35,62 @@ webhookRouter.get(['/webhook/meta', '/integrations/meta/webhook'], (req: Request
 // 2. Meta Webhook Ingestion (POST /api/webhook/meta & POST /api/integrations/meta/webhook)
 webhookRouter.post(['/webhook/meta', '/integrations/meta/webhook'], async (req: Request, res: Response) => {
   try {
-    const payload = req.body;
-    logger.info('[Meta Webhook] leadgen event received');
+    const appSecret = process.env.META_APP_SECRET;
+    const signatureHeader = req.headers['x-hub-signature-256'] as string | undefined;
+    const rawBody: Buffer | undefined = (req as any).rawBody;
 
-    // Parse leadgen event
+    if (appSecret) {
+      const validSignature = MetaIntegrationService.verifyWebhookSignature(rawBody, signatureHeader, appSecret);
+      if (!validSignature) {
+        logger.warn('[Meta Webhook] Rejected: signature verification failed.');
+        res.status(403).json({ error: 'Invalid signature' });
+        return;
+      }
+    } else {
+      // No app secret configured yet - can't verify who sent this. Still
+      // process it (so testing works before the secret is set up), but
+      // make the gap visible in the logs rather than failing silently.
+      logger.warn('[Meta Webhook] META_APP_SECRET not set - accepting request WITHOUT signature verification.');
+    }
+
+    const payload = req.body;
+    const pageAccessToken = process.env.META_PAGE_ACCESS_TOKEN;
+    let created = 0;
+    let skipped = 0;
+    let failed = 0;
+
     if (payload.entry && Array.isArray(payload.entry)) {
       for (const entryItem of payload.entry) {
-        if (entryItem.changes && Array.isArray(entryItem.changes)) {
-          for (const change of entryItem.changes) {
-            if (change.field === 'leadgen' && change.value) {
-              const leadgenId = change.value.leadgen_id;
-              if (leadgenId) {
-                logger.info(`[Meta Webhook] Lead ID received: ${leadgenId}`);
-              }
+        if (!entryItem.changes || !Array.isArray(entryItem.changes)) continue;
+
+        for (const change of entryItem.changes) {
+          if (change.field !== 'leadgen' || !change.value?.leadgen_id) continue;
+
+          const leadgenId = change.value.leadgen_id;
+          logger.info(`[Meta Webhook] Processing leadgen_id: ${leadgenId}`);
+
+          try {
+            const details = await MetaIntegrationService.fetchLeadFromGraphApi(leadgenId, pageAccessToken);
+            if (!details) {
+              logger.error(`[Meta Webhook] Could not fetch details for lead ${leadgenId} (check META_PAGE_ACCESS_TOKEN).`);
+              failed++;
+              continue;
+            }
+
+            const normalized = MetaIntegrationService.normalizeMetaLead(details);
+            const result = await MetaIntegrationService.processIncomingLead(normalized);
+            logger.info(`[Meta Webhook] Lead ${leadgenId} created as ${result.leadId}`);
+            created++;
+          } catch (err: any) {
+            // A duplicate (same mobile/email, or a redelivered webhook event
+            // for a leadgen_id we've already processed) isn't a real
+            // failure - Meta retries webhooks, so this is expected.
+            if (err.isDuplicate || err.code === 'DUPLICATE_LEAD' || err.code === 'P2002') {
+              logger.info(`[Meta Webhook] Lead ${leadgenId} already exists - skipping.`);
+              skipped++;
+            } else {
+              logger.error(`[Meta Webhook] Failed to process lead ${leadgenId}: ${err.message}`);
+              failed++;
             }
           }
         }
@@ -56,7 +99,10 @@ webhookRouter.post(['/webhook/meta', '/integrations/meta/webhook'], async (req: 
 
     res.status(200).json({
       success: true,
-      message: 'Meta lead event received and queued for processing'
+      message: 'Meta lead event processed',
+      created,
+      skipped,
+      failed
     });
   } catch (error: any) {
     logger.error('[Meta Webhook] Error processing incoming lead:', error.message);

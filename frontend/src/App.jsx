@@ -66,6 +66,12 @@ export default function App() {
   // the counselor's search box, filters and page position. Only
   // LeadWorkspace needs a forced remount after a save.
   const [workspaceRefreshKey, setWorkspaceRefreshKey] = useState(0);
+  // One-shot filter for the Dashboard's "View All" under Overdue Follow-ups
+  // - AllLeads only reads this once on mount (see its initialFilters
+  // comment), so it's safe to flip back to false right after navigating;
+  // that stops it from leaking into a later, unrelated visit to All Leads
+  // (e.g. via the sidebar) that didn't come from this button.
+  const [leadsOverdueOnly, setLeadsOverdueOnly] = useState(false);
 
   // Modals
   const [showAddLeadModal, setShowAddLeadModal] = useState(false);
@@ -341,13 +347,16 @@ export default function App() {
             <Dashboard
               key={`dash-${refreshKey}`}
               onNavigate={(route, params) => {
-                if (params && params.status) {
-                  setCurrentRoute('leads');
+                if (params && params.overdueOnly) {
+                  setLeadsOverdueOnly(true);
+                  setCurrentRoute(route);
+                  setTimeout(() => setLeadsOverdueOnly(false), 0);
                 } else {
                   setCurrentRoute(route);
                 }
               }}
               onOpenAddLead={() => setShowAddLeadModal(true)}
+              onSelectLead={handleSelectLead}
               currentUser={currentUser}
               darkMode={darkMode}
             />
@@ -364,7 +373,7 @@ export default function App() {
               onNotify={(msg) => showToast(msg)}
               currentUser={currentUser}
               visibleColumns={visibleColumns}
-              initialFilters={{ search: globalSearch }}
+              initialFilters={{ search: globalSearch, overdueOnly: leadsOverdueOnly }}
               onGlobalSearchChange={setGlobalSearch}
               darkMode={darkMode}
             />

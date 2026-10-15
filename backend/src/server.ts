@@ -60,7 +60,15 @@ io.on('connection', (socket) => {
 });
 
 // 3. Request Parsers
-app.use(express.json({ limit: '10mb' }));
+// `verify` stashes the raw request bytes on req.rawBody - needed by the Meta
+// webhook route to check the X-Hub-Signature-256 header, which is computed
+// over the exact bytes Meta sent, not the re-serialized parsed JSON.
+app.use(express.json({
+  limit: '10mb',
+  verify: (req: any, _res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 

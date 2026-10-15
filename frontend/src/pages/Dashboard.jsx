@@ -30,7 +30,7 @@ import {
   CartesianGrid
 } from 'recharts';
 
-export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) => {
+export const Dashboard = ({ onNavigate, onOpenAddLead, onSelectLead, currentUser, darkMode }) => {
   const [stats, setStats] = useState({
     totalLeads: 0,
     newLeads: 0,
@@ -1210,7 +1210,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
                   <span className="material-symbols-outlined text-lg">info</span>
                 </button>
                 <button
-                  onClick={() => onNavigate('leads')}
+                  onClick={() => onNavigate('leads', { overdueOnly: true })}
                   className="text-[11px] font-bold text-rose-500 hover:underline"
                 >
                   View All
@@ -1227,7 +1227,14 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, currentUser, darkMode }) 
             ) : (
               <div className={`space-y-3 divide-y ${darkMode ? 'divide-[#222936]' : 'divide-slate-100'}`}>
                 {overdueFollowups.map(item => (
-                  <div key={item.id} className="pt-2.5 first:pt-0 flex items-center justify-between gap-3 text-xs">
+                  <div
+                    key={item.id}
+                    onClick={() => item.leadId && onSelectLead && onSelectLead(item.leadId)}
+                    title="Open this lead to clear the overdue follow-up"
+                    className={`pt-2.5 first:pt-0 flex items-center justify-between gap-3 text-xs rounded-lg transition-colors ${
+                      item.leadId ? `cursor-pointer -mx-2 px-2 ${darkMode ? 'hover:bg-rose-950/20' : 'hover:bg-rose-50'}` : ''
+                    }`}
+                  >
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center flex-shrink-0 shadow-xs">
                         <span className="material-symbols-outlined text-[16px]">error</span>

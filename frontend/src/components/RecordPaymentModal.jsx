@@ -4,18 +4,15 @@ import { api } from '../api/client';
 export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecorded, darkMode }) => {
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('UPI');
-  const [referenceNo, setReferenceNo] = useState(`TXN-${Math.floor(100000 + Math.random() * 900000)}`);
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().slice(0, 10));
-  const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // Fee summary (total course fee / paid so far / due) + EMI plan - students
-  // almost always pay in installments rather than the full fee at once, so
-  // the counselor needs to see where this payment lands against the total.
+  // always pay in installments rather than the full fee at once, so every
+  // payment IS an EMI installment - there's no opt-in checkbox for it.
   const [summary, setSummary] = useState(null);
   const [summaryLoading, setSummaryLoading] = useState(true);
-  const [isEmi, setIsEmi] = useState(false);
   const [emiTotalInstallments, setEmiTotalInstallments] = useState(2);
   const [emiInstallmentNumber, setEmiInstallmentNumber] = useState(1);
 
@@ -59,10 +56,7 @@ export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecord
     setEditingPaymentId(null);
     setAmount('');
     setPaymentMethod('UPI');
-    setReferenceNo(`TXN-${Math.floor(100000 + Math.random() * 900000)}`);
     setPaymentDate(new Date().toISOString().slice(0, 10));
-    setNotes('');
-    setIsEmi(false);
     if (summary) {
       const nextNumber = summary.paymentsCount + 1;
       setEmiInstallmentNumber(nextNumber);
@@ -74,10 +68,7 @@ export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecord
     setEditingPaymentId(payment.id);
     setAmount(String(payment.amount));
     setPaymentMethod(payment.paymentMethod || 'UPI');
-    setReferenceNo(payment.referenceNo || '');
     setPaymentDate(payment.paymentDate || new Date().toISOString().slice(0, 10));
-    setNotes(payment.notes || '');
-    setIsEmi(Boolean(payment.emiTotalInstallments));
     setEmiInstallmentNumber(payment.emiInstallmentNumber || 1);
     setEmiTotalInstallments(payment.emiTotalInstallments || 2);
     setError(null);
@@ -93,11 +84,9 @@ export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecord
     const payload = {
       amount: Number(amount),
       paymentMethod,
-      referenceNo,
       paymentDate,
-      notes,
-      emiInstallmentNumber: isEmi ? emiInstallmentNumber : null,
-      emiTotalInstallments: isEmi ? emiTotalInstallments : null,
+      emiInstallmentNumber,
+      emiTotalInstallments,
       currentUser: currentUser ? currentUser.name : 'Counselor'
     };
 
@@ -253,61 +242,45 @@ export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecord
             </div>
           </div>
 
-          {/* EMI Plan */}
+          {/* EMI Plan - every payment is an installment, no opt-in needed */}
           {summary && summary.totalFee > 0 && (
             <div className={`p-3 rounded-lg border space-y-2 ${darkMode ? 'bg-amber-950/20 border-amber-800/30' : 'bg-amber-50/60 border-amber-200'}`}>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isEmi}
-                  onChange={(e) => setIsEmi(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded cursor-pointer accent-amber-600"
-                />
-                <span className={`text-xs font-bold ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>
-                  This is an EMI installment (student is paying in parts, not full fee at once)
+              <div className="flex items-center gap-2 pl-0 text-xs flex-wrap">
+                <span className={`font-bold ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>
+                  Installment {emiInstallmentNumber} of
                 </span>
-              </label>
+                <select
+                  value={emiTotalInstallments}
+                  onChange={(e) => setEmiTotalInstallments(Number(e.target.value))}
+                  className={`border rounded px-2 py-1 text-xs font-bold outline-none ${
+                    darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-white border-slate-300 text-slate-900'
+                  }`}
+                >
+                  {Array.from(
+                    { length: Math.max(1, summary.maxEmiInstallments - emiInstallmentNumber + 1) },
+                    (_, i) => emiInstallmentNumber + i
+                  ).map(n => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+                <span className={darkMode ? 'text-slate-400' : 'text-slate-500'}>
+                  total (max {summary.maxEmiInstallments} for this course's {summary.durationMonths}-month duration)
+                </span>
+              </div>
 
-              {isEmi && (
-                <>
-                  <div className="flex items-center gap-2 pl-6 text-xs flex-wrap">
-                    <span className={darkMode ? 'text-slate-300' : 'text-slate-700'}>
-                      Installment {emiInstallmentNumber} of
-                    </span>
-                    <select
-                      value={emiTotalInstallments}
-                      onChange={(e) => setEmiTotalInstallments(Number(e.target.value))}
-                      className={`border rounded px-2 py-1 text-xs font-bold outline-none ${
-                        darkMode ? 'bg-[#1A1608] border-[#574719] text-white' : 'bg-white border-slate-300 text-slate-900'
-                      }`}
-                    >
-                      {Array.from(
-                        { length: Math.max(1, summary.maxEmiInstallments - emiInstallmentNumber + 1) },
-                        (_, i) => emiInstallmentNumber + i
-                      ).map(n => (
-                        <option key={n} value={n}>{n}</option>
-                      ))}
-                    </select>
-                    <span className={darkMode ? 'text-slate-400' : 'text-slate-500'}>
-                      total (max {summary.maxEmiInstallments} for this course's {summary.durationMonths}-month duration)
-                    </span>
-                  </div>
-
-                  <div className={`flex items-center justify-between gap-2 pl-6 pt-1 text-xs border-t ${darkMode ? 'border-amber-800/30' : 'border-amber-200'}`}>
-                    <span className={darkMode ? 'text-slate-300' : 'text-slate-700'}>
-                      Suggested amount for this installment ({remainingInstallments} left ÷ ₹{summary.dueBalance.toLocaleString('en-IN')} due):{' '}
-                      <strong className={darkMode ? 'text-white' : 'text-slate-900'}>₹{suggestedInstallmentAmount.toLocaleString('en-IN')}</strong>
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setAmount(String(suggestedInstallmentAmount))}
-                      className="px-2 py-1 rounded bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold flex-shrink-0"
-                    >
-                      Use This
-                    </button>
-                  </div>
-                </>
-              )}
+              <div className={`flex items-center justify-between gap-2 pt-1 text-xs border-t ${darkMode ? 'border-amber-800/30' : 'border-amber-200'}`}>
+                <span className={darkMode ? 'text-slate-300' : 'text-slate-700'}>
+                  Suggested amount for this installment ({remainingInstallments} left ÷ ₹{summary.dueBalance.toLocaleString('en-IN')} due):{' '}
+                  <strong className={darkMode ? 'text-white' : 'text-slate-900'}>₹{suggestedInstallmentAmount.toLocaleString('en-IN')}</strong>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setAmount(String(suggestedInstallmentAmount))}
+                  className="px-2 py-1 rounded bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold flex-shrink-0"
+                >
+                  Use This
+                </button>
+              </div>
             </div>
           )}
 
@@ -347,38 +320,6 @@ export const RecordPaymentModal = ({ lead, currentUser, onClose, onPaymentRecord
                 }`}
               />
             </div>
-          </div>
-
-          {/* Reference / Receipt Number */}
-          <div>
-            <label className={`block text-xs font-bold mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-              Transaction / Receipt Ref No.
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. UPI-98234123412 or REC-2026-88"
-              value={referenceNo}
-              onChange={(e) => setReferenceNo(e.target.value)}
-              className={`w-full border rounded-lg px-3 py-2 text-xs font-mono outline-none focus:ring-2 focus:ring-emerald-500 ${
-                darkMode ? 'bg-[#1A1608] border-[#574719] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
-              }`}
-            />
-          </div>
-
-          {/* Remarks / Notes */}
-          <div>
-            <label className={`block text-xs font-bold mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-              Remarks / Payment Installment Notes
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. 1st Installment for Simulator & Flying fees"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className={`w-full border rounded-lg px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-emerald-500 ${
-                darkMode ? 'bg-[#1A1608] border-[#574719] text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900'
-              }`}
-            />
           </div>
 
           {/* Footer Actions */}

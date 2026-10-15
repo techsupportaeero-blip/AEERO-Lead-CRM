@@ -5,7 +5,7 @@ import { AuditLogService } from './auditLog.service.js';
 import { CustomerService } from './customer.service.js';
 import { CampaignAssignmentService } from './campaignAssignment.service.js';
 import { CourseService } from './course.service.js';
-import { istDayStartUTC, istDayEndUTC } from '../utils/istDate.js';
+import { istDayStartUTC, istDayEndUTC, toISTDateKey } from '../utils/istDate.js';
 import { LeadStatus, Priority } from '../types/index.js';
 
 export interface LeadFilterParams {
@@ -416,14 +416,6 @@ export class LeadService {
       orderBy,
       include: {
         payments: true,
-        // Nearest upcoming PENDING follow-up only - this is a list view, not
-        // the full history (that's the Follow-up Stages tracker on the
-        // lead's own Workspace page).
-        followUps: {
-          where: { status: 'PENDING' },
-          orderBy: [{ date: 'asc' }, { time: 'asc' }],
-          take: 1
-        },
         // Most recent Call & Update remark only, for the All Leads table's
         // Counselor Remarks column. Deliberately NOT written into the
         // lead's own `remarks` field, which already holds unmapped Google
@@ -454,15 +446,41 @@ export class LeadService {
     // see, right on the row, that it's a shared/multi-apply lead rather than
     // "someone else's lead" with a confusing owner name attached.
     const leadIds = leads.map((l: any) => l.id);
-    const [reAppliedActivities, campaignAssignments] = await Promise.all([
+    const [reAppliedActivities, campaignAssignments, allFollowUps] = await Promise.all([
       leadIds.length > 0
         ? prisma.activity.findMany({
             where: { activityType: 'Re-applied', leadRelId: { in: leadIds } },
             select: { leadRelId: true, description: true }
           })
         : Promise.resolve([] as { leadRelId: number | null; description: string | null }[]),
-      prisma.campaignAssignment.findMany({ select: { campaignName: true, ownerId: true } })
+      prisma.campaignAssignment.findMany({ select: { campaignName: true, ownerId: true } }),
+      leadIds.length > 0
+        ? prisma.followUp.findMany({
+            where: { leadRelId: { in: leadIds } },
+            select: { leadRelId: true, date: true, time: true, status: true, notes: true }
+          })
+        : Promise.resolve([] as { leadRelId: number | null; date: string; time: string | null; status: string; notes: string | null }[])
     ]);
+
+    // Nearest upcoming PENDING follow-up, and the most recent COMPLETED one
+    // (so the table can show both "next due" and "when we last actually
+    // called them" without loading each lead's full history).
+    const nextPendingByLead = new Map<number, { date: string; time: string | null }>();
+    const lastCompletedByLead = new Map<number, { date: string; time: string | null; notes: string | null }>();
+    for (const f of allFollowUps) {
+      if (!f.leadRelId || !f.date) continue;
+      if (f.status === 'PENDING') {
+        const existing = nextPendingByLead.get(f.leadRelId);
+        if (!existing || f.date < existing.date || (f.date === existing.date && (f.time || '') < (existing.time || ''))) {
+          nextPendingByLead.set(f.leadRelId, { date: f.date, time: f.time });
+        }
+      } else if (f.status === 'COMPLETED') {
+        const existing = lastCompletedByLead.get(f.leadRelId);
+        if (!existing || f.date > existing.date || (f.date === existing.date && (f.time || '') > (existing.time || ''))) {
+          lastCompletedByLead.set(f.leadRelId, { date: f.date, time: f.time, notes: f.notes });
+        }
+      }
+    }
 
     const ownerByCampaign = new Map(
       campaignAssignments.map((a) => [a.campaignName.trim().toLowerCase(), a.ownerId])
@@ -486,10 +504,12 @@ export class LeadService {
     // "Follow-up" column (which was never wired to real data before - it
     // always showed "-" regardless of what was scheduled) has something to
     // read.
+    const todayKey = toISTDateKey(new Date());
     const enriched = leads.map((l: any) => {
-      const next = l.followUps[0];
+      const next = nextPendingByLead.get(l.id);
+      const last = lastCompletedByLead.get(l.id);
       const latestRemark = l.activities[0]?.remarks || null;
-      const { followUps, activities, _count, ...rest } = l;
+      const { activities, _count, ...rest } = l;
 
       const campaignSet = campaignHistoryByLead.get(l.id) || new Set<string>();
       if (l.campaign) campaignSet.add(l.campaign);
@@ -501,10 +521,16 @@ export class LeadService {
       return {
         ...rest,
         followUp: next ? `${next.date}${next.time ? ' ' + next.time : ''}` : null,
+        lastFollowUp: last ? `${last.date}${last.time ? ' ' + last.time : ''}` : null,
+        lastFollowUpNotes: last?.notes || null,
         counselorRemarks: latestRemark,
         followUpCount: _count?.followUps || 0,
         isMultiCampaignLead,
-        appliedCampaigns
+        appliedCampaigns,
+        // Nearest PENDING follow-up's date has already passed - matches the
+        // Dashboard's "Overdue Follow-ups" definition exactly, so clicking
+        // through from there lands on the same set of leads.
+        isFollowUpOverdue: Boolean(next && next.date && next.date < todayKey)
       };
     });
 

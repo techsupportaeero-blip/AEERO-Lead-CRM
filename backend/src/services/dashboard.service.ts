@@ -29,7 +29,7 @@ export class DashboardService {
         include: { lead: { select: { name: true, interestedCourse: true, status: true } } }
       }),
       prisma.task.findMany({ where: { status: { not: 'COMPLETED' } } }),
-      prisma.user.findMany({ where: { isActive: true }, select: { name: true } })
+      prisma.user.findMany({ where: { isActive: true }, select: { name: true, role: true } })
     ]);
 
     const totalLeads = leads.length;
@@ -287,11 +287,12 @@ export class DashboardService {
     const overdueTasksCount = tasks.filter((t: any) => t.dueDate && t.dueDate < todayStr).length;
 
     // Counselor Performance
-    const counselorNames = counselors.map((c: any) => c.name);
-    if (!counselorNames.includes('MS. INDU')) counselorNames.push('MS. INDU');
-    if (!counselorNames.includes('MS. AYESHA')) counselorNames.push('MS. AYESHA');
-    if (!counselorNames.includes('MS. Preeti Sharma')) counselorNames.push('MS. Preeti Sharma');
-    if (!counselorNames.includes('Admin User 1')) counselorNames.push('Admin User 1');
+    // Admin accounts don't get leads assigned to them, so they don't belong
+    // in a counselor performance leaderboard - including them just added a
+    // permanent all-zero row.
+    const counselorNames = counselors
+      .filter((c: any) => c.role !== 'ADMIN')
+      .map((c: any) => c.name);
 
     const employeeMap: Record<string, any> = {};
     counselorNames.forEach((cName: string) => {
@@ -301,11 +302,7 @@ export class DashboardService {
     });
 
     leads.forEach((l: any) => {
-      let owner = l.ownerId || 'MS. INDU';
-      if (owner === 'Rahul Sharma' || owner === 'Sourav Sharma') owner = 'MS. INDU';
-      if (owner === 'Anita Verma') owner = 'MS. AYESHA';
-      if (owner === 'Suresh Menon') owner = 'MS. Preeti Sharma';
-
+      const owner = l.ownerId || 'Unassigned';
       if (!employeeMap[owner]) {
         employeeMap[owner] = { name: owner, assigned: 0, contacted: 0, interested: 0, followups: 0, converted: 0, lost: 0 };
       }
@@ -317,10 +314,14 @@ export class DashboardService {
       if (l.status === LeadStatus.LOST || l.status === LeadStatus.NOT_INTERESTED) employeeMap[owner].lost += 1;
     });
 
-    const employeePerformance = Object.values(employeeMap).map((e: any) => ({
-      ...e,
-      conversionRate: e.assigned > 0 ? ((e.converted / e.assigned) * 100).toFixed(1) : '0.0'
-    }));
+    // Ranked leaderboard - busiest counselor (most assigned leads) first,
+    // not whatever arbitrary order the Users table happened to return.
+    const employeePerformance = Object.values(employeeMap)
+      .map((e: any) => ({
+        ...e,
+        conversionRate: e.assigned > 0 ? ((e.converted / e.assigned) * 100).toFixed(1) : '0.0'
+      }))
+      .sort((a: any, b: any) => b.assigned - a.assigned);
 
     // Course distribution
     const courseMap: Record<string, number> = {};
