@@ -20,7 +20,10 @@ export class ActivityService {
   }
 
   static async getActivities(leadIdentifier: string | number) {
-    const lead = await LeadService.getLeadById(leadIdentifier);
+    // Only leadId/id are used below - getLeadById() eagerly loads every
+    // activity/followUp/task/payment/note the lead has, which is wasted work
+    // here (and, under Neon's per-round-trip latency, a visible delay).
+    const lead = await LeadService.getLeadLite(leadIdentifier);
     if (!lead) return [];
 
     return prisma.activity.findMany({
@@ -53,7 +56,10 @@ export class ActivityService {
   }
 
   static async recordActivity(leadIdentifier: string | number, data: any, createdBy = 'Counselor', userId?: number) {
-    const lead = await LeadService.getLeadById(leadIdentifier);
+    // Same reasoning as getActivities() above - this is the "Save & Update
+    // Lead" button's backing call (Call & Update Panel), so its latency is
+    // directly what counselors feel as "save takes forever".
+    const lead = await LeadService.getLeadLite(leadIdentifier);
     if (!lead) throw new Error(`Lead ${leadIdentifier} not found.`);
 
     const actType = this.normalizeActivityType(data.type || data.activityType);
@@ -78,26 +84,28 @@ export class ActivityService {
       }
     });
 
-    // If follow-up date is also provided in the call log modal
-    if (data.followUpDate) {
-      await prisma.followUp.create({
-        data: {
-          leadId: lead.leadId,
-          leadRelId: lead.id,
-          date: data.followUpDate,
-          time: data.followUpTime || '10:00',
-          type: FollowupService.normalizeType(data.followUpType),
-          notes: data.remarks || 'Scheduled Callback',
-          status: 'PENDING',
-          createdBy: createdBy || 'Counselor'
-        }
-      });
-    }
-
-    // If lead status update requested
-    if (data.leadStatus && data.leadStatus !== lead.status) {
-      await LeadService.updateLead(lead.id, { status: data.leadStatus }, createdBy);
-    }
+    // The follow-up row and the status update are independent writes - run
+    // them together instead of one after another, so this call only pays
+    // for the SLOWER of the two Neon round trips, not their sum.
+    await Promise.all([
+      data.followUpDate
+        ? prisma.followUp.create({
+            data: {
+              leadId: lead.leadId,
+              leadRelId: lead.id,
+              date: data.followUpDate,
+              time: data.followUpTime || '10:00',
+              type: FollowupService.normalizeType(data.followUpType),
+              notes: data.remarks || 'Scheduled Callback',
+              status: 'PENDING',
+              createdBy: createdBy || 'Counselor'
+            }
+          })
+        : Promise.resolve(null),
+      (data.leadStatus && data.leadStatus !== lead.status)
+        ? LeadService.updateLead(lead.id, { status: data.leadStatus }, createdBy)
+        : Promise.resolve(null)
+    ]);
 
     return activity;
   }

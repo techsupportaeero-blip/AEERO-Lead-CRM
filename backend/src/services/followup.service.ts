@@ -29,7 +29,11 @@ export class FollowupService {
     const where: any = {};
 
     if (leadIdentifier) {
-      const lead = await LeadService.getLeadById(leadIdentifier);
+      // Only leadId/id are used below - avoid LeadService.getLeadById()'s
+      // full activities/followUps/tasks/payments/notes include, which is
+      // exactly the slow query behind "follow-up table doesn't update in
+      // real time" (every load and every add was paying for it).
+      const lead = await LeadService.getLeadLite(leadIdentifier);
       if (lead) {
         where.OR = [{ leadId: lead.leadId }, { leadRelId: lead.id }];
       } else {
@@ -64,7 +68,7 @@ export class FollowupService {
   }
 
   static async addFollowup(leadIdentifier: string | number, data: any, createdBy = 'Counselor') {
-    const lead = await LeadService.getLeadById(leadIdentifier);
+    const lead = await LeadService.getLeadLite(leadIdentifier);
     if (!lead) throw new Error(`Lead ${leadIdentifier} not found.`);
 
     const type = this.normalizeType(data.type);

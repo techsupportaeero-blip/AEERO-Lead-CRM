@@ -30,7 +30,8 @@ import {
   CartesianGrid
 } from 'recharts';
 
-export const Dashboard = ({ onNavigate, onOpenAddLead, onSelectLead, currentUser, darkMode }) => {
+export const Dashboard = ({ onNavigate, onOpenAddLead, onSelectLead, notifications, currentUser, darkMode }) => {
+  const unreadNotificationCount = (notifications || []).filter(n => !n.isRead).length;
   const [stats, setStats] = useState({
     totalLeads: 0,
     newLeads: 0,
@@ -603,7 +604,11 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, onSelectLead, currentUser
             title="Notifications"
           >
             <span className="material-symbols-outlined text-xl">notifications</span>
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D99B00] text-black font-extrabold text-[9px] rounded-full flex items-center justify-center">3</span>
+            {unreadNotificationCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D99B00] text-black font-extrabold text-[9px] rounded-full flex items-center justify-center">
+                {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+              </span>
+            )}
           </button>
 
           {/* User Profile Badge */}
@@ -810,7 +815,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, onSelectLead, currentUser
         </div>
 
         {/* Card 6: CONVERSION RATE */}
-        <div className={`rounded-xl p-3.5 border shadow-xs hover:shadow-md transition-all relative group flex flex-col justify-between ${darkMode ? 'bg-[#2A220C] border-[#574719] text-white' : 'bg-white border-slate-300/80 text-slate-900'
+        <div onClick={() => openDetail('converted')} className={`rounded-xl p-3.5 border shadow-xs hover:shadow-md transition-all relative group flex flex-col justify-between cursor-pointer ${darkMode ? 'bg-[#2A220C] border-[#574719] text-white hover:border-[#E5A812]/50' : 'bg-white border-slate-300/80 text-slate-900 hover:border-amber-400/50'
           }`}>
           <div className="flex items-start justify-between">
             <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 shadow-2xs ${darkMode ? 'bg-[#E5A812]/20 text-[#E5A812]' : 'bg-amber-100 text-amber-700'
@@ -818,7 +823,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, onSelectLead, currentUser
               <span className="material-symbols-outlined text-xl">insights</span>
             </div>
             <button
-              onClick={() => showInfo('conversionRate')}
+              onClick={(e) => { e.stopPropagation(); showInfo('conversionRate'); }}
               className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${darkMode ? 'bg-[#1A1608] text-slate-400 hover:text-[#E5A812]' : 'bg-slate-100 hover:bg-amber-100 text-slate-400 hover:text-amber-700'
                 }`}
               title="Click for metric explanation"
@@ -1408,7 +1413,7 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, onSelectLead, currentUser
                 <span className="material-symbols-outlined text-lg">info</span>
               </button>
               <button
-                onClick={() => onNavigate('lead-sources')}
+                onClick={() => openDetail('sourcePerformance')}
                 className="text-[11px] font-bold text-[#E5A812] hover:underline"
               >
                 View All
@@ -1430,7 +1435,11 @@ export const Dashboard = ({ onNavigate, onOpenAddLead, onSelectLead, currentUser
               </thead>
               <tbody className={`divide-y font-medium ${darkMode ? 'divide-[#222936]' : 'divide-slate-100'}`}>
                 {topSourcesData.map((src, idx) => (
-                  <tr key={idx} className={`transition-colors ${darkMode ? 'hover:bg-[#1E2532]' : 'hover:bg-slate-50'}`}>
+                  <tr
+                    key={idx}
+                    onClick={() => openDetail('sourcePerformance')}
+                    className={`cursor-pointer transition-colors ${darkMode ? 'hover:bg-[#1E2532]' : 'hover:bg-slate-50'}`}
+                  >
                     <td className={`py-3 font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{src.source}</td>
                     <td className={`py-3 text-center font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>{src.leads}</td>
                     <td className={`py-3 text-center ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>{src.interested}</td>

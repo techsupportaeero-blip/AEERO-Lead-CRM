@@ -1,21 +1,33 @@
 import { Router, Request, Response } from 'express';
+import crypto from 'crypto';
 // @ts-ignore
 import { discoverFolderSpreadsheets, syncAllFolderSpreadsheets, syncSingleSpreadsheet, ingestLeadRecord, getAllSources, updateCourseMapping } from '../integrations/googleSheets/index.js';
 
 export const googleSheetsRouter = Router();
 
+// Constant-time string compare - a plain `===` here would leak the secret's
+// correct prefix length one HTTP-timing-measurement at a time.
+function secureCompare(a: string, b: string): boolean {
+  const hashA = crypto.createHash('sha256').update(a).digest();
+  const hashB = crypto.createHash('sha256').update(b).digest();
+  return crypto.timingSafeEqual(hashA, hashB);
+}
+
 const verifyGoogleSecretOrAuth = (req: Request, res: Response, next: Function) => {
+  const configuredSecret = process.env.GOOGLE_SHEETS_INGEST_SECRET;
+  // No hardcoded fallback, no NODE_ENV bypass, no "starts with" prefix
+  // backdoor - any of those let an unauthenticated caller inject fake leads
+  // into the CRM. If the real secret isn't configured, every request is
+  // rejected rather than silently accepted.
+  if (!configuredSecret) {
+    return res.status(503).json({ error: 'Google Sheets integration is not configured on this server.' });
+  }
+
   const authHeader = req.headers.authorization || '';
   const token = authHeader.replace(/^Bearer\s+/i, '').trim();
-  const configuredSecret = process.env.GOOGLE_SHEETS_INGEST_SECRET || 'aeero_sheets_secret_2026';
+  const integrationHeader = String(req.headers['x-integration-secret'] || '');
 
-  if (
-    token === configuredSecret ||
-    token.startsWith('aeero_session_') ||
-    !process.env.NODE_ENV ||
-    process.env.NODE_ENV === 'development' ||
-    req.headers['x-integration-secret'] === configuredSecret
-  ) {
+  if (secureCompare(token, configuredSecret) || secureCompare(integrationHeader, configuredSecret)) {
     return next();
   }
   return res.status(401).json({ error: 'Unauthorized: Invalid Google Sheets integration secret or auth token.' });

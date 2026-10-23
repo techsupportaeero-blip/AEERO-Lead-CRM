@@ -16,6 +16,7 @@ export const KanbanBoard = ({ onSelectLead, currentUser, onNotify, darkMode }) =
     { code: 'INTERESTED', title: 'Interested', color: 'border-emerald-500' },
     { code: 'FOLLOW_UP', title: 'Follow-up', color: 'border-purple-500' },
     { code: 'CONVERTED', title: 'Converted / Enrolled', color: 'border-green-600' },
+    { code: 'NEED_CERTIFICATE', title: 'Need Certificate', color: 'border-indigo-500' },
     { code: 'LOST', title: 'Lost / Closed', color: 'border-red-500' }
   ];
 

@@ -357,6 +357,7 @@ export default function App() {
               }}
               onOpenAddLead={() => setShowAddLeadModal(true)}
               onSelectLead={handleSelectLead}
+              notifications={notifications}
               currentUser={currentUser}
               darkMode={darkMode}
             />

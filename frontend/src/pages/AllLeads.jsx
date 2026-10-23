@@ -437,7 +437,8 @@ export const AllLeads = ({
         if (followUpStageFilter === 'none' && count !== 0) return false;
         if (followUpStageFilter === '1' && count !== 1) return false;
         if (followUpStageFilter === '2' && count !== 2) return false;
-        if (followUpStageFilter === '3+' && count < 3) return false;
+        if (followUpStageFilter === '3' && count !== 3) return false;
+        if (followUpStageFilter === '4+' && count < 4) return false;
       }
       if (overdueOnlyFilter && !lead.isFollowUpOverdue) return false;
       return true;
@@ -972,7 +973,8 @@ export const AllLeads = ({
               <option value="none">No Follow-up Yet</option>
               <option value="1">1st Done (needs 2nd)</option>
               <option value="2">2nd Done (needs 3rd)</option>
-              <option value="3+">3rd+ Done</option>
+              <option value="3">3rd Done (needs 4th)</option>
+              <option value="4+">4th+ Done</option>
             </select>
           </div>
 
@@ -1289,30 +1291,31 @@ export const AllLeads = ({
                     )}
 
                     {isColVisible('followUp') && (
-                      <td className={`py-2.5 px-3 whitespace-nowrap ${
+                      <td className={`py-2.5 px-3 max-w-[220px] ${
                         darkMode ? 'text-slate-400' : 'text-slate-600'
                       }`}>
                         <div className="flex items-center gap-1.5">
-                          <span>{lead.followUp || '-'}</span>
-                          {lead.followUpCount > 0 && (
+                          {lead.followUpCount > 0 ? (
                             <span
                               title={`${lead.followUpCount} follow-up${lead.followUpCount > 1 ? 's' : ''} completed so far`}
-                              className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-black ${
+                              className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-black flex-shrink-0 ${
                                 darkMode ? 'bg-[#574719] text-[#E2B134]' : 'bg-[#7D610F] text-white'
                               }`}
                             >
                               {lead.followUpCount}
                             </span>
+                          ) : (
+                            <span className={darkMode ? 'text-slate-600' : 'text-slate-300'}>-</span>
+                          )}
+                          {lead.lastFollowUpNotes && (
+                            <span
+                              className="truncate text-[11px]"
+                              title={lead.lastFollowUpNotes}
+                            >
+                              {lead.lastFollowUpNotes}
+                            </span>
                           )}
                         </div>
-                        {lead.lastFollowUp && (
-                          <div
-                            className={`text-[10px] mt-0.5 max-w-[160px] truncate ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}
-                            title={lead.lastFollowUpNotes ? `${lead.lastFollowUp} - ${lead.lastFollowUpNotes}` : lead.lastFollowUp}
-                          >
-                            Last: {lead.lastFollowUp}{lead.lastFollowUpNotes ? ` - ${lead.lastFollowUpNotes}` : ''}
-                          </div>
-                        )}
                       </td>
                     )}
 

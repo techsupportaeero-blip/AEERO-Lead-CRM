@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { env } from '../config/env.js';
 import { MetaIntegrationService } from '../integrations/meta/meta.service.js';
 import { logger } from '../utils/logger.js';
+import { authMiddleware } from '../middleware/auth.middleware.js';
 
 export const webhookRouter = Router();
 
@@ -11,7 +12,11 @@ webhookRouter.get(['/webhook/meta', '/integrations/meta/webhook'], (req: Request
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
 
-  const verifyToken = process.env.META_VERIFY_TOKEN || 'aeero_meta_lead_token_2026';
+  const verifyToken = process.env.META_VERIFY_TOKEN;
+  if (!verifyToken) {
+    logger.error('[Meta Webhook] META_VERIFY_TOKEN not set - rejecting verification request.');
+    return res.status(503).json({ error: 'Meta webhook is not configured on this server.' });
+  }
 
   if (mode && token) {
     if (mode === 'subscribe' && token === verifyToken) {
@@ -39,18 +44,20 @@ webhookRouter.post(['/webhook/meta', '/integrations/meta/webhook'], async (req: 
     const signatureHeader = req.headers['x-hub-signature-256'] as string | undefined;
     const rawBody: Buffer | undefined = (req as any).rawBody;
 
-    if (appSecret) {
-      const validSignature = MetaIntegrationService.verifyWebhookSignature(rawBody, signatureHeader, appSecret);
-      if (!validSignature) {
-        logger.warn('[Meta Webhook] Rejected: signature verification failed.');
-        res.status(403).json({ error: 'Invalid signature' });
-        return;
-      }
-    } else {
-      // No app secret configured yet - can't verify who sent this. Still
-      // process it (so testing works before the secret is set up), but
-      // make the gap visible in the logs rather than failing silently.
-      logger.warn('[Meta Webhook] META_APP_SECRET not set - accepting request WITHOUT signature verification.');
+    if (!appSecret) {
+      // Can't verify who sent this without the secret - processing it
+      // anyway would let anyone who knows this URL inject fake "leads" into
+      // the CRM. Reject instead of silently trusting an unverified payload.
+      logger.error('[Meta Webhook] META_APP_SECRET not set - rejecting request.');
+      res.status(503).json({ error: 'Meta webhook is not configured on this server.' });
+      return;
+    }
+
+    const validSignature = MetaIntegrationService.verifyWebhookSignature(rawBody, signatureHeader, appSecret);
+    if (!validSignature) {
+      logger.warn('[Meta Webhook] Rejected: signature verification failed.');
+      res.status(403).json({ error: 'Invalid signature' });
+      return;
     }
 
     const payload = req.body;
@@ -110,12 +117,14 @@ webhookRouter.post(['/webhook/meta', '/integrations/meta/webhook'], async (req: 
   }
 });
 
-// 3. Meta Integration Config Probe
-webhookRouter.get('/integrations/meta/config', (_req: Request, res: Response) => {
+// 3. Meta Integration Config Probe - internal status only, never the actual
+// secret values (this used to echo the real META_VERIFY_TOKEN back in the
+// response to anyone, logged in or not).
+webhookRouter.get('/integrations/meta/config', authMiddleware, (_req: Request, res: Response) => {
   res.json({
     enabled: true,
     webhookPath: '/api/webhook/meta',
-    verifyToken: process.env.META_VERIFY_TOKEN || 'aeero_meta_lead_token_2026',
+    verifyTokenConfigured: Boolean(process.env.META_VERIFY_TOKEN),
     hasPageAccessToken: Boolean(process.env.META_PAGE_ACCESS_TOKEN),
     autoAssignEnabled: true,
     supportedFields: ['full_name', 'phone_number', 'email', 'city', 'state', 'interested_course', 'qualification', 'campaign_name', 'form_id']

@@ -1,22 +1,22 @@
 import { Router } from 'express';
 import { PaymentController } from '../controllers/payment.controller.js';
-import { optionalAuthMiddleware } from '../middleware/auth.middleware.js';
+import { authMiddleware } from '../middleware/auth.middleware.js';
 import { validateBody } from '../middleware/validate.middleware.js';
 import { createPaymentSchema, updatePaymentSchema } from '../validators/payment.validator.js';
 
 export const paymentRouter = Router();
 
-paymentRouter.get('/leads/:id/payments', optionalAuthMiddleware, PaymentController.getPayments);
-paymentRouter.get('/leads/:id/payment-summary', optionalAuthMiddleware, PaymentController.getPaymentSummary);
+paymentRouter.get('/leads/:id/payments', authMiddleware, PaymentController.getPayments);
+paymentRouter.get('/leads/:id/payment-summary', authMiddleware, PaymentController.getPaymentSummary);
 paymentRouter.post(
   '/leads/:id/payments',
-  optionalAuthMiddleware,
+  authMiddleware,
   validateBody(createPaymentSchema),
   PaymentController.recordPayment
 );
 paymentRouter.patch(
   '/payments/:paymentId',
-  optionalAuthMiddleware,
+  authMiddleware,
   validateBody(updatePaymentSchema),
   PaymentController.updatePayment
 );

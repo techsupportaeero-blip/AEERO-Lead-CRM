@@ -583,7 +583,7 @@ export class LeadService {
   // activities/follow-ups/tasks/payments/notes that getLeadById() eagerly
   // loads. That full load was making every save noticeably slow for no
   // benefit, since the response here is never sent back to the client.
-  private static async getLeadLite(identifier: string | number) {
+  static async getLeadLite(identifier: string | number) {
     const idNum = Number(identifier);
     const isNumeric = !isNaN(idNum) && String(identifier).trim() === String(idNum);
 
@@ -706,8 +706,12 @@ export class LeadService {
       await CustomerService.createFromLeadIfMissing(updated);
     }
 
-    // Audit log
-    await AuditLogService.log({
+    // Audit log - informational only, nothing downstream reads it back, so
+    // it must not make every save wait on one more round trip to the DB.
+    // Neon's connection latency already makes each sequential query here
+    // noticeably slow (see DB connection string note); logging failures are
+    // still caught so they don't disappear silently.
+    AuditLogService.log({
       userId: userContext?.userId,
       userName: userContext?.userName || updatedBy,
       leadId: existing.leadId,
@@ -717,7 +721,7 @@ export class LeadService {
       details: `Lead ${existing.leadId} updated by ${updatedBy}`,
       ipAddress: userContext?.ipAddress,
       userAgent: userContext?.userAgent
-    });
+    }).catch((err) => console.error('Audit log failed (LEAD_UPDATED):', err));
 
     (global as any).io?.emit('leadUpdated', updated);
     return updated;
@@ -757,7 +761,9 @@ export class LeadService {
       }
     });
 
-    await AuditLogService.log({
+    // Fire-and-forget, same reasoning as updateLead() above - this is a
+    // Kanban drag-and-drop, so it's the one place latency is most visible.
+    AuditLogService.log({
       userId: userContext?.userId,
       userName: userContext?.userName || updatedBy,
       leadId: existing.leadId,
@@ -765,7 +771,7 @@ export class LeadService {
       oldValue: existing.status,
       newValue: newStatus,
       details: `Status changed from ${existing.status} to ${newStatus}`
-    });
+    }).catch((err) => console.error('Audit log failed (STATUS_CHANGED):', err));
 
     // Auto-create a Customer record the moment a lead converts (Kanban
     // drag-and-drop path), mirroring the same hook in updateLead().

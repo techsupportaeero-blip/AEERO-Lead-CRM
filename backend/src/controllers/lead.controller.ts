@@ -3,16 +3,14 @@ import { LeadService } from '../services/lead.service.js';
 
 export class LeadController {
   // Shared admin check for the most destructive/restricted actions (bulk
-  // archive-all / permanently-delete-all-archived - "Clear All"). Trusts
-  // req.user.role when authenticated, and falls back to a name/body-role
-  // heuristic to stay compatible with the app's optional-auth (no-login)
-  // mode. Deliberately NOT relaxed for Sr. Counsellor - Clear All stays
+  // archive-all / permanently-delete-all-archived - "Clear All"). Only
+  // trusts the authenticated session (req.user, set by authMiddleware from
+  // a verified JWT) - never req.body, which a caller can set to anything.
+  // Deliberately NOT relaxed for Sr. Counsellor - Clear All stays
   // strict-admin-only.
   static isAdminRequest(req: Request): boolean {
-    const currentUser = req.user?.name || req.body?.currentUser || '';
-    const userRole = req.user?.role || req.body?.userRole || '';
-    const roleUpper = String(userRole).toUpperCase();
-    const nameLower = String(currentUser).toLowerCase();
+    const roleUpper = String(req.user?.role || '').toUpperCase();
+    const nameLower = String(req.user?.name || '').toLowerCase();
     return roleUpper === 'ADMIN' || nameLower.includes('admin');
   }
 
@@ -21,8 +19,7 @@ export class LeadController {
   // "all authorities except Clear All" permission level.
   static isElevatedRequest(req: Request): boolean {
     if (LeadController.isAdminRequest(req)) return true;
-    const currentUser = req.user?.name || req.body?.currentUser || '';
-    return String(currentUser).toUpperCase().includes('INDU');
+    return String(req.user?.name || '').toUpperCase().includes('INDU');
   }
 
   static async checkDuplicate(req: Request, res: Response, next: NextFunction): Promise<void> {

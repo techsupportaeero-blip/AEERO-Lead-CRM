@@ -22,6 +22,7 @@ export const leadStatusEnum = caseInsensitiveEnum([
   'INTERESTED',
   'FOLLOW_UP',
   'CONVERTED',
+  'NEED_CERTIFICATE',
   'LOST',
   'NOT_INTERESTED',
   'INVALID'

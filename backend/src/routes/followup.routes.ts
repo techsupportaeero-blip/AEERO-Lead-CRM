@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { FollowupController } from '../controllers/followup.controller.js';
-import { authMiddleware, optionalAuthMiddleware } from '../middleware/auth.middleware.js';
+import { authMiddleware } from '../middleware/auth.middleware.js';
 import { validateBody } from '../middleware/validate.middleware.js';
 import { createFollowupSchema, updateFollowupSchema } from '../validators/followup.validator.js';
 
@@ -13,24 +13,24 @@ export const followupRouter = Router();
 // ?currentUser=/?userRole= query param must never be trusted for this.
 followupRouter.get('/followups/stage-tracker', authMiddleware, FollowupController.getStageTracker);
 
-followupRouter.get('/followups', optionalAuthMiddleware, FollowupController.getFollowups);
-followupRouter.get('/leads/:id/followups', optionalAuthMiddleware, FollowupController.getFollowups);
+followupRouter.get('/followups', authMiddleware, FollowupController.getFollowups);
+followupRouter.get('/leads/:id/followups', authMiddleware, FollowupController.getFollowups);
 followupRouter.post(
   '/leads/:id/followups',
-  optionalAuthMiddleware,
+  authMiddleware,
   validateBody(createFollowupSchema),
   FollowupController.addFollowup
 );
 followupRouter.post(
   '/followups',
-  optionalAuthMiddleware,
+  authMiddleware,
   validateBody(createFollowupSchema),
   FollowupController.addFollowup
 );
 followupRouter.put(
   '/followups/:id',
-  optionalAuthMiddleware,
+  authMiddleware,
   validateBody(updateFollowupSchema),
   FollowupController.updateFollowup
 );
-followupRouter.delete('/followups/:id', optionalAuthMiddleware, FollowupController.deleteFollowup);
+followupRouter.delete('/followups/:id', authMiddleware, FollowupController.deleteFollowup);

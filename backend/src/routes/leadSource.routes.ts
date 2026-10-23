@@ -1,22 +1,22 @@
 import { Router } from 'express';
 import { LeadSourceController } from '../controllers/leadSource.controller.js';
-import { optionalAuthMiddleware } from '../middleware/auth.middleware.js';
+import { authMiddleware } from '../middleware/auth.middleware.js';
 import { validateBody } from '../middleware/validate.middleware.js';
 import { createLeadSourceSchema, updateLeadSourceSchema } from '../validators/leadSource.validator.js';
 
 export const leadSourceRouter = Router();
 
-leadSourceRouter.get('/lead-sources', optionalAuthMiddleware, LeadSourceController.getLeadSources);
+leadSourceRouter.get('/lead-sources', authMiddleware, LeadSourceController.getLeadSources);
 leadSourceRouter.post(
   '/lead-sources',
-  optionalAuthMiddleware,
+  authMiddleware,
   validateBody(createLeadSourceSchema),
   LeadSourceController.createLeadSource
 );
 leadSourceRouter.put(
   '/lead-sources/:id',
-  optionalAuthMiddleware,
+  authMiddleware,
   validateBody(updateLeadSourceSchema),
   LeadSourceController.updateLeadSource
 );
-leadSourceRouter.delete('/lead-sources/:id', optionalAuthMiddleware, LeadSourceController.deleteLeadSource);
+leadSourceRouter.delete('/lead-sources/:id', authMiddleware, LeadSourceController.deleteLeadSource);

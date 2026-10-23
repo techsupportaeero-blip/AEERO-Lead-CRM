@@ -3,20 +3,31 @@ import { verifyPassword, hashPassword } from '../utils/password.js';
 import { generateToken } from '../utils/jwt.js';
 import { Role } from '../types/index.js';
 
+// Not a real user's hash - a fixed dummy so the "account doesn't exist"
+// path still pays bcrypt's full cost, instead of returning near-instantly
+// while a wrong-password-for-a-real-account attempt takes measurably
+// longer. Without this, an attacker can enumerate valid usernames/emails
+// purely from response timing even though the error text is identical.
+const DUMMY_PASSWORD_HASH = '$2a$10$LuOKhnCm7oLcDpi7rrd4eeHhbQCRr99TlzExppa36lJx0P3VPRgXq';
+
 export class AuthService {
   static async login(usernameOrEmail: string, passwordPlain: string) {
     const cleanInput = usernameOrEmail.trim();
+    // Username/email only - a user's display `name` is shown all over the
+    // UI (lead ownership, audit logs), so allowing it as a login identifier
+    // too just hands an attacker a free, easily-guessable third way to
+    // enumerate accounts.
     const user = await prisma.user.findFirst({
       where: {
         OR: [
           { username: { equals: cleanInput, mode: 'insensitive' } },
-          { email: { equals: cleanInput, mode: 'insensitive' } },
-          { name: { equals: cleanInput, mode: 'insensitive' } }
+          { email: { equals: cleanInput, mode: 'insensitive' } }
         ]
       }
     });
 
     if (!user) {
+      await verifyPassword(passwordPlain, DUMMY_PASSWORD_HASH);
       throw new Error('Invalid username or password credentials.');
     }
 

@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { NotificationController } from '../controllers/notification.controller.js';
-import { optionalAuthMiddleware } from '../middleware/auth.middleware.js';
+import { authMiddleware } from '../middleware/auth.middleware.js';
 
 export const notificationRouter = Router();
 
-notificationRouter.get('/notifications', optionalAuthMiddleware, NotificationController.getNotifications);
-notificationRouter.put('/notifications/:id/read', optionalAuthMiddleware, NotificationController.markAsRead);
+notificationRouter.get('/notifications', authMiddleware, NotificationController.getNotifications);
+notificationRouter.put('/notifications/:id/read', authMiddleware, NotificationController.markAsRead);

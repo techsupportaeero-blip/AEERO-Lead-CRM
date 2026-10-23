@@ -17,6 +17,14 @@ const app = express();
 const httpServer = createServer(app);
 const PORT = env.PORT || 3001;
 
+// Render sits in front of this app as a reverse proxy - without this,
+// express-rate-limit (and anything else reading req.ip) sees Render's proxy
+// IP for every request instead of the real client IP, collapsing every
+// visitor into one rate-limit bucket (or, if it falls back to trusting
+// X-Forwarded-For blindly, letting it be spoofed). `1` = trust exactly one
+// hop, matching Render's setup.
+app.set('trust proxy', 1);
+
 // 1. Security Middlewares
 app.use(
   helmet({
@@ -30,11 +38,14 @@ app.use(
 // all before, so every request paid the full transfer time over the network.
 app.use(compression());
 
-// 2. CORS Setup
-const allowedOrigins = env.CORS_ORIGIN === '*' ? '*' : env.CORS_ORIGIN.split(',').map(o => o.trim());
+// 2. CORS Setup - CORS_ORIGIN is a required, explicit comma-separated list
+// (see config/env.ts) of real frontend origin(s); no wildcard fallback, so a
+// misconfigured/missing value fails startup instead of quietly allowing
+// every website on the internet to make credentialed requests here.
+const allowedOrigins = env.CORS_ORIGIN.split(',').map(o => o.trim()).filter(Boolean);
 app.use(
   cors({
-    origin: allowedOrigins === '*' ? true : allowedOrigins,
+    origin: allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-integration-secret']
@@ -44,7 +55,7 @@ app.use(
 // Initialize Socket.io
 export const io = new Server(httpServer, {
   cors: {
-    origin: allowedOrigins === '*' ? true : allowedOrigins,
+    origin: allowedOrigins,
     methods: ['GET', 'POST']
   }
 });

@@ -2,12 +2,12 @@ import { Request, Response, NextFunction } from 'express';
 import { CampaignAssignmentService } from '../services/campaignAssignment.service.js';
 
 // Admin, or the Sr. Counsellor (Indu) - matches the frontend's
-// canManageArchive gate (isAdmin || name includes 'INDU').
+// canManageArchive gate (isAdmin || name includes 'INDU'). Only trusts the
+// authenticated session (req.user, set by authMiddleware from a verified
+// JWT) - never req.body, which a caller can set to anything.
 function isAuthorized(req: Request): boolean {
-  const currentUser = req.user?.name || req.body?.currentUser || '';
-  const userRole = req.user?.role || req.body?.userRole || '';
-  const roleUpper = String(userRole).toUpperCase();
-  const nameUpper = String(currentUser).toUpperCase();
+  const roleUpper = String(req.user?.role || '').toUpperCase();
+  const nameUpper = String(req.user?.name || '').toUpperCase();
   return roleUpper === 'ADMIN' || nameUpper.includes('ADMIN') || nameUpper.includes('INDU');
 }
 
@@ -34,7 +34,7 @@ export class CampaignAssignmentController {
         return;
       }
 
-      const currentUser = req.user?.name || req.body?.currentUser || 'Admin';
+      const currentUser = req.user?.name || 'Admin';
       const { assignment, reassignedCount } = await CampaignAssignmentService.setAssignment(
         campaignName,
         ownerId,

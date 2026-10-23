@@ -14,9 +14,11 @@ leadRouter.post(
   LeadController.checkDuplicate
 );
 
-// Bulk actions (Admin Only) - must come before the /:id routes below
-leadRouter.post('/leads/bulk-archive', optionalAuthMiddleware, LeadController.bulkArchiveActive);
-leadRouter.post('/leads/bulk-delete-archived', optionalAuthMiddleware, LeadController.bulkDeleteArchived);
+// Bulk actions (Admin Only) - must come before the /:id routes below.
+// Mandatory auth - LeadController.isAdminRequest only trusts req.user now,
+// so these need a verified session to ever succeed anyway.
+leadRouter.post('/leads/bulk-archive', authMiddleware, LeadController.bulkArchiveActive);
+leadRouter.post('/leads/bulk-delete-archived', authMiddleware, LeadController.bulkDeleteArchived);
 
 // Lightweight count (sidebar badge, etc.) - a single COUNT query instead of
 // the full /api/stats aggregate, which fetches every lead/activity/payment
@@ -36,5 +38,6 @@ leadRouter.post('/leads', optionalAuthMiddleware, validateBody(createLeadSchema)
 leadRouter.put('/leads/:id', authMiddleware, validateBody(updateLeadSchema), LeadController.updateLead);
 leadRouter.put('/leads/:id/status', authMiddleware, LeadController.updateLeadStatus);
 leadRouter.post('/leads/:id/archive', authMiddleware, LeadController.archiveLead);
-leadRouter.post('/leads/:id/unarchive', optionalAuthMiddleware, LeadController.unarchiveLead);
-leadRouter.delete('/leads/:id', optionalAuthMiddleware, LeadController.deleteLead);
+// Mandatory auth - LeadController.isElevatedRequest only trusts req.user now.
+leadRouter.post('/leads/:id/unarchive', authMiddleware, LeadController.unarchiveLead);
+leadRouter.delete('/leads/:id', authMiddleware, LeadController.deleteLead);

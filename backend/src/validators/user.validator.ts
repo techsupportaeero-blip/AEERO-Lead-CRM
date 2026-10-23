@@ -8,7 +8,9 @@ export const createUserSchema = z.object({
   email: z.string().email('Invalid email address').trim(),
   phone: z.string().optional().nullable(),
   role: roleEnum.optional().default('LEAD_FINDER'),
-  password: z.string().min(8, 'Password must be at least 8 characters')
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/^(?=.*[A-Za-z])(?=.*\d).+$/, 'Password must include at least one letter and one number')
 });
 
 export const updateUserSchema = z.object({
@@ -21,5 +23,7 @@ export const updateUserSchema = z.object({
 });
 
 export const resetPasswordSchema = z.object({
-  password: z.string().min(8, 'Password must be at least 8 characters')
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/^(?=.*[A-Za-z])(?=.*\d).+$/, 'Password must include at least one letter and one number')
 });

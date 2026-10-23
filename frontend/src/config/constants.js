@@ -6,6 +6,7 @@ export const LEAD_STATUSES = [
   { code: 'INTERESTED', label: 'Interested', color: 'bg-amber-100 text-amber-800 border-amber-300' },
   { code: 'FOLLOW_UP', label: 'Follow-up', color: 'bg-orange-100 text-orange-800 border-orange-200' },
   { code: 'CONVERTED', label: 'Converted', color: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
+  { code: 'NEED_CERTIFICATE', label: 'Need Certificate', color: 'bg-indigo-100 text-indigo-800 border-indigo-300' },
   { code: 'LOST', label: 'Lost', color: 'bg-rose-100 text-rose-700 border-rose-200' },
   { code: 'NOT_INTERESTED', label: 'Not Interested', color: 'bg-red-100 text-red-700 border-red-200' },
   { code: 'INVALID', label: 'Invalid', color: 'bg-gray-100 text-gray-600 border-gray-300' }

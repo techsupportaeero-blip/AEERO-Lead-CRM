@@ -47,6 +47,10 @@ export const StatusBadge = ({ status, darkMode }) => {
       return darkMode
         ? 'bg-emerald-900/40 text-emerald-200 border-emerald-600/50'
         : 'bg-emerald-100 text-emerald-800 border-emerald-300';
+    if (s.includes('certificate') || c === 'NEED_CERTIFICATE')
+      return darkMode
+        ? 'bg-indigo-900/40 text-indigo-300 border-indigo-700/50'
+        : 'bg-indigo-100 text-indigo-800 border-indigo-300';
     if (s.includes('details') || c === 'GIVEN_DETAILS')
       return darkMode
         ? 'bg-cyan-900/40 text-cyan-300 border-cyan-700/50'
